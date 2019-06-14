@@ -1,8 +1,15 @@
 [package]
 name = "interfacer"
-version = "0.1.0"
+version = "0.0.1"
 authors = ["Hexilee <hexileee@gmail.com>"]
 edition = "2018"
+license = "MIT"
+description = "SDK builder for various API, like retrofit"
+repository = "https://github.com/Hexilee/interfacer"
+keywords = ["SDK Builder"]
+categories = ["API bindings"]
+readme = "README.md"
+documentation = "https://docs.rs/interfacer"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
