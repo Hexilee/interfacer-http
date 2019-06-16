@@ -4,7 +4,7 @@ version = "0.0.2"
 authors = ["Hexilee <hexileee@gmail.com>"]
 edition = "2018"
 license = "MIT"
-description = "SDK builder for various API, like retrofit"
+description = "SDK builder for various API"
 repository = "https://github.com/Hexilee/interfacer"
 keywords = ["SDK-Builder"]
 categories = ["api-bindings"]
@@ -12,6 +12,10 @@ readme = "README.md"
 documentation = "https://docs.rs/interfacer"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[workspace]
+members = [
+    "interfacer-http"
+]
 
 [dependencies]
 const-concat = "0.1.0"

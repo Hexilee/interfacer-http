@@ -12,11 +12,11 @@ use interfacer::http::content_type;
 trait MyServiceInterface {
     #[get("/api/user?limit={limit}&offset={offset}", content_type::JSON)]
     #[except(200, content_type::JSON)]
-    fn get_users_info(limit: u64, offset: u64) -> Result<Vec<User>>;
+    fn get_users_info(&self, limit: u64, offset: u64) -> Result<Vec<User>>;
     
     #[put("/api/user/{uid}", content_type::JSON)]
     #[expect(200)]
-    fn put_user_info(uid: u64, user: &User) -> Result<()>;
+    fn put_user_info(&self, uid: u64, user: &User) -> Result<()>;
 }
 ```
 
@@ -66,11 +66,11 @@ use interfacer_sql::Result;
 #[sql_service]
 trait MyServiceInterface {
     #[sql("SELECT * FROM `user` WHERE `uid`={uid}")]
-    fn get_user(uid: u64) -> Result<User>;
+    fn get_user(&self, uid: u64) -> Result<User>;
     
     // parse by method name
     #[sql]
-    fn get_user_by_uid(uid: u64) -> Result<User>;
+    fn get_user_by_uid(&self, uid: u64) -> Result<User>;
 }
 ```
 

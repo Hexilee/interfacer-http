@@ -1,3 +1,7 @@
+pub trait HttpService {
+    fn get_base_url(&self) -> &str;
+}
+
 pub trait FromContent<const CONTENT_TYPE: &'static str> {
     fn from_content(data: &[u8]) -> Self;
 }
