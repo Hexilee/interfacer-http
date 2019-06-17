@@ -1,5 +1,5 @@
-use crate::http::HttpClient;
-use http::Request;
+use crate::http::{HttpClient, HttpService};
+use http::{Request, Uri};
 use hyper::client::{HttpConnector, ResponseFuture};
 use hyper::{Body, Client};
 
@@ -7,10 +7,24 @@ pub struct AsyncClient {
     inner: hyper::Client<HttpConnector, Body>,
 }
 
+pub struct AsyncService {
+    client: AsyncClient,
+    base_uri: Uri,
+}
+
 impl AsyncClient {
     pub fn new() -> Self {
         Self {
             inner: Client::new(),
+        }
+    }
+}
+
+impl AsyncService {
+    pub fn new(base_uri: Uri) -> Self {
+        Self {
+            client: AsyncClient::new(),
+            base_uri,
         }
     }
 }
@@ -22,7 +36,16 @@ impl HttpClient for AsyncClient {
         let (parts, data) = req.into_parts();
         self.inner.request(Request::from_parts(parts, data.into()))
     }
-    fn _phantom(&self) -> Self::Body {
-        unimplemented!()
+}
+
+impl HttpService for AsyncService {
+    type Client = AsyncClient;
+
+    fn get_base_url(&self) -> &Uri {
+        &self.base_uri
+    }
+
+    fn get_client(&self) -> &Self::Client {
+        &self.client
     }
 }

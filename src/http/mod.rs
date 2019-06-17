@@ -4,16 +4,17 @@ pub use http::{
     HttpTryFrom,
 };
 
+pub use async_service::{AsyncClient, AsyncService};
+
 pub trait HttpClient {
     type Response;
     type Body;
     fn request(&self, req: Request<Self::Body>) -> Self::Response;
-    fn _phantom(&self) -> Self::Body;
 }
 
 pub trait HttpService {
     type Client: HttpClient;
-    fn get_base_url(&self) -> &str;
+    fn get_base_url(&self) -> &Uri;
     fn get_client(&self) -> &Self::Client;
 }
 
