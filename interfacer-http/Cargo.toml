@@ -15,11 +15,16 @@ documentation = "https://docs.rs/interfacer-http"
 [lib]
 proc-macro = true
 
+[[test]]
+name = "tests"
+path = "tests/lib.rs"
+
 [dependencies]
 interfacer = { path = "..", version = "0.0" }
 quote = "0.6"
 proc-macro2 = "0.4"
 synstructure = "0.10"
+http = "0.1"
 
 [dependencies.syn]
 version = "0.15"
