@@ -29,7 +29,7 @@ fn request(method: &str, args: TokenStream, input: TokenStream) -> TokenStream {
         Method::GET
     });
     http_request::request(
-        method,
+        method.as_str(),
         parse_macro_input!(args as AttributeArgs),
         parse_macro_input!(input as TraitItemMethod),
     )

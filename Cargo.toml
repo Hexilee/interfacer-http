@@ -20,3 +20,4 @@ members = [
 [dependencies]
 const-concat = "0.1.0"
 http = "0.1"
+hyper = "0.12"

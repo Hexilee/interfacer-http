@@ -4,8 +4,15 @@ pub use http::{
     HttpTryFrom,
 };
 
+pub trait HttpClient {
+    type Response;
+    fn request(&self, req: Request<Vec<u8>>) -> Self::Response;
+}
+
 pub trait HttpService {
+    type Client: HttpClient;
     fn get_base_url(&self) -> &str;
+    fn get_client(&self) -> &Self::Client;
 }
 
 pub trait FromContent<const CONTENT_TYPE: &'static str> {

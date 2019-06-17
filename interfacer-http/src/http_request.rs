@@ -71,7 +71,46 @@ impl Args {
     }
 }
 
-pub fn request(method: Method, raw_args: AttributeArgs, signature: TraitItemMethod) -> TokenStream {
+pub fn request(method: &str, raw_args: AttributeArgs, raw_method: TraitItemMethod) -> TokenStream {
     let args = Args::new(raw_args);
-    quote!(#signature)
+    let raw_sig = &raw_method.sig;
+    let attr = &raw_method.attrs;
+    let req_ident = quote!(req);
+    let req_define = build_request(&req_ident, method, &args, &raw_method);
+    let return_type = if args.send {
+        quote!(Self::Client::Response)
+    } else {
+        quote!(interfacer::http::Request<Vec<u8>>)
+    };
+
+    let return_block = if args.send {
+        quote!(self.get_client().request(#req_ident))
+    } else {
+        quote!(#req_ident)
+    };
+
+    quote!(
+        #($attr)*
+        #raw_sig -> #return_type {
+            #req_define
+            #return_block
+        }
+    )
+}
+
+// TODO: complete build request
+fn build_request(
+    req_ident: &TokenStream,
+    method: &str,
+    args: &Args,
+    raw_method: &TraitItemMethod,
+) -> TokenStream {
+    let path = &args.path;
+    quote!(
+        let mut builder = interfacer::http::Request::builder();
+        let #req_ident = builder
+            .uri(#path)
+            .method(#method)
+            .body(vec![]);
+    )
 }
