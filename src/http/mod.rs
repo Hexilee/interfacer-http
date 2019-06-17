@@ -1,3 +1,9 @@
+pub use http::{
+    header, header::HeaderMap, method, method::Method, request, request::Request, response,
+    response::Response, status, status::StatusCode, uri, uri::Uri, version, version::Version,
+    HttpTryFrom,
+};
+
 pub trait HttpService {
     fn get_base_url(&self) -> &str;
 }
