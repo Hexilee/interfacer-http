@@ -66,8 +66,8 @@ impl Args {
                     }
                 }
             }
+            Diagnostic::new(Level::Error, "send should be 'send=<true | false>'").emit()
         }
-        Diagnostic::new(Level::Error, "send should be 'send=<true | false>'").emit()
     }
 }
 
