@@ -6,7 +6,9 @@ pub use http::{
 
 pub trait HttpClient {
     type Response;
-    fn request(&self, req: Request<Vec<u8>>) -> Self::Response;
+    type Body;
+    fn request(&self, req: Request<Self::Body>) -> Self::Response;
+    fn _phantom(&self) -> Self::Body;
 }
 
 pub trait HttpService {
@@ -23,4 +25,5 @@ pub trait ToContent<const CONTENT_TYPE: &'static str> {
     fn to_content(&self) -> &[u8];
 }
 
+pub mod async_service;
 pub mod content_type;
