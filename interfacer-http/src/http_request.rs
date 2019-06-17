@@ -78,7 +78,7 @@ pub fn request(method: &str, raw_args: AttributeArgs, raw_method: TraitItemMetho
     let req_ident = quote!(req);
     let req_define = build_request(&req_ident, method, &args, &raw_method);
     let return_type = if args.send {
-        quote!(Self::Client::Response)
+        quote!(<<Self as interfacer::http::HttpService>::Client as interfacer::http::HttpClient>::Response)
     } else {
         quote!(interfacer::http::Request<Vec<u8>>)
     };
@@ -98,7 +98,7 @@ pub fn request(method: &str, raw_args: AttributeArgs, raw_method: TraitItemMetho
     )
 }
 
-// TODO: complete build request
+// TODO: complete build request; replace unwrap with try; using generic Body type
 fn build_request(
     req_ident: &TokenStream,
     method: &str,
@@ -111,6 +111,7 @@ fn build_request(
         let #req_ident = builder
             .uri(#path)
             .method(#method)
-            .body(vec![]);
+            .body(vec![])
+            .unwrap();
     )
 }

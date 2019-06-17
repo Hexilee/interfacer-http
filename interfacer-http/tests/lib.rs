@@ -1,4 +1,5 @@
 #![cfg(test)]
+use interfacer::http::HttpClient;
 use interfacer_http::{expect, get, http_service};
 
 #[http_service]
