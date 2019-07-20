@@ -12,51 +12,6 @@ pub struct Args {
     pub expect: Option<Expect>,
 }
 
-impl Default for Args {
-    fn default() -> Self {
-        Args {
-            path: "".into(),
-            content_type: None,
-            expect: None,
-        }
-    }
-}
-
-impl Args {
-    fn new(mut raw_args: AttributeArgs) -> Self {
-        let mut args: Args = Default::default();
-        args.try_set_path(raw_args.get(0));
-        args.try_set_content_type(raw_args.get(1));
-        args
-    }
-
-    pub fn try_set_path(&mut self, attr: Option<&NestedMeta>) {
-        if let Some(path) = attr {
-            if let NestedMeta::Literal(Lit::Str(lit_str)) = path {
-                self.path = lit_str.value()
-            } else {
-                Diagnostic::new(Level::Error, "request path should be string literal").emit()
-            }
-        }
-    }
-
-    pub fn try_set_content_type(&mut self, attr: Option<&NestedMeta>) {
-        if let Some(content_type) = attr {
-            match content_type {
-                NestedMeta::Literal(lit) => {
-                    if let Lit::Str(_) = lit {
-                        self.content_type = Some(Box::new(lit.clone()))
-                    } else {
-                        Diagnostic::new(Level::Error, "content type should be string literal")
-                            .emit()
-                    }
-                }
-                NestedMeta::Meta(meta) => self.content_type = Some(Box::new(meta.name())),
-            }
-        }
-    }
-}
-
 pub fn request(method: &str, raw_args: AttributeArgs, raw_method: TraitItemMethod) -> TokenStream {
     let args = Args::new(raw_args);
     let raw_sig = &raw_method.sig;

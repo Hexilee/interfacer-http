@@ -24,6 +24,7 @@ interfacer = { path = "..", version = "0.0" }
 quote = "0.6"
 proc-macro2 = "0.4"
 synstructure = "0.10"
+darling = "0.9"
 
 [dependencies.syn]
 version = "0.15"
