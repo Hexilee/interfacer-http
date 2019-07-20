@@ -4,10 +4,12 @@ pub use http::{
     HttpTryFrom,
 };
 
+use core::future::Future;
+
 pub use async_service::{AsyncClient, AsyncService};
 
 pub trait HttpClient {
-    type Response;
+    type Response: Future;
     type Body;
     fn request(&self, req: Request<Self::Body>) -> Self::Response;
 }

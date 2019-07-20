@@ -1,28 +1,46 @@
-use interfacer::http::{Method, Request};
-use proc_macro::{Diagnostic, Level};
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::export::{Debug, ToTokens};
-use syn::{AttributeArgs, Ident, Lit, LitStr, Meta, NestedMeta, TraitItemMethod};
-use crate::expect::Expect;
+use syn::{TraitItemMethod, ReturnType, Token, parse_macro_input, Type};
+use darling::FromMeta;
 
-pub struct Args {
-    pub path: String,
-    pub content_type: Option<Box<dyn ToTokens>>,
-    pub expect: Option<Expect>,
+#[derive(Debug, FromMeta)]
+struct Expect {
+    status: i32,
+    #[darling(default)]
+    content_type: Option<String>,
 }
 
-pub fn request(method: &str, raw_args: AttributeArgs, raw_method: TraitItemMethod) -> TokenStream {
-    let args = Args::new(raw_args);
-    let raw_sig = &raw_method.sig;
+#[derive(Debug, FromMeta, Default)]
+pub struct Args {
+    #[darling(default)]
+    path: Option<String>,
+
+    #[darling(default)]
+    content_type: Option<String>,
+
+    #[darling(default)]
+    expect: Option<Expect>,
+}
+
+pub fn request(method: &str, args: Args, mut raw_method: TraitItemMethod) -> TokenStream {
     let attr = &raw_method.attrs;
     let req_ident = quote!(req);
     let req_define = build_request(&req_ident, method, &args, &raw_method);
-    let return_type = quote!(<<Self as interfacer::http::HttpService>::Client as interfacer::http::HttpClient>::Response);
+    let return_type = TokenStream::from(quote!(<<Self as interfacer::http::HttpService>::Client as interfacer::http::HttpClient>::Response));
+    let output = &mut raw_method.sig.decl.output;
+    let raw_sig = match output {
+        ReturnType::Default => {
+            *output = ReturnType::Type(Token![->], Box::new(parse_macro_input!(return_type as Type)));
+        }
+
+        ReturnType::Type(_, typ) => {
+            *output = ReturnType::Type(Token![->], Box::new(parse_macro_input!(return_type as Type)));
+        }
+    };
     let return_block = quote!(self.get_client().request(#req_ident));
     quote!(
         #($attr)*
-        #raw_sig -> #return_type {
+        #raw_sig {
             #req_define
             #return_block
         }
@@ -36,7 +54,10 @@ fn build_request(
     args: &Args,
     raw_method: &TraitItemMethod,
 ) -> TokenStream {
-    let path = &args.path;
+    let path = match args.path {
+        Some(ref path) => path,
+        None => "/"
+    };
     quote!(
         let mut builder = interfacer::http::Request::builder();
         let #req_ident = builder
