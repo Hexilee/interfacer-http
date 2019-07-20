@@ -4,11 +4,12 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::export::{Debug, ToTokens};
 use syn::{AttributeArgs, Ident, Lit, LitStr, Meta, NestedMeta, TraitItemMethod};
+use crate::expect::Expect;
 
 pub struct Args {
     pub path: String,
     pub content_type: Option<Box<dyn ToTokens>>,
-    pub send: bool,
+    pub expect: Option<Expect>,
 }
 
 impl Default for Args {
@@ -16,7 +17,7 @@ impl Default for Args {
         Args {
             path: "".into(),
             content_type: None,
-            send: true,
+            expect: None,
         }
     }
 }
@@ -26,7 +27,6 @@ impl Args {
         let mut args: Args = Default::default();
         args.try_set_path(raw_args.get(0));
         args.try_set_content_type(raw_args.get(1));
-        args.try_set_send(raw_args.get(2));
         args
     }
 
@@ -55,20 +55,6 @@ impl Args {
             }
         }
     }
-
-    pub fn try_set_send(&mut self, attr: Option<&NestedMeta>) {
-        if let Some(send) = attr {
-            if let NestedMeta::Meta(Meta::NameValue(kv)) = send {
-                if kv.ident == "send" {
-                    if let Lit::Bool(send) = &kv.lit {
-                        self.send = send.value;
-                        return;
-                    }
-                }
-            }
-            Diagnostic::new(Level::Error, "send should be 'send=<true | false>'").emit()
-        }
-    }
 }
 
 pub fn request(method: &str, raw_args: AttributeArgs, raw_method: TraitItemMethod) -> TokenStream {
@@ -77,18 +63,8 @@ pub fn request(method: &str, raw_args: AttributeArgs, raw_method: TraitItemMetho
     let attr = &raw_method.attrs;
     let req_ident = quote!(req);
     let req_define = build_request(&req_ident, method, &args, &raw_method);
-    let return_type = if args.send {
-        quote!(<<Self as interfacer::http::HttpService>::Client as interfacer::http::HttpClient>::Response)
-    } else {
-        quote!(interfacer::http::Request<Vec<u8>>)
-    };
-
-    let return_block = if args.send {
-        quote!(self.get_client().request(#req_ident))
-    } else {
-        quote!(#req_ident)
-    };
-
+    let return_type = quote!(<<Self as interfacer::http::HttpService>::Client as interfacer::http::HttpClient>::Response);
+    let return_block = quote!(self.get_client().request(#req_ident));
     quote!(
         #($attr)*
         #raw_sig -> #return_type {

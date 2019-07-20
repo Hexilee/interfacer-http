@@ -10,15 +10,6 @@ pub fn http_service(_args: TokenStream, input: TokenStream) -> TokenStream {
     http_service_impl::implement(parse_macro_input!(input as ItemTrait)).into()
 }
 
-#[proc_macro_attribute]
-pub fn expect(args: TokenStream, input: TokenStream) -> TokenStream {
-    expect_impl::implement(
-        parse_macro_input!(args as AttributeArgs),
-        parse_macro_input!(input as TraitItemMethod),
-    )
-    .into()
-}
-
 fn request(method: &str, args: TokenStream, input: TokenStream) -> TokenStream {
     let method = Method::try_from(method).unwrap_or_else(|err| {
         Diagnostic::new(
@@ -28,7 +19,7 @@ fn request(method: &str, args: TokenStream, input: TokenStream) -> TokenStream {
         .emit();
         Method::GET
     });
-    http_request::request(
+    http_request_impl::request(
         method.as_str(),
         parse_macro_input!(args as AttributeArgs),
         parse_macro_input!(input as TraitItemMethod),
@@ -49,6 +40,6 @@ macro_rules! define_request {
 
 define_request!(get, post, put, delete, head, options, connect, patch, trace);
 
-mod expect_impl;
-mod http_request;
+mod expect;
+mod http_request_impl;
 mod http_service_impl;

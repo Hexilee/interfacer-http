@@ -29,6 +29,7 @@ impl AsyncService {
     }
 }
 
+// TODO: send request
 impl HttpClient for AsyncClient {
     type Response = ResponseFuture;
     type Body = Vec<u8>;
