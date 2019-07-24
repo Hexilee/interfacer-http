@@ -4,12 +4,13 @@ pub use http::{
     HttpTryFrom,
 };
 
-use core::future::Future;
+pub use async_trait::async_trait;
 
+#[async_trait]
 pub trait HttpClient {
-    type Response: Future;
+    type Err;
     type Body;
-    fn request(&self, req: Request<Self::Body>) -> Self::Response;
+    async fn request(&self, req: Request<Self::Body>) -> Result<Response<Self::Body>, Self::Err>;
 }
 
 pub trait HttpService {
@@ -18,12 +19,17 @@ pub trait HttpService {
     fn get_client(&self) -> &Self::Client;
 }
 
-pub trait FromContent<const CONTENT_TYPE: &'static str> {
-    fn from_content(data: &[u8]) -> Self;
+pub trait FromContent: Sized {
+    const CONTENT_TYPE: &'static str;
+    const CHARSET: &'static str = content_type::CHARSET_UTF8;
+    type Err;
+    fn from_content(data: &[u8]) -> Result<Self, Self::Err>;
 }
 
-pub trait ToContent<const CONTENT_TYPE: &'static str> {
-    fn to_content(&self) -> &[u8];
+pub trait IntoContent {
+    const CONTENT_TYPE: &'static str;
+    const CHARSET: &'static str = content_type::CHARSET_UTF8;
+    fn into_content(&self) -> &[u8];
 }
 
 pub mod content_type;
