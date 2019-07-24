@@ -1,7 +1,7 @@
+use darling::FromMeta;
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{TraitItemMethod, ReturnType, Token, parse_macro_input, Type};
-use darling::FromMeta;
+use syn::{parse_macro_input, ReturnType, Token, TraitItemMethod, Type};
 
 #[derive(Debug, FromMeta)]
 struct Expect {
@@ -26,15 +26,23 @@ pub fn request(method: &str, args: Args, mut raw_method: TraitItemMethod) -> Tok
     let attr = &raw_method.attrs;
     let req_ident = quote!(req);
     let req_define = build_request(&req_ident, method, &args, &raw_method);
-    let return_type = TokenStream::from(quote!(<<Self as interfacer::http::HttpService>::Client as interfacer::http::HttpClient>::Response));
+    let return_type = TokenStream::from(quote!(
+        <<Self as interfacer::http::HttpService>::Client as interfacer::http::HttpClient>::Response
+    ));
     let output = &mut raw_method.sig.decl.output;
     let raw_sig = match output {
         ReturnType::Default => {
-            *output = ReturnType::Type(Token![->], Box::new(parse_macro_input!(return_type as Type)));
+            *output = ReturnType::Type(
+                Token![->],
+                Box::new(parse_macro_input!(return_type as Type)),
+            );
         }
 
         ReturnType::Type(_, typ) => {
-            *output = ReturnType::Type(Token![->], Box::new(parse_macro_input!(return_type as Type)));
+            *output = ReturnType::Type(
+                Token![->],
+                Box::new(parse_macro_input!(return_type as Type)),
+            );
         }
     };
     let return_block = quote!(self.get_client().request(#req_ident));
@@ -56,7 +64,7 @@ fn build_request(
 ) -> TokenStream {
     let path = match args.path {
         Some(ref path) => path,
-        None => "/"
+        None => "/",
     };
     quote!(
         let mut builder = interfacer::http::Request::builder();

@@ -2,10 +2,10 @@
 
 extern crate proc_macro;
 
-use interfacer::http::{HttpTryFrom, Method};
+use darling::FromMeta;
+use interfacer_http_service::{HttpTryFrom, Method};
 use proc_macro::{Diagnostic, Level, TokenStream};
 use syn::{parse_macro_input, AttributeArgs, ItemTrait, TraitItemMethod};
-use darling::FromMeta;
 
 #[proc_macro_attribute]
 pub fn http_service(_args: TokenStream, input: TokenStream) -> TokenStream {
@@ -18,7 +18,7 @@ fn request(method: &str, raw_args: TokenStream, input: TokenStream) -> TokenStre
             Level::Error,
             format!("{}, fallback to GET", err.to_string()),
         )
-            .emit();
+        .emit();
         Method::GET
     });
 
@@ -28,7 +28,7 @@ fn request(method: &str, raw_args: TokenStream, input: TokenStream) -> TokenStre
                 Level::Error,
                 format!("parse service method fails: {}", err.to_string()),
             )
-                .emit();
+            .emit();
             Default::default()
         });
 
@@ -37,7 +37,7 @@ fn request(method: &str, raw_args: TokenStream, input: TokenStream) -> TokenStre
         args,
         parse_macro_input!(input as TraitItemMethod),
     )
-        .into()
+    .into()
 }
 
 macro_rules! define_request {
