@@ -1,7 +1,9 @@
-use http::{Request, Uri};
-use hyper::client::{HttpConnector, ResponseFuture};
-use hyper::{Body, Client};
-use interfacer_http_service::{HttpClient, HttpService};
+#![feature(async_await)]
+
+use http::{Request, Response, Uri};
+use hyper::client::HttpConnector;
+use hyper::{Body, Client, Error};
+use interfacer_http_service::{async_trait, HttpClient, HttpService};
 
 pub struct AsyncClient {
     inner: hyper::Client<HttpConnector, Body>,
@@ -29,13 +31,12 @@ impl AsyncService {
     }
 }
 
-// TODO: send request
+#[async_trait]
 impl HttpClient for AsyncClient {
-    type Response = ResponseFuture;
-    type Body = Vec<u8>;
-    fn request(&self, req: http::Request<Self::Body>) -> Self::Response {
-        let (parts, data) = req.into_parts();
-        self.inner.request(Request::from_parts(parts, data.into()))
+    type Err = Error;
+    type Body = Body;
+    async fn request(&self, req: Request<Self::Body>) -> Result<Response<Self::Body>, Self::Err> {
+        self.inner.request(req).await
     }
 }
 
