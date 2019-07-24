@@ -21,6 +21,7 @@ members = [
 
 [patch.crates-io]
 hyper = { git = "https://github.com/hyperium/hyper", branch = "master" }
+tokio-io = { git = "https://github.com/tokio-rs/tokio", branch = "master" }
 
 [dependencies]
 interfacer-http-attribute = { path = "interfacer-http-attribute", version = "0.0" }

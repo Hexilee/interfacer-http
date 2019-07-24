@@ -9,3 +9,4 @@ edition = "2018"
 [dependencies]
 http = "0.1"
 async-trait = "0.1.2"
+futures-preview = "0.3.0-alpha.17"
