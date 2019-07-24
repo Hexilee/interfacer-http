@@ -12,20 +12,15 @@ readme = "README.md"
 documentation = "https://docs.rs/interfacer-http"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[lib]
-proc-macro = true
-
-[[test]]
-name = "tests"
-path = "tests/lib.rs"
-
 [dependencies]
-interfacer = { path = "..", version = "0.0" }
-quote = "0.6"
-proc-macro2 = "0.4"
-synstructure = "0.10"
-darling = "0.9"
+const-concat = "0.1.0"
+http = "0.1"
 
-[dependencies.syn]
-version = "0.15"
-features = ["full"]
+[workspace]
+members = [
+    "interfacer-http-attribute",
+    "interfacer-http-hyper"
+]
+
+[patch.crates-io]
+const-concat = { git = "https://github.com/Vurich/const-concat", branch = "master" }

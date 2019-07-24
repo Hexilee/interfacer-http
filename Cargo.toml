@@ -12,16 +12,5 @@ readme = "README.md"
 documentation = "https://docs.rs/interfacer"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-[workspace]
-members = [
-    "interfacer-http"
-]
 
 [dependencies]
-const-concat = "0.1.0"
-http = "0.1"
-hyper = "0.13.0-a.0"
-
-[patch.crates-io]
-const-concat = { git = "https://github.com/Vurich/const-concat", branch = "master" }
-hyper = { git = "https://github.com/hyperium/hyper", branch = "master" }

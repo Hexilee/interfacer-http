@@ -1,0 +1,24 @@
+[package]
+name = "interfacer-http-attribute"
+version = "0.0.1"
+authors = ["Hexilee <hexileee@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+quote = "0.6"
+proc-macro2 = "0.4"
+synstructure = "0.10"
+darling = "0.9"
+
+[dependencies.syn]
+version = "0.15"
+features = ["full"]
+
+[[test]]
+name = "tests"
+path = "tests/lib.rs"
+
+[lib]
+proc-macro = true
