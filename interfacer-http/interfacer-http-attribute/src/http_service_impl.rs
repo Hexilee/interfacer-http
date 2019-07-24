@@ -1,17 +1,17 @@
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::ItemTrait;
+use syn::{parse_quote, ItemTrait};
 
-pub fn implement(item_trait: ItemTrait) -> TokenStream {
-    let attr = &item_trait.attrs;
-    let vis = &item_trait.vis;
-    let ident = &item_trait.ident;
-    let items = &item_trait.items;
+pub fn implement(mut item_trait: ItemTrait) -> TokenStream {
+    let items = item_trait.items.clone();
+    let trait_name = item_trait.ident.clone();
     quote! {
-        #(#attr)*
-        #vis trait #ident: interfacer::http::HttpService {
-            #(#items)*
+        #[interface_http::async_trait]
+        #item_trait
+
+        #[interface_http::async_trait]
+        impl<T: interfacer::http::HttpService> #trait_name for T {
+
         }
-        impl<T: interfacer::http::HttpService> #ident for T {}
     }
 }

@@ -30,29 +30,7 @@ pub fn request(method: &str, args: Args, mut raw_method: TraitItemMethod) -> Tok
         <<Self as interfacer::http::HttpService>::Client as interfacer::http::HttpClient>::Response
     ));
     let output = &mut raw_method.sig.decl.output;
-    let raw_sig = match output {
-        ReturnType::Default => {
-            *output = ReturnType::Type(
-                Token![->],
-                Box::new(parse_macro_input!(return_type as Type)),
-            );
-        }
-
-        ReturnType::Type(_, typ) => {
-            *output = ReturnType::Type(
-                Token![->],
-                Box::new(parse_macro_input!(return_type as Type)),
-            );
-        }
-    };
-    let return_block = quote!(self.get_client().request(#req_ident));
-    quote!(
-        #($attr)*
-        #raw_sig {
-            #req_define
-            #return_block
-        }
-    )
+    unimplemented!()
 }
 
 // TODO: complete build request; replace unwrap with try; using generic Body type
