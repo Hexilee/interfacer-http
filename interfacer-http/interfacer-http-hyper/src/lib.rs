@@ -3,9 +3,10 @@
 use http::{Request, Response, Uri};
 use hyper::client::HttpConnector;
 use hyper::{self, Client, Error};
-use interfacer_http_service::{async_trait, AsyncRead, HttpClient, HttpService};
-use std::pin::Pin;
-use std::task::{Context, Poll};
+use interfacer_http_service::{async_trait, HttpClient, HttpService};
+// use hyper::body::Payload;
+// use std::pin::Pin;
+// use std::task::{Context, Poll};
 
 // TODO: use generic Connector
 pub struct AsyncClient {
@@ -17,9 +18,9 @@ pub struct AsyncService {
     base_uri: Uri,
 }
 
-pub struct Body {
-    inner: hyper::Body,
-}
+// pub struct Body {
+//     inner: hyper::Body,
+// }
 
 impl AsyncClient {
     pub fn new() -> Self {
@@ -38,40 +39,43 @@ impl AsyncService {
     }
 }
 
-impl Body {
-    pub fn new(body: hyper::Body) -> Self {
-        Self { inner: body }
-    }
-}
+// impl Body {
+//     pub fn new(body: hyper::Body) -> Self {
+//         Self { inner: body }
+//     }
+// }
 
-impl From<hyper::Body> for Body {
-    fn from(body: hyper::Body) -> Self {
-        Body::new(body)
-    }
-}
+// impl From<hyper::Body> for Body {
+//     fn from(body: hyper::Body) -> Self {
+//         Body::new(body)
+//     }
+// }
 
-impl AsyncRead for Body {
-    fn poll_read(
-        self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-        buf: &mut [u8],
-    ) -> Poll<std::io::Result<usize>> {
-        unimplemented!()
-    }
-}
+// impl AsyncRead for Body {
+//     fn poll_read(
+//         self: Pin<&mut Self>,
+//         cx: &mut Context<'_>,
+//         buf: &mut [u8],
+//     ) -> Poll<std::io::Result<usize>> {
+//         match self.get_mut().inner.poll_read(cx) {}
+//     }
+// }
 
 #[async_trait]
 impl HttpClient for AsyncClient {
     type Err = Error;
-    type Body = Body;
-    async fn request(&self, req: Request<Vec<u8>>) -> Result<Response<Self::Body>, Self::Err> {
+    async fn request(&self, req: Request<Vec<u8>>) -> Result<Response<Vec<u8>>, Self::Err> {
         let (parts, body) = req.into_parts();
-        let (parts, body) = self
+        let (parts, mut body) = self
             .inner
             .request(Request::from_parts(parts, body.into()))
             .await?
             .into_parts();
-        Ok(Response::from_parts(parts, body.into()))
+        let mut data = Vec::new();
+        while let Some(chunk) = body.next().await {
+            data.extend_from_slice(&chunk?);
+        }
+        Ok(Response::from_parts(parts, data))
     }
 }
 
