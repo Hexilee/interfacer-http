@@ -1,9 +1,10 @@
-use darling::FromMeta;
+use interfacer_http_service::content_type;
+use interfacer_http_service::StatusCode;
 use proc_macro::{Diagnostic, Level};
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{
-    parse_macro_input, parse_quote, AttrStyle, Attribute, AttributeArgs, ReturnType, Token,
+    parse_macro_input, parse_quote, AttrStyle, Attribute, MetaList, ReturnType, Token,
     TraitItemMethod, Type,
 };
 
@@ -11,91 +12,131 @@ const METHODS: [&'static str; 9] = [
     "get", "post", "put", "delete", "head", "options", "connect", "patch", "trace",
 ];
 
-#[derive(Debug, FromMeta)]
+const EXPECT: &'static str = "expect";
+
+#[derive(Debug)]
+struct ContentType {
+    content_type: String,
+    charset: String,
+}
+
+impl Default for ContentType {
+    fn default() -> Self {
+        Self {
+            content_type: content_type::APPLICATION_JSON.into(),
+            charset: content_type::CHARSET_UTF8.into(),
+        }
+    }
+}
+
+#[derive(Debug)]
 struct Expect {
-    status: i32,
-    #[darling(default)]
-    content_type: Option<String>,
+    status: StatusCode,
+    content_type: ContentType,
 }
 
-#[derive(Debug, FromMeta, Default)]
-pub struct Args {
-    #[darling(default)]
-    path: Option<String>,
-
-    #[darling(default)]
-    content_type: Option<String>,
-
-    #[darling(default)]
-    expect: Option<Expect>,
+impl Default for Expect {
+    fn default() -> Self {
+        Self {
+            status: StatusCode::OK,
+            content_type: Default::default(),
+        }
+    }
 }
 
-fn filter_method(raw_method: &TraitItemMethod) -> Result<(String, proc_macro::TokenStream), Diagnostic> {
-    let attrs = raw_method.attrs.as_slice();
-    if attrs.len() != 1 {
-        Err(Diagnostic::new(
-            Level::Error,
-            format!(
-                "method `{}` has multiple attribute",
-                &raw_method.sig.ident.to_string()
-            ),
-        ))?;
-    };
-    let attr = attrs.first().unwrap().to_owned();
-    if let AttrStyle::Inner(_) = attr.style {
-        Err(Diagnostic::new(
-            Level::Error,
-            format!(
-                "the attribute`{}` of method `{}` should be Outer",
-                stringify!(&attr),
-                &raw_method.sig.ident.to_string()
-            ),
-        ))?;
-    };
+#[derive(Debug)]
+pub struct ReqArgs {
+    path: String,
+    content_type: ContentType,
+}
 
-    let length = attr.path.segments.len();
-    let attr_name = if length > 0 {
-        attr.path
-            .segments
-            .first()
-            .unwrap()
-            .value()
-            .ident
-            .to_string()
-    } else {
-        "".into()
-    };
+impl Default for ReqArgs {
+    fn default() -> Self {
+        Self {
+            path: "/".into(),
+            content_type: Default::default(),
+        }
+    }
+}
 
-    if length != 1 || !METHODS.contains(&attr_name.as_str()) {
-        Err(Diagnostic::new(
+struct ArgsTokens {
+    req: Option<proc_macro::TokenStream>,
+    expect: Option<proc_macro::TokenStream>,
+}
+
+#[derive(Default)]
+struct Args {
+    req: ReqArgs,
+    expect: Expect,
+}
+
+fn gen_meta(attr: Attribute) -> proc_macro::TokenStream {
+    let name = attr.path.segments.last().unwrap().value().ident.clone();
+    let tts = attr.tts.clone();
+    quote!(#name#tts).into()
+}
+
+fn check_duplicate(
+    method_name: &str,
+    attr: &Option<proc_macro::TokenStream>,
+) -> Result<(), Diagnostic> {
+    match attr {
+        None => Ok(()),
+        Some(_) => Err(Diagnostic::new(
             Level::Error,
-            format!(
-                "the attribute name of method `{}` should be one of {:?}",
-                &raw_method.sig.ident.to_string(),
-                &METHODS
-            ),
-        ))?;
+            format!("method `{}` has duplicate attribute", method_name,),
+        )),
+    }
+}
+
+fn filter_method(raw_method: &TraitItemMethod) -> Result<ArgsTokens, Diagnostic> {
+    let method_name = raw_method.sig.ident.to_string();
+    let mut tokens = ArgsTokens {
+        req: None,
+        expect: None,
     };
-    Ok((attr_name, attr.tts.clone().into()))
+    for attr in raw_method.attrs.clone() {
+        if let AttrStyle::Outer = attr.style {
+            let name = attr.path.segments.last().unwrap().value().ident.to_string();
+            if name.as_str() == EXPECT {
+                check_duplicate(method_name.as_str(), &tokens.expect)?;
+                tokens.expect = Some(gen_meta(attr))
+            } else if METHODS.contains(&name.as_str()) {
+                check_duplicate(method_name.as_str(), &tokens.req)?;
+                tokens.req = Some(gen_meta(attr))
+            }
+        }
+    }
+
+    match tokens.req {
+        Some(_) => Ok(tokens),
+        None => Err(Diagnostic::new(
+            Level::Error,
+            format!("method `{}` has no request attribute", method_name,),
+        )),
+    }
+}
+
+fn gen_args(req_meta: MetaList, expect_meta: Option<MetaList>) -> Args {
+    let mut args = Args::default();
+    args
 }
 
 pub fn transform_method(mut raw_method: TraitItemMethod) -> proc_macro::TokenStream {
-    let (http_method, raw_args) = filter_method(&raw_method).unwrap_or_else( |err| {
+    let ArgsTokens { req, expect } = filter_method(&raw_method).unwrap_or_else(|err| {
         err.emit();
         std::process::exit(1);
     });
-//    let args = Args::from_list(&parse_macro_input!(raw_args as AttributeArgs))
-//        .unwrap_or_else(|err| {
-//            Diagnostic::new(
-//                Level::Error,
-//                format!("parse service method fails: {}", err.to_string()),
-//            )
-//            .emit();
-//            Default::default()
-//        });
-    let args = Default::default();
+    let req_token = req.unwrap();
+    let req_meta = parse_macro_input!(req_token as MetaList);
+    let http_method = req_meta.ident.clone();
+    let expect_meta = match expect {
+        Some(token) => Some(parse_macro_input!(token as MetaList)),
+        None => None,
+    };
+    let args = gen_args(req_meta, expect_meta);
     let req_ident = quote!(req);
-    let req_define = build_request(&req_ident, http_method.as_str(), &args, &raw_method);
+    let req_define = build_request(&req_ident, http_method.to_string(), &args, &raw_method);
     let body = quote!(
         #req_define
     );
@@ -109,14 +150,11 @@ pub fn transform_method(mut raw_method: TraitItemMethod) -> proc_macro::TokenStr
 // TODO: complete build request; using generic Body type
 fn build_request(
     req_ident: &TokenStream,
-    method: &str,
+    method: String,
     args: &Args,
     raw_method: &TraitItemMethod,
 ) -> TokenStream {
-    let path = match args.path {
-        Some(ref path) => path,
-        None => "/",
-    };
+    let path = args.req.path.as_str();
     quote!(
         let mut builder = interfacer_http::Request::builder();
         let #req_ident = builder

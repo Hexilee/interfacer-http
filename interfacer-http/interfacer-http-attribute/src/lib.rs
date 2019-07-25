@@ -2,7 +2,6 @@
 
 extern crate proc_macro;
 
-use darling::FromMeta;
 use interfacer_http_service::{HttpTryFrom, Method};
 use proc_macro::{Level, TokenStream};
 use syn::{parse_macro_input, AttributeArgs, ItemTrait, TraitItemMethod};
