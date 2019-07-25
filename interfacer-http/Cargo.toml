@@ -27,3 +27,7 @@ tokio-io = { git = "https://github.com/tokio-rs/tokio", branch = "master" }
 interfacer-http-attribute = { path = "interfacer-http-attribute", version = "0.0" }
 interfacer-http-hyper = { path = "interfacer-http-hyper", version = "0.0" }
 interfacer-http-service = { path = "interfacer-http-service", version = "0.0" }
+
+[[test]]
+name = "tests"
+path = "tests/lib.rs"

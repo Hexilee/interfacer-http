@@ -14,9 +14,5 @@ darling = "0.9"
 syn = { version = "0.15", features = ["full", "visit-mut"] }
 interfacer-http-service = { path = "../interfacer-http-service", version = "0.0" }
 
-[[test]]
-name = "tests"
-path = "tests/lib.rs"
-
 [lib]
 proc-macro = true

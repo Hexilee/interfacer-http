@@ -1,6 +1,6 @@
 #![cfg(test)]
 
-use interfacer::http::HttpClient;
+use interfacer_http::HttpClient;
 use interfacer_http::{get, http_service};
 
 struct User {}
@@ -11,7 +11,7 @@ trait BasicService {
         path = "/api/user/{id}",
         expect(status = 200, content_type = "application/json")
     )]
-    fn get_user(&self, id: u64);
+    async fn get_user(&self, id: u64) -> User {}
 }
 
 mod basic;
