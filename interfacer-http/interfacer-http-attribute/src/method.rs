@@ -30,30 +30,27 @@ pub struct Args {
     expect: Option<Expect>,
 }
 
-// TODO: exit when error
-fn filter_method(raw_method: &TraitItemMethod) -> (String, proc_macro::TokenStream) {
+fn filter_method(raw_method: &TraitItemMethod) -> Result<(String, proc_macro::TokenStream), Diagnostic> {
     let attrs = raw_method.attrs.as_slice();
     if attrs.len() != 1 {
-        Diagnostic::new(
+        Err(Diagnostic::new(
             Level::Error,
             format!(
-                "method {} has multiple attribute",
+                "method `{}` has multiple attribute",
                 &raw_method.sig.ident.to_string()
             ),
-        )
-        .emit();
+        ))?;
     };
     let attr = attrs.first().unwrap().to_owned();
     if let AttrStyle::Inner(_) = attr.style {
-        Diagnostic::new(
+        Err(Diagnostic::new(
             Level::Error,
             format!(
-                "the attribute({}) of method {} should be Outer",
+                "the attribute`{}` of method `{}` should be Outer",
                 stringify!(&attr),
                 &raw_method.sig.ident.to_string()
             ),
-        )
-        .emit();
+        ))?;
     };
 
     let length = attr.path.segments.len();
@@ -70,21 +67,23 @@ fn filter_method(raw_method: &TraitItemMethod) -> (String, proc_macro::TokenStre
     };
 
     if length != 1 || !METHODS.contains(&attr_name.as_str()) {
-        Diagnostic::new(
+        Err(Diagnostic::new(
             Level::Error,
             format!(
-                "the attribute name of method {} should be in {:?}",
+                "the attribute name of method `{}` should be one of {:?}",
                 &raw_method.sig.ident.to_string(),
                 &METHODS
             ),
-        )
-        .emit();
+        ))?;
     };
-    (attr_name, proc_macro::TokenStream::from(attr.tts.clone()))
+    Ok((attr_name, attr.tts.clone().into()))
 }
 
 pub fn transform_method(mut raw_method: TraitItemMethod) -> proc_macro::TokenStream {
-    let (http_method, raw_args) = filter_method(&raw_method);
+    let (http_method, raw_args) = filter_method(&raw_method).unwrap_or_else( |err| {
+        err.emit();
+        std::process::exit(1);
+    });
 //    let args = Args::from_list(&parse_macro_input!(raw_args as AttributeArgs))
 //        .unwrap_or_else(|err| {
 //            Diagnostic::new(
