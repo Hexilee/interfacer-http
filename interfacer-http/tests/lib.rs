@@ -1,16 +1,13 @@
+#![feature(custom_attribute, async_await)]
 #![cfg(test)]
 
-use interfacer_http::HttpClient;
-use interfacer_http::{get, http_service};
+use interfacer_http::http_service;
 
 struct User {}
 
 #[http_service]
-trait BasicService {
-    #[get(
-        path = "/api/user/{id}",
-        expect(status = 200, content_type = "application/json")
-    )]
+trait BasicService: Clone {
+    #[get(path = "/api/user/{id}", expect(status = 200, content_type = "application/json"))]
     async fn get_user(&self, id: u64) -> User {}
 }
 
