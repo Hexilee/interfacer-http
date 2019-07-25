@@ -85,15 +85,16 @@ fn filter_method(raw_method: &TraitItemMethod) -> (String, proc_macro::TokenStre
 
 pub fn transform_method(mut raw_method: TraitItemMethod) -> proc_macro::TokenStream {
     let (http_method, raw_args) = filter_method(&raw_method);
-    let args: Args = Args::from_list(&parse_macro_input!(raw_args as AttributeArgs))
-        .unwrap_or_else(|err| {
-            Diagnostic::new(
-                Level::Error,
-                format!("parse service method fails: {}", err.to_string()),
-            )
-            .emit();
-            Default::default()
-        });
+//    let args = Args::from_list(&parse_macro_input!(raw_args as AttributeArgs))
+//        .unwrap_or_else(|err| {
+//            Diagnostic::new(
+//                Level::Error,
+//                format!("parse service method fails: {}", err.to_string()),
+//            )
+//            .emit();
+//            Default::default()
+//        });
+    let args = Default::default();
     let req_ident = quote!(req);
     let req_define = build_request(&req_ident, http_method.as_str(), &args, &raw_method);
     let body = quote!(
@@ -103,7 +104,7 @@ pub fn transform_method(mut raw_method: TraitItemMethod) -> proc_macro::TokenStr
     raw_method.default = Some(parse_quote!({
         #body
     }));
-    quote!(raw_method).into()
+    quote!(#raw_method).into()
 }
 
 // TODO: complete build request; using generic Body type
@@ -118,7 +119,7 @@ fn build_request(
         None => "/",
     };
     quote!(
-        let mut builder = interfacer::http::Request::builder();
+        let mut builder = interfacer_http::Request::builder();
         let #req_ident = builder
             .uri(#path)
             .method(#method)
