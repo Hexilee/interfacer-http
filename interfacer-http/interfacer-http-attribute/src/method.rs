@@ -8,6 +8,8 @@ use syn::{
     NestedMeta, TraitItemMethod,
 };
 
+use crate::args::*;
+
 const METHODS: [&'static str; 9] = [
     "get", "post", "put", "delete", "head", "options", "connect", "patch", "trace",
 ];
@@ -16,141 +18,6 @@ const CONTENT_TYPE: &'static str = "content_type";
 const CHARSET: &'static str = "charset";
 const EXPECT: &'static str = "expect";
 const STATUS: &'static str = "status";
-
-trait LoadMeta {
-    fn load_meta(&mut self, meta: &MetaList) -> Result<(), Diagnostic>;
-}
-
-#[derive(Debug)]
-struct ContentType {
-    content_type: String,
-    charset: String,
-}
-
-impl Default for ContentType {
-    fn default() -> Self {
-        Self {
-            content_type: content_type::APPLICATION_JSON.into(),
-            charset: content_type::CHARSET_UTF8.into(),
-        }
-    }
-}
-
-impl LoadMeta for ContentType {
-    fn load_meta(&mut self, meta: &MetaList) -> Result<(), Diagnostic> {
-        for nested_meta in meta.nested.iter() {
-            if let NestedMeta::Meta(Meta::NameValue(MetaNameValue {
-                ident,
-                eq_token: _,
-                lit: Lit::Str(token),
-            })) = nested_meta
-            {
-                match ident.to_string().as_str() {
-                    CONTENT_TYPE => {
-                        self.content_type = token.value();
-                    }
-                    CHARSET => {
-                        self.charset = token.value();
-                    }
-                    _ => (),
-                }
-            }
-        }
-        Ok(())
-    }
-}
-
-#[derive(Debug)]
-struct Expect {
-    status: StatusCode,
-    content_type: ContentType,
-}
-
-impl Default for Expect {
-    fn default() -> Self {
-        Self {
-            status: StatusCode::OK,
-            content_type: Default::default(),
-        }
-    }
-}
-
-impl LoadMeta for Expect {
-    fn load_meta(&mut self, meta: &MetaList) -> Result<(), Diagnostic> {
-        for nested_meta in meta.nested.iter() {
-            if let NestedMeta::Meta(Meta::NameValue(MetaNameValue {
-                ident,
-                eq_token: _,
-                lit: Lit::Int(token),
-            })) = nested_meta
-            {
-                match ident.to_string().as_str() {
-                    STATUS => {
-                        let status = token.value() as u16;
-                        match StatusCode::from_u16(status) {
-                            Err(err) => Err(Diagnostic::new(
-                                Level::Error,
-                                format!("invalid status code: {}", err.to_string()),
-                            ))?,
-                            Ok(code) => {
-                                self.status = code;
-                            }
-                        }
-                    }
-                    _ => (),
-                }
-            }
-        }
-        self.content_type.load_meta(meta)
-    }
-}
-
-#[derive(Debug)]
-pub struct ReqArgs {
-    path: String,
-    content_type: ContentType,
-}
-
-impl Default for ReqArgs {
-    fn default() -> Self {
-        Self {
-            path: "/".into(),
-            content_type: Default::default(),
-        }
-    }
-}
-
-impl LoadMeta for ReqArgs {
-    fn load_meta(&mut self, meta: &MetaList) -> Result<(), Diagnostic> {
-        for nested_meta in meta.nested.iter() {
-            if let NestedMeta::Meta(Meta::NameValue(MetaNameValue {
-                ident,
-                eq_token: _,
-                lit: Lit::Str(token),
-            })) = nested_meta
-            {
-                match ident.to_string().as_str() {
-                    PATH => {
-                        self.path = token.value();
-                    }
-                    _ => (),
-                }
-            }
-        }
-        self.content_type.load_meta(meta)
-    }
-}
-
-struct ArgsTokens {
-    req: Option<proc_macro::TokenStream>,
-    expect: Option<proc_macro::TokenStream>,
-}
-
-#[derive(Default)]
-struct Args {
-    req: ReqArgs,
-    expect: Expect,
-}
 
 fn gen_meta(attr: Attribute) -> proc_macro::TokenStream {
     let name = attr.path.segments.last().unwrap().value().ident.clone();

@@ -12,3 +12,4 @@ pub fn http_service(_args: TokenStream, input: TokenStream) -> TokenStream {
 
 mod http_service_impl;
 mod method;
+mod args;

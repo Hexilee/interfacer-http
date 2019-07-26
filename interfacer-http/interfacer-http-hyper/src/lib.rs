@@ -1,9 +1,10 @@
 #![feature(async_await)]
 
-use http::{Request, Response, Uri};
+use http::{Request, Response};
 use hyper::client::HttpConnector;
-use hyper::{self, Client, Error};
-use interfacer_http_service::{async_trait, HttpClient, HttpService};
+use hyper::{self, Client};
+use interfacer_http_service::{async_trait, HttpClient, HttpService, RequestFail, Url};
+use std::fmt::Display;
 // use hyper::body::Payload;
 // use std::pin::Pin;
 // use std::task::{Context, Poll};
@@ -15,7 +16,32 @@ pub struct AsyncClient {
 
 pub struct AsyncService {
     client: AsyncClient,
-    base_uri: Uri,
+    base_url: Url,
+}
+
+#[derive(Debug)]
+pub struct Error(hyper::Error);
+
+impl Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl std::error::Error for Error {
+
+}
+
+impl From<Error> for RequestFail {
+    fn from(err: Error) -> Self {
+        RequestFail::http(err)
+    }
+}
+
+impl From<hyper::Error> for Error {
+    fn from(err: hyper::Error) -> Self {
+        Error(err)
+    }
 }
 
 // pub struct Body {
@@ -31,10 +57,10 @@ impl AsyncClient {
 }
 
 impl AsyncService {
-    pub fn new(base_uri: Uri) -> Self {
+    pub fn new(base_url: Url) -> Self {
         Self {
             client: AsyncClient::new(),
-            base_uri,
+            base_url,
         }
     }
 }
@@ -82,8 +108,8 @@ impl HttpClient for AsyncClient {
 impl HttpService for AsyncService {
     type Client = AsyncClient;
 
-    fn get_base_url(&self) -> &Uri {
-        &self.base_uri
+    fn get_base_url(&self) -> &Url {
+        &self.base_url
     }
 
     fn get_client(&self) -> &Self::Client {
