@@ -71,3 +71,24 @@ mod serde_xml_support {
     define_support!("application/xml", to_vec, to_string, from_reader, from_str);
     define_support!("text/xml", to_vec, to_string, from_reader, from_str);
 }
+
+#[cfg(any(feature = "serde-full", feature = "serde-msgpack"))]
+mod serde_msgpack_support {
+    use super::{FromContentFail, ToContentFail};
+    use crate::{FromContent, ToContent};
+    use serde::{de::DeserializeOwned, Serialize};
+
+    impl<T: Serialize> ToContent<"application/msgpack"> for T {
+        type Err = ToContentFail;
+        fn to_content(&self, _encode: Option<&str>) -> Result<Vec<u8>, Self::Err> {
+            Ok(rmp_serde::to_vec(self)?)
+        }
+    }
+
+    impl<T: DeserializeOwned> FromContent<"application/msgpack"> for T {
+        type Err = FromContentFail;
+        fn from_content(data: &[u8], _encode: Option<&str>) -> Result<Self, Self::Err> {
+            Ok(rmp_serde::from_slice(data)?)
+        }
+    }
+}

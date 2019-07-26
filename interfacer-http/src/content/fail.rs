@@ -58,6 +58,12 @@ define_from!(serde_urlencoded::ser::Error);
 #[cfg(any(feature = "serde-full", feature = "serde-urlencoded"))]
 define_from!(serde::de::value::Error);
 
+#[cfg(any(feature = "serde-full", feature = "serde-msgpack"))]
+define_from!(rmp_serde::encode::Error);
+
+#[cfg(any(feature = "serde-full", feature = "serde-msgpack"))]
+define_from!(rmp_serde::decode::Error);
+
 define_from!(crate::fail::StringError);
 
 request_fail_define_from!(FromContentFail);
