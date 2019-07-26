@@ -3,7 +3,7 @@
 use http::{Request, Response};
 use hyper::client::HttpConnector;
 use hyper::{self, Client};
-use interfacer_http_util::{async_trait, HttpClient, HttpService, RequestFail, Url};
+use interfacer_http::{async_trait, HttpClient, HttpService, RequestFail, Url};
 use std::fmt::Display;
 // use hyper::body::Payload;
 // use std::pin::Pin;
@@ -28,9 +28,7 @@ impl Display for Error {
     }
 }
 
-impl std::error::Error for Error {
-
-}
+impl std::error::Error for Error {}
 
 impl From<Error> for RequestFail {
     fn from(err: Error) -> Self {
