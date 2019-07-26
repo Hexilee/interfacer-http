@@ -24,7 +24,7 @@ pub struct Error(hyper::Error);
 
 impl Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        self.0.fmt(f)
+        f.write_str(&format!("hyper error: {}", &self.0))
     }
 }
 
@@ -32,7 +32,7 @@ impl std::error::Error for Error {}
 
 impl From<Error> for RequestFail {
     fn from(err: Error) -> Self {
-        RequestFail::http(err)
+        RequestFail::custom(err)
     }
 }
 

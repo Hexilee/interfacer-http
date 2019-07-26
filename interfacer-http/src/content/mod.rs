@@ -11,3 +11,8 @@ pub trait IntoContent<const CONTENT_TYPE: &'static str>: Sized {
     type Err;
     fn into_content(self, charset: Option<&str>) -> StdResult<Vec<u8>, Self::Err>;
 }
+
+#[cfg(any(feature = "serde-base", feature = "serde-full"))]
+mod serde_support;
+
+pub mod fail;

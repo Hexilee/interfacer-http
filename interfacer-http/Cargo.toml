@@ -26,6 +26,18 @@ tokio-io = { git = "https://github.com/tokio-rs/tokio", branch = "master" }
 [dependencies]
 interfacer-http-attribute = { path = "interfacer-http-attribute", version = "0.0" }
 interfacer-http-util = { path = "interfacer-http-util", version = "0.0" }
+failure = "0.1"
+failure_derive = "0.1"
+
+serde_json = { version = "1.0", optional = true }
+serde = { version = "1.0", optional = true }
+encoding = { version = "0.2", optional = true }
+
+[features]
+encode = ["encoding"]
+serde-base = ["serde"]
+serde-json = ["serde_json"]
+serde-full = ["serde", "serde_json"]
 
 [[test]]
 name = "tests"
