@@ -15,7 +15,7 @@ pub trait LoadMeta {
 #[derive(Debug)]
 pub struct ContentType {
     pub content_type: String,
-    pub charset: String,
+    pub charset: Option<String>,
 }
 
 #[derive(Debug)]
@@ -45,7 +45,7 @@ impl Default for ContentType {
     fn default() -> Self {
         Self {
             content_type: content_type::APPLICATION_JSON.into(),
-            charset: content_type::CHARSET_UTF8.into(),
+            charset: None,
         }
     }
 }
@@ -64,7 +64,7 @@ impl LoadMeta for ContentType {
                         self.content_type = token.value();
                     }
                     CHARSET => {
-                        self.charset = token.value();
+                        self.charset = Some(token.value());
                     }
                     _ => (),
                 }
