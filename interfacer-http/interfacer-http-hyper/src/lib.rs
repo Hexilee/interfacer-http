@@ -3,11 +3,7 @@
 use http::{Request, Response};
 use hyper::client::HttpConnector;
 use hyper::{self, Client};
-use interfacer_http::{async_trait, HttpClient, HttpService, RequestFail, Url};
-use std::fmt::Display;
-// use hyper::body::Payload;
-// use std::pin::Pin;
-// use std::task::{Context, Poll};
+use interfacer_http::{async_trait, define_custom_fail, HttpClient, HttpService, Url};
 
 // TODO: use generic Connector
 pub struct AsyncClient {
@@ -19,32 +15,7 @@ pub struct AsyncService {
     base_url: Url,
 }
 
-#[derive(Debug)]
-pub struct Error(hyper::Error);
-
-impl Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        f.write_str(&format!("hyper error: {}", &self.0))
-    }
-}
-
-impl std::error::Error for Error {}
-
-impl From<Error> for RequestFail {
-    fn from(err: Error) -> Self {
-        RequestFail::custom(err)
-    }
-}
-
-impl From<hyper::Error> for Error {
-    fn from(err: hyper::Error) -> Self {
-        Error(err)
-    }
-}
-
-// pub struct Body {
-//     inner: hyper::Body,
-// }
+define_custom_fail!(Error, "hyper error: {}", hyper::Error);
 
 impl AsyncClient {
     pub fn new() -> Self {
@@ -62,28 +33,6 @@ impl AsyncService {
         }
     }
 }
-
-// impl Body {
-//     pub fn new(body: hyper::Body) -> Self {
-//         Self { inner: body }
-//     }
-// }
-
-// impl From<hyper::Body> for Body {
-//     fn from(body: hyper::Body) -> Self {
-//         Body::new(body)
-//     }
-// }
-
-// impl AsyncRead for Body {
-//     fn poll_read(
-//         self: Pin<&mut Self>,
-//         cx: &mut Context<'_>,
-//         buf: &mut [u8],
-//     ) -> Poll<std::io::Result<usize>> {
-//         match self.get_mut().inner.poll_read(cx) {}
-//     }
-// }
 
 #[async_trait]
 impl HttpClient for AsyncClient {

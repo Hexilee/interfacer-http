@@ -67,3 +67,32 @@ impl From<http::Error> for RequestFail {
         RequestFail::RequestBuild { err }
     }
 }
+
+pub macro define_custom_fail {
+    ($name:ident, $template:expr, $($from:path),*) => {
+        #[derive(Debug)]
+        pub struct $name(Box<dyn Fail>);
+
+        impl std::fmt::Display for $name {
+            fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                f.write_str(&format!($template, &self.0))
+            }
+        }
+
+        impl std::error::Error for $name {}
+
+        impl From<$name> for RequestFail {
+            fn from(err: $name) -> Self {
+                RequestFail::custom(err)
+            }
+        }
+
+        $(
+            impl From<$from> for $name {
+                fn from(err: $from) -> Self {
+                    Self(Box::new(err))
+                }
+            }
+        )*
+    };
+}
