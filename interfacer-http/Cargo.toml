@@ -30,13 +30,19 @@ failure = "0.1"
 failure_derive = "0.1"
 
 serde_json = { version = "1.0", optional = true }
+rmp-serde = { version = "0.13", optional = true }
+serde_urlencoded = { version = "0.5", optional = true }
+serde-xml-rs = { version = "0.3", optional = true }
 serde = { version = "1.0", optional = true }
 encoding = { version = "0.2", optional = true }
 
 [features]
 encode = ["encoding"]
 serde-json = ["serde", "serde_json"]
-serde-full = ["serde", "serde_json"]
+serde-msgpack = ["serde", "rmp-serde"]
+serde-urlencoded = ["serde", "serde_urlencoded"]
+serde-xml = ["serde", "serde-xml-rs"]
+serde-full = ["serde", "serde_json", "rmp-serde", "serde_urlencoded", "serde-xml-rs"]
 
 [[test]]
 name = "tests"
