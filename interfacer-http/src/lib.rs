@@ -1,6 +1,6 @@
 #![feature(const_generics, decl_macro)]
 
-pub use content::{FromContent, IntoContent};
+pub use content::{FromContent, ToContent};
 pub use content_type::ContentType;
 use core::result::Result as StdResult;
 pub use fail::{define_from, RequestFail, Result};

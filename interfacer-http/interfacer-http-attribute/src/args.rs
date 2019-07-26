@@ -1,4 +1,4 @@
-use interfacer_http_util::content_type;
+use interfacer_http_util::content_types;
 use interfacer_http_util::StatusCode;
 use proc_macro::{Diagnostic, Level};
 use syn::{Lit, Meta, MetaList, MetaNameValue, NestedMeta};
@@ -44,7 +44,7 @@ pub struct Args {
 impl Default for ContentType {
     fn default() -> Self {
         Self {
-            content_type: content_type::APPLICATION_JSON.into(),
+            content_type: content_types::APPLICATION_JSON.into(),
             charset: None,
         }
     }

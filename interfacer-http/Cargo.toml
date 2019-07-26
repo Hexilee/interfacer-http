@@ -35,8 +35,7 @@ encoding = { version = "0.2", optional = true }
 
 [features]
 encode = ["encoding"]
-serde-base = ["serde"]
-serde-json = ["serde_json"]
+serde-json = ["serde", "serde_json"]
 serde-full = ["serde", "serde_json"]
 
 [[test]]

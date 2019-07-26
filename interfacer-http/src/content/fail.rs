@@ -2,8 +2,8 @@ use crate::define_from as request_fail_define_from;
 use failure::Fail;
 
 #[derive(Fail, Debug)]
-pub enum IntoContentFail {
-    #[fail(display = "into content fail: {}", err)]
+pub enum ToContentFail {
+    #[fail(display = "to content fail: {}", err)]
     Inner { err: Box<dyn Fail> },
 }
 
@@ -16,7 +16,7 @@ pub enum FromContentFail {
 macro_rules! define_from {
     ($from:ty) => {
         define_from!($from, FromContentFail);
-        define_from!($from, IntoContentFail);
+        define_from!($from, ToContentFail);
     };
 
     ($from:ty, $to:ty) => {
@@ -31,7 +31,7 @@ macro_rules! define_from {
 #[cfg(any(feature = "serde-full", feature = "serde-json"))]
 define_from!(serde_json::Error);
 
-#[cfg(feature = "encode")]
-define_from!(std::borrow::Cow<'static, str>);
+define_from!(crate::fail::StringError);
 
-request_fail_define_from!(IntoContentFail);
+request_fail_define_from!(FromContentFail);
+request_fail_define_from!(ToContentFail);

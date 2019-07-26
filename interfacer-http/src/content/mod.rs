@@ -1,18 +1,22 @@
 use crate::StdResult;
 
 // TODO: use T: AsyncRead as type of data
+// TODO: declare charset as generics when Option is supported by const generics
 pub trait FromContent<const CONTENT_TYPE: &'static str>: Sized {
     type Err;
-    fn from_content(data: &[u8], charset: Option<&str>) -> StdResult<Self, Self::Err>;
+    fn from_content(data: &[u8], encode: Option<&str>) -> StdResult<Self, Self::Err>;
 }
 
 // TODO: use T: AsyncRead as type of ret
-pub trait IntoContent<const CONTENT_TYPE: &'static str>: Sized {
+// TODO: declare charset as generics when Option is supported by const generics
+pub trait ToContent<const CONTENT_TYPE: &'static str> {
     type Err;
-    fn into_content(self, charset: Option<&str>) -> StdResult<Vec<u8>, Self::Err>;
+    fn to_content(&self, encode: Option<&str>) -> StdResult<Vec<u8>, Self::Err>;
 }
 
-#[cfg(any(feature = "serde-base", feature = "serde-full"))]
 mod serde_support;
 
-mod fail;
+pub mod fail;
+
+#[cfg(feature = "encode")]
+pub mod encode;

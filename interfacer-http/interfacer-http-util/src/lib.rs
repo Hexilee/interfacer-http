@@ -9,4 +9,4 @@ pub use futures::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 
 pub use async_trait::async_trait;
 
-pub mod content_type;
+pub mod content_types;

@@ -1,7 +1,7 @@
-// charset
-pub const CHARSET_UTF8: &str = "utf-8";
-pub const CHARSET_GB2312: &str = "gb2312";
-pub const CHARSET_GBK: &str = "gbk";
+// encoding
+pub const ENCODING_UTF8: &str = "utf-8";
+pub const ENCODING_GB2312: &str = "gb2312";
+pub const ENCODING_GBK: &str = "gbk";
 
 // content-type
 pub const APPLICATION_JSON: &str = "application/json";
