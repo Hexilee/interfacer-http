@@ -68,12 +68,10 @@ impl From<http::Error> for RequestFail {
     }
 }
 
-pub macro define_from {
-    ($from:ty) => {
-        impl From<$from> for RequestFail {
-            fn from(err: $from) -> Self {
-                RequestFail::custom(err)
-            }
+pub macro define_from($from:ty) {
+    impl From<$from> for RequestFail {
+        fn from(err: $from) -> Self {
+            RequestFail::custom(err)
         }
-    };
+    }
 }

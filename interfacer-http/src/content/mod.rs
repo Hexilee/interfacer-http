@@ -15,4 +15,4 @@ pub trait IntoContent<const CONTENT_TYPE: &'static str>: Sized {
 #[cfg(any(feature = "serde-base", feature = "serde-full"))]
 mod serde_support;
 
-pub mod fail;
+mod fail;
