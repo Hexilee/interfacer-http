@@ -9,4 +9,6 @@ edition = "2018"
 [dependencies]
 hyper = "0.13.0-a.0"
 http = "0.1"
+failure = "0.1"
+failure_derive = "0.1"
 interfacer-http = { path = "..", version = "0.0" }

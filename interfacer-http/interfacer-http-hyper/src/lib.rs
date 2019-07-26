@@ -1,9 +1,10 @@
 #![feature(async_await)]
 
+use failure::Fail;
 use http::{Request, Response};
 use hyper::client::HttpConnector;
 use hyper::{self, Client};
-use interfacer_http::{async_trait, define_custom_fail, HttpClient, HttpService, Url};
+use interfacer_http::{async_trait, define_from, HttpClient, HttpService, Url};
 
 // TODO: use generic Connector
 pub struct AsyncClient {
@@ -15,7 +16,19 @@ pub struct AsyncService {
     base_url: Url,
 }
 
-define_custom_fail!(Error, "hyper error: {}", hyper::Error);
+#[derive(Fail, Debug)]
+pub enum Error {
+    #[fail(display = "hyper error: {}", err)]
+    Hyper { err: hyper::Error },
+}
+
+impl From<hyper::Error> for Error {
+    fn from(err: hyper::Error) -> Self {
+        Error::Hyper { err }
+    }
+}
+
+define_from!(Error);
 
 impl AsyncClient {
     pub fn new() -> Self {
