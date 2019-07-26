@@ -1,3 +1,5 @@
+#![feature(const_generics)]
+
 pub use http::{
     header, header::HeaderMap, method, method::Method, request, request::Request, response,
     response::Response, status, status::StatusCode, version, version::Version, HttpTryFrom,
@@ -29,18 +31,15 @@ pub trait HttpService {
 }
 
 // TODO: use T: AsyncRead as type of data
-pub trait FromContent: Sized {
-    const CONTENT_TYPE: &'static str = content_type::APPLICATION_JSON;
-    const CHARSET: &'static str = content_type::CHARSET_UTF8;
+pub trait FromContent<const CONTENT_TYPE: &'static str>: Sized {
     type Err;
-    fn from_content(data: &[u8]) -> StdResult<Self, Self::Err>;
+    fn from_content(data: &[u8], charset: Option<&str>) -> StdResult<Self, Self::Err>;
 }
 
 // TODO: use T: AsyncRead as type of ret
-pub trait IntoContent {
-    const CONTENT_TYPE: &'static str = content_type::APPLICATION_JSON;
-    const CHARSET: &'static str = content_type::CHARSET_UTF8;
-    fn into_content(self) -> Vec<u8>;
+pub trait IntoContent<const CONTENT_TYPE: &'static str>: Sized {
+    type Err;
+    fn into_content(self, charset: Option<&str>) -> StdResult<Vec<u8>, Self::Err>;
 }
 
 mod fail;

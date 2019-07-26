@@ -55,6 +55,15 @@ impl RequestFail {
     pub fn http(err: impl Fail) -> Self {
         RequestFail::HTTP { err: Box::new(err) }
     }
+
+    pub fn encode(err: impl Fail) -> Self {
+        RequestFail::Encode { err: Box::new(err) }
+    }
+
+    pub fn decode(err: impl Fail) -> Self {
+        RequestFail::Decode { err: Box::new(err) }
+    }
+
     pub fn expect_status(expect_status: StatusCode, ret_status: StatusCode) -> Result<()> {
         if expect_status == ret_status {
             Ok(())
