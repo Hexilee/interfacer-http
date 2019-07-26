@@ -1,12 +1,12 @@
 use interfacer_http_service::content_type;
 use interfacer_http_service::StatusCode;
 use proc_macro::{Diagnostic, Level};
-use proc_macro2::TokenStream;
-use quote::quote;
-use syn::{
-    parse_macro_input, parse_quote, AttrStyle, Attribute, Lit, Meta, MetaList, MetaNameValue,
-    NestedMeta, TraitItemMethod,
-};
+use syn::{Lit, Meta, MetaList, MetaNameValue, NestedMeta};
+
+const PATH: &'static str = "path";
+const CONTENT_TYPE: &'static str = "content_type";
+const CHARSET: &'static str = "charset";
+const STATUS: &'static str = "status";
 
 pub trait LoadMeta {
     fn load_meta(&mut self, meta: &MetaList) -> Result<(), Diagnostic>;
@@ -16,6 +16,29 @@ pub trait LoadMeta {
 pub struct ContentType {
     pub content_type: String,
     pub charset: String,
+}
+
+#[derive(Debug)]
+pub struct Expect {
+    pub status: StatusCode,
+    pub content_type: ContentType,
+}
+
+#[derive(Debug)]
+pub struct ReqArgs {
+    pub path: String,
+    pub content_type: ContentType,
+}
+
+pub struct ArgsTokens {
+    pub req: Option<proc_macro::TokenStream>,
+    pub expect: Option<proc_macro::TokenStream>,
+}
+
+#[derive(Default)]
+pub struct Args {
+    pub req: ReqArgs,
+    pub expect: Expect,
 }
 
 impl Default for ContentType {
@@ -49,12 +72,6 @@ impl LoadMeta for ContentType {
         }
         Ok(())
     }
-}
-
-#[derive(Debug)]
-pub struct Expect {
-    pub status: StatusCode,
-    pub content_type: ContentType,
 }
 
 impl Default for Expect {
@@ -96,12 +113,6 @@ impl LoadMeta for Expect {
     }
 }
 
-#[derive(Debug)]
-pub struct ReqArgs {
-    pub path: String,
-    pub content_type: ContentType,
-}
-
 impl Default for ReqArgs {
     fn default() -> Self {
         Self {
@@ -130,15 +141,4 @@ impl LoadMeta for ReqArgs {
         }
         self.content_type.load_meta(meta)
     }
-}
-
-pub struct ArgsTokens {
-    pub req: Option<proc_macro::TokenStream>,
-    pub expect: Option<proc_macro::TokenStream>,
-}
-
-#[derive(Default)]
-pub struct Args {
-    pub req: ReqArgs,
-    pub expect: Expect,
 }

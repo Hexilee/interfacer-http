@@ -1,23 +1,14 @@
-use interfacer_http_service::content_type;
-use interfacer_http_service::StatusCode;
 use proc_macro::{Diagnostic, Level};
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{
-    parse_macro_input, parse_quote, AttrStyle, Attribute, Lit, Meta, MetaList, MetaNameValue,
-    NestedMeta, TraitItemMethod,
-};
+use syn::{parse_macro_input, parse_quote, AttrStyle, Attribute, MetaList, TraitItemMethod};
 
 use crate::args::*;
 
 const METHODS: [&'static str; 9] = [
     "get", "post", "put", "delete", "head", "options", "connect", "patch", "trace",
 ];
-const PATH: &'static str = "path";
-const CONTENT_TYPE: &'static str = "content_type";
-const CHARSET: &'static str = "charset";
 const EXPECT: &'static str = "expect";
-const STATUS: &'static str = "status";
 
 fn gen_meta(attr: Attribute) -> proc_macro::TokenStream {
     let name = attr.path.segments.last().unwrap().value().ident.clone();
