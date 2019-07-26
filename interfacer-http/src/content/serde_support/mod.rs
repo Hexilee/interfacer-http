@@ -41,6 +41,22 @@ mod serde_json_support {
     define_support!("application/json", to_vec, to_string, from_slice, from_str);
 }
 
+#[cfg(any(feature = "serde-full", feature = "serde-urlencoded"))]
+mod serde_urlencoded_support {
+    use serde_urlencoded::{from_bytes, from_str, to_string};
+    import!();
+    fn to_vec(object: impl Serialize) -> Result<Vec<u8>, ToContentFail> {
+        Ok(to_string(&object)?.into_bytes())
+    }
+    define_support!(
+        "application/x-www-form-urlencoded",
+        to_vec,
+        to_string,
+        from_bytes,
+        from_str
+    );
+}
+
 #[cfg(any(feature = "serde-full", feature = "serde-xml"))]
 mod serde_xml_support {
     use serde_xml_rs::{from_reader, from_str, to_string, to_writer};

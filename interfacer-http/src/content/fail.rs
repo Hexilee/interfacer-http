@@ -52,6 +52,12 @@ define_from!(serde_json::Error);
 #[cfg(any(feature = "serde-full", feature = "serde-xml"))]
 define_from_by_str!(serde_xml_rs::Error);
 
+#[cfg(any(feature = "serde-full", feature = "serde-urlencoded"))]
+define_from!(serde_urlencoded::ser::Error);
+
+#[cfg(any(feature = "serde-full", feature = "serde-urlencoded"))]
+define_from!(serde::de::value::Error);
+
 define_from!(crate::fail::StringError);
 
 request_fail_define_from!(FromContentFail);
