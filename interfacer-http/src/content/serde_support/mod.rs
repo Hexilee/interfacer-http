@@ -12,7 +12,7 @@ macro_rules! import {
 
 macro_rules! define_support {
     ($content_type:expr, $to_vec:path, $to_string:path, $from_slice:path, $from_str:path) => {
-        impl<T: Serialize> ToContent<"application/json"> for T {
+        impl<T: Serialize> ToContent<$content_type> for T {
             type Err = ToContentFail;
             fn to_content(&self, encode: Option<&str>) -> Result<Vec<u8>, Self::Err> {
                 match encode {
@@ -22,7 +22,7 @@ macro_rules! define_support {
             }
         }
 
-        impl<T: DeserializeOwned> FromContent<"application/json"> for T {
+        impl<T: DeserializeOwned> FromContent<$content_type> for T {
             type Err = FromContentFail;
             fn from_content(data: &[u8], encode: Option<&str>) -> Result<Self, Self::Err> {
                 match encode {
@@ -39,4 +39,19 @@ mod serde_json_support {
     use serde_json::{from_slice, from_str, to_string, to_vec};
     import!();
     define_support!("application/json", to_vec, to_string, from_slice, from_str);
+}
+
+#[cfg(any(feature = "serde-full", feature = "serde-xml"))]
+mod serde_xml_support {
+    use serde_xml_rs::{from_reader, from_str, to_string, to_writer};
+    import!();
+
+    fn to_vec(object: impl Serialize) -> Result<Vec<u8>, ToContentFail> {
+        let mut data = Vec::new();
+        to_writer(&mut data, &object)?;
+        Ok(data)
+    }
+
+    define_support!("application/xml", to_vec, to_string, from_reader, from_str);
+    define_support!("text/xml", to_vec, to_string, from_reader, from_str);
 }
