@@ -11,7 +11,7 @@ quote = "0.6"
 proc-macro2 = "0.4"
 synstructure = "0.10"
 syn = { version = "0.15", features = ["full", "visit-mut"] }
-interfacer-http-service = { path = "../interfacer-http-service", version = "0.0" }
+interfacer-http-util = { path = "../interfacer-http-util", version = "0.0" }
 
 [lib]
 proc-macro = true

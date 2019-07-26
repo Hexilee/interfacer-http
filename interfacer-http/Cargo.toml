@@ -16,7 +16,7 @@ documentation = "https://docs.rs/interfacer-http"
 members = [
     "interfacer-http-attribute",
     "interfacer-http-hyper",
-    "interfacer-http-service",
+    "interfacer-http-util",
 ]
 
 [patch.crates-io]
@@ -26,7 +26,7 @@ tokio-io = { git = "https://github.com/tokio-rs/tokio", branch = "master" }
 [dependencies]
 interfacer-http-attribute = { path = "interfacer-http-attribute", version = "0.0" }
 interfacer-http-hyper = { path = "interfacer-http-hyper", version = "0.0" }
-interfacer-http-service = { path = "interfacer-http-service", version = "0.0" }
+interfacer-http-util = { path = "interfacer-http-util", version = "0.0" }
 
 [[test]]
 name = "tests"

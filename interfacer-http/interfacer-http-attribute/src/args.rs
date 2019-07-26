@@ -1,5 +1,5 @@
-use interfacer_http_service::content_type;
-use interfacer_http_service::StatusCode;
+use interfacer_http_util::content_type;
+use interfacer_http_util::StatusCode;
 use proc_macro::{Diagnostic, Level};
 use syn::{Lit, Meta, MetaList, MetaNameValue, NestedMeta};
 

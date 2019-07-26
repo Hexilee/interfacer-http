@@ -1,5 +1,5 @@
 [package]
-name = "interfacer-http-service"
+name = "interfacer-http-util"
 version = "0.0.1"
 authors = ["Hexilee <hexileee@gmail.com>"]
 edition = "2018"

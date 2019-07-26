@@ -43,3 +43,4 @@ pub trait IntoContent<const CONTENT_TYPE: &'static str>: Sized {
 }
 
 mod fail;
+mod content;

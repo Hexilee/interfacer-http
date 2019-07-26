@@ -9,4 +9,4 @@ edition = "2018"
 [dependencies]
 hyper = "0.13.0-a.0"
 http = "0.1"
-interfacer-http-service = { path = "../interfacer-http-service", version = "0.0" }
+interfacer-http-util = { path = "../interfacer-http-util", version = "0.0" }
