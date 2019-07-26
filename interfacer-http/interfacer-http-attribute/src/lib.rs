@@ -2,9 +2,8 @@
 
 extern crate proc_macro;
 
-use interfacer_http_service::{HttpTryFrom, Method};
-use proc_macro::{Level, TokenStream};
-use syn::{parse_macro_input, AttributeArgs, ItemTrait, TraitItemMethod};
+use proc_macro::TokenStream;
+use syn::{parse_macro_input, ItemTrait};
 
 #[proc_macro_attribute]
 pub fn http_service(_args: TokenStream, input: TokenStream) -> TokenStream {
