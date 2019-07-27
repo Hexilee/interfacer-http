@@ -47,3 +47,11 @@ fn urlencoded() {
 fn msgpack() {
     define_test!(APPLICATION_MSGPACK, None);
 }
+
+#[cfg(any(feature = "serde-full", feature = "encode"))]
+#[test]
+fn encoding() {
+    define_test!(APPLICATION_JSON, Some("utf-8"));
+    define_test!(APPLICATION_XML, Some("gbk"));
+    define_test!(TEXT_XML, Some("gb2312"));
+}
