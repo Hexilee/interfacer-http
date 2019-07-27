@@ -1,19 +1,27 @@
 use super::encode::{decode_data, encode_data};
 use super::fail::{FromContentFail, ToContentFail};
 use crate::content_type::ContentType;
-use crate::content_types::ENCODING_UTF8;
+use crate::content_types::*;
+use crate::fail::StringError;
 use crate::{FromContent, ToContent};
 use serde::{de::DeserializeOwned, Serialize};
 
-//impl<T: Serialize> ToContent for T {
-//    type Err = ToContentFail;
-//    fn to_content(&self, content_type: ContentType) -> Result<Vec<u8>, Self::Err> {
-//        match content_type.base_type() {
-//
-//        }
-//    }
-//}
-//
+impl<T: Serialize> ToContent for T {
+    type Err = ToContentFail;
+    fn to_content(&self, content_type: ContentType) -> Result<Vec<u8>, Self::Err> {
+        match content_type.base_type() {
+            #[cfg(any(feature = "serde-full", feature = "serde-json"))]
+            APPLICATION_JSON => Ok(encode_data(
+                serde_json::to_string(self)?,
+                content_type.encoding(),
+            )?),
+            unsupported => {
+                Err(StringError::new(format!("unsupported content type '{}'", unsupported)).into())
+            }
+        }
+    }
+}
+
 //impl<T: DeserializeOwned> FromContent for T {
 //    type Err = FromContentFail;
 //    fn from_content(data: &[u8], _encode: Option<&str>) -> Result<Self, Self::Err> {
