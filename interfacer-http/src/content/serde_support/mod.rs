@@ -1,4 +1,23 @@
+use super::encode::{decode_data, encode_data};
 use super::fail::{FromContentFail, ToContentFail};
+use crate::content_type::ContentType;
+use crate::content_types::ENCODING_UTF8;
+use crate::{FromContent, ToContent};
+use serde::{de::DeserializeOwned, Serialize};
+
+//impl<T: Serialize> ToContent for T {
+//    type Err = ToContentFail;
+//    fn to_content(&self, content_type: ContentType) -> Result<Vec<u8>, Self::Err> {
+//        match content_type. { }
+//    }
+//}
+//
+//impl<T: DeserializeOwned> FromContent for T {
+//    type Err = FromContentFail;
+//    fn from_content(data: &[u8], _encode: Option<&str>) -> Result<Self, Self::Err> {
+//        Ok(rmp_serde::from_slice(data)?)
+//    }
+//}
 
 //macro_rules! import {
 //    () => {

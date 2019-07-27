@@ -4,7 +4,7 @@ use crate::{fail::StringError, RequestFail, Result};
 #[derive(Eq, PartialEq, Clone)]
 pub struct ContentType {
     base_type: String,
-    charset: Option<String>,
+    encoding: Option<String>,
 }
 
 impl ContentType {
@@ -18,11 +18,11 @@ impl ContentType {
         match segments.len() {
             1 => Ok(Self {
                 base_type: segments[0].into(),
-                charset: None,
+                encoding: None,
             }),
             2 => Ok(Self {
                 base_type: segments[0].into(),
-                charset: Some(segments[1].into()),
+                encoding: Some(segments[1].into()),
             }),
             _ => Err(RequestFail::custom(StringError::new(format!(
                 "Content-Type({}) of parse fail",
@@ -34,7 +34,7 @@ impl ContentType {
     pub fn new(base_type: &str, charset: Option<&str>) -> Self {
         Self {
             base_type: base_type.into(),
-            charset: charset.map(|refer| refer.into()),
+            encoding: charset.map(|refer| refer.into()),
         }
     }
 
@@ -47,11 +47,19 @@ impl ContentType {
             })
         }
     }
+
+    pub fn base_type(&self) -> &str {
+        &self.base_type
+    }
+
+    pub fn encoding(&self) -> Option<&str> {
+        self.encoding.as_ref().map(|encoding| encoding.as_str())
+    }
 }
 
 impl ToString for ContentType {
     fn to_string(&self) -> String {
-        match &self.charset {
+        match &self.encoding {
             Some(charset) => format!("{}; {}", &self.base_type, charset),
             None => self.base_type.clone(),
         }
