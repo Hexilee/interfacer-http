@@ -25,6 +25,7 @@ pub struct Expect {
 
 #[derive(Debug)]
 pub struct ReqArgs {
+    pub method: String,
     pub path: String,
     pub content_type: ContentType,
 }
@@ -115,6 +116,7 @@ impl LoadMeta for Expect {
 impl Default for ReqArgs {
     fn default() -> Self {
         Self {
+            method: Default::default(),
             path: "/".into(),
             content_type: Default::default(),
         }
@@ -123,6 +125,7 @@ impl Default for ReqArgs {
 
 impl LoadMeta for ReqArgs {
     fn load_meta(&mut self, meta: &MetaList) -> Result<(), Diagnostic> {
+        self.method = meta.ident.to_string();
         for nested_meta in meta.nested.iter() {
             if let NestedMeta::Meta(Meta::NameValue(MetaNameValue {
                 ident,

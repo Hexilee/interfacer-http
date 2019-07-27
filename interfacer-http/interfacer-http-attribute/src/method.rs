@@ -66,26 +66,34 @@ fn gen_args(req_meta: MetaList, expect_meta: Option<MetaList>) -> Result<Args, D
     Ok(args)
 }
 
-pub fn transform_method(mut raw_method: TraitItemMethod) -> proc_macro::TokenStream {
-    let ArgsTokens { req, expect } = filter_method(&raw_method).unwrap_or_else(|err| {
-        err.emit();
-        std::process::exit(1);
-    });
-    let req_token = req.unwrap();
-    let req_meta = parse_macro_input!(req_token as MetaList);
-    let http_method = req_meta.ident.clone();
-    let expect_meta = match expect {
-        Some(token) => Some(parse_macro_input!(token as MetaList)),
-        None => None,
+macro_rules! parse_args {
+    ($args:ident, $raw_method:ident) => {
+        let ArgsTokens { req, expect } = filter_method(&$raw_method).unwrap_or_else(|err| {
+            err.emit();
+            std::process::exit(1);
+        });
+        let req_token = req.unwrap();
+        let req_meta = parse_macro_input!(req_token as MetaList);
+        let expect_meta = match expect {
+            Some(token) => Some(parse_macro_input!(token as MetaList)),
+            None => None,
+        };
+        let $args = gen_args(req_meta, expect_meta).unwrap_or_else(|err| {
+            err.emit();
+            std::process::exit(1);
+        });
     };
-    let args = gen_args(req_meta, expect_meta).unwrap_or_else(|err| {
-        err.emit();
-        std::process::exit(1);
-    });
+}
+
+pub fn transform_method(mut raw_method: TraitItemMethod) -> proc_macro::TokenStream {
+    parse_args!(args, raw_method);
     let req_ident = quote!(req);
-    let req_define = build_request(&req_ident, http_method.to_string(), &args, &raw_method);
+    let resp_ident = quote!(resp);
+    let req_define = build_request(&req_ident, &args, &raw_method);
+    let send_request = send_request(&req_ident, &resp_ident);
     let body = quote!(
         #req_define
+        #send_request
     );
     raw_method.semi_token = None;
     raw_method.default = Some(parse_quote!({
@@ -97,16 +105,22 @@ pub fn transform_method(mut raw_method: TraitItemMethod) -> proc_macro::TokenStr
 // TODO: complete build request; using generic Body type
 fn build_request(
     req_ident: &TokenStream,
-    method: String,
     args: &Args,
     _raw_method: &TraitItemMethod,
 ) -> TokenStream {
     let path = args.req.path.as_str();
+    let method = args.req.method.as_str();
     quote!(
         let mut builder = interfacer_http::Request::builder();
         let #req_ident = builder
             .uri(#path)
             .method(#method)
             .body(vec![])?;
+    )
+}
+
+fn send_request(req_ident: &TokenStream, resp_ident: &TokenStream) -> TokenStream {
+    quote!(
+        let #resp_ident = self.get_client().request(#req_ident).await?;
     )
 }
