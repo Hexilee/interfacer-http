@@ -3,7 +3,7 @@ use interfacer_http::content_types::{
     APPLICATION_FORM, APPLICATION_JSON, APPLICATION_MSGPACK, APPLICATION_XML, TEXT_XML,
 };
 
-use interfacer_http::{FromContent, ToContent};
+use interfacer_http::polyfill::*;
 
 macro_rules! define_test {
     ($base_type:expr, $encoding:expr) => {

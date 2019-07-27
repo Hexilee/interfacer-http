@@ -10,7 +10,7 @@ use serde::{de::DeserializeOwned, Serialize};
 
 impl<T: Serialize> ToContentSerde for T {
     type Err = ToContentFail;
-    fn _to_content(&self, content_type: &ContentType) -> Result<Vec<u8>, Self::Err> {
+    fn to_content(&self, content_type: &ContentType) -> Result<Vec<u8>, Self::Err> {
         match content_type.base_type() {
             #[cfg(any(feature = "serde-full", feature = "serde-json"))]
             APPLICATION_JSON => Ok(encode_data(
@@ -42,7 +42,7 @@ impl<T: Serialize> ToContentSerde for T {
 
 impl<T: DeserializeOwned> FromContentSerde for T {
     type Err = FromContentFail;
-    fn _from_content(data: Vec<u8>, content_type: &ContentType) -> Result<Self, Self::Err> {
+    fn from_content(data: Vec<u8>, content_type: &ContentType) -> Result<Self, Self::Err> {
         match content_type.base_type() {
             #[cfg(any(feature = "serde-full", feature = "serde-json"))]
             APPLICATION_JSON => Ok(serde_json::from_str(&decode_data(
