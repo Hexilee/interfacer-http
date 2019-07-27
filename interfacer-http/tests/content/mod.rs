@@ -10,7 +10,7 @@ mod unhtml_support;
 #[macro_export]
 macro_rules! define_mirror_test {
     ($typ:ident, $object:expr, $base_type:expr, $encoding:expr) => {
-        let content_type = interfacer_http::ContentType::new($base_type, $encoding);
+        let content_type = interfacer_http::ContentType::new($base_type, $encoding, None);
         let data = $object
             .to_content(&content_type)
             .expect(&format!("to '{}' fail", $base_type));

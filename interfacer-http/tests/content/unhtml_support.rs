@@ -16,7 +16,7 @@ struct Link {
 fn normal() {
     let link = Link::from_content(
         br#"<a href="https://github.com">Github</a>"#[..].to_vec(),
-        &ContentType::new("text/html", None),
+        &ContentType::new("text/html", None, None),
     )
     .expect("from html fail");
     assert_eq!("https://github.com", &link.href);
