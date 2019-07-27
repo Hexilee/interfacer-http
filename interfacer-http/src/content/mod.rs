@@ -5,7 +5,7 @@ use crate::StdResult;
 // TODO: declare content_type as generics when const generics is stable
 pub trait FromContent: Sized {
     type Err;
-    fn from_content(data: &[u8], content_type: ContentType) -> StdResult<Self, Self::Err>;
+    fn from_content(data: Vec<u8>, content_type: ContentType) -> StdResult<Self, Self::Err>;
 }
 
 // TODO: use T: AsyncRead as type of ret

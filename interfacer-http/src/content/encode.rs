@@ -1,6 +1,7 @@
 use crate::content_types::ENCODING_UTF8;
 use crate::fail::StringError;
 
+#[allow(dead_code)]
 pub fn encode_data(raw_data: String, encode: Option<&str>) -> Result<Vec<u8>, StringError> {
     match encode {
         None | Some(ENCODING_UTF8) => Ok(raw_data.into_bytes()),
@@ -8,6 +9,7 @@ pub fn encode_data(raw_data: String, encode: Option<&str>) -> Result<Vec<u8>, St
     }
 }
 
+#[allow(dead_code)]
 pub fn decode_data(raw_data: Vec<u8>, encode: Option<&str>) -> Result<String, StringError> {
     match encode {
         None | Some(ENCODING_UTF8) => match String::from_utf8(raw_data) {
