@@ -31,10 +31,10 @@ impl ContentType {
         }
     }
 
-    pub fn new(base_type: &str, charset: Option<&str>) -> Self {
+    pub fn new(base_type: &str, encoding: Option<&str>) -> Self {
         Self {
             base_type: base_type.into(),
-            encoding: charset.map(|refer| refer.into()),
+            encoding: encoding.map(|refer| refer.into()),
         }
     }
 
@@ -59,9 +59,9 @@ impl ContentType {
 
 impl ToString for ContentType {
     fn to_string(&self) -> String {
-        match &self.encoding {
-            Some(charset) => format!("{}; {}", &self.base_type, charset),
-            None => self.base_type.clone(),
+        match self.encoding() {
+            Some(encoding) => format!("{}; {}", self.base_type(), encoding),
+            None => self.base_type().to_owned(),
         }
     }
 }

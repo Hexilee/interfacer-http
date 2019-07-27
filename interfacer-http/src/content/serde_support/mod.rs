@@ -8,7 +8,9 @@ use serde::{de::DeserializeOwned, Serialize};
 //impl<T: Serialize> ToContent for T {
 //    type Err = ToContentFail;
 //    fn to_content(&self, content_type: ContentType) -> Result<Vec<u8>, Self::Err> {
-//        match content_type. { }
+//        match content_type.base_type() {
+//
+//        }
 //    }
 //}
 //
