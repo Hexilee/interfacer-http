@@ -1,7 +1,7 @@
 #![feature(decl_macro)]
 
 #[doc(inline)]
-pub use content::{fail::*, polyfill, FromContent, ToContent};
+pub use content::{fail::*, polyfill, FromContent, IntoStruct, ToContent};
 #[doc(inline)]
 pub use content_type::ContentType;
 use core::result::Result as StdResult;
