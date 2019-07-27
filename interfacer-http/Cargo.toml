@@ -50,8 +50,3 @@ serde-full = ["serde", "serde_json", "rmp-serde", "serde_urlencoded", "serde-xml
 
 # only for test
 derive = ["serde_derive"]
-
-[[test]]
-name = "serde_support"
-path = "tests/content/mod.rs"
-required-features = ["derive"]
