@@ -18,6 +18,9 @@ pub trait ToContent {
 #[cfg(any(feature = "serde-base", feature = "serde-full"))]
 mod serde_support;
 
+#[cfg(feature = "unhtml-html")]
+mod unhtml_support;
+
 pub mod fail;
 
 mod encode;
