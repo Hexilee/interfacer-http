@@ -1,4 +1,9 @@
-use crate::{async_trait, Request, RequestFail, Response, StdResult, Url};
+use crate::{
+    async_trait,
+    http::{Request, Response},
+    url::Url,
+    RequestFail, StdResult,
+};
 
 // TODO: use T: AsyncRead as type of Request::Body
 // TODO: use T: AsyncRead as type of Response::Body

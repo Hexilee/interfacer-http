@@ -1,6 +1,5 @@
-use crate::http;
-use crate::ParseError;
-use crate::StatusCode;
+use crate::http::{self, StatusCode};
+use crate::url::ParseError;
 use failure::Fail;
 use std::error::Error;
 use std::fmt::Display;

@@ -5,6 +5,7 @@ use crate::{fail::StringError, RequestFail, Result};
 pub struct ContentType {
     base_type: String,
     encoding: Option<String>,
+    //    boundary: Option<String>,
 }
 
 impl ContentType {
