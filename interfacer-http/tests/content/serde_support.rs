@@ -1,7 +1,9 @@
 use super::User;
-use interfacer_http_util::content_types::{
+use interfacer_http::content_types::{
     APPLICATION_FORM, APPLICATION_JSON, APPLICATION_MSGPACK, APPLICATION_XML, TEXT_XML,
 };
+
+use interfacer_http::{FromContent, ToContent};
 
 macro_rules! define_test {
     ($base_type:expr, $encoding:expr) => {
@@ -10,10 +12,11 @@ macro_rules! define_test {
             age: 18,
         };
         let content_type = interfacer_http::ContentType::new($base_type, $encoding);
-        let data = <User as interfacer_http::ToContent>::to_content(&user, &content_type)
+        let data = user
+            .to_content(&content_type)
             .expect(&format!("to '{}' fail", $base_type));
-        let mirror = <User as interfacer_http::FromContent>::from_content(data, &content_type)
-            .expect(&format!("from '{}' fail", $base_type));
+        let mirror =
+            User::from_content(data, &content_type).expect(&format!("from '{}' fail", $base_type));
         assert_eq!(user, mirror);
     };
 }
