@@ -91,25 +91,39 @@ macro_rules! define_idents {
     };
 }
 
-// TODO: remove use interfacer_http::polyfill when const generics is stable
 // TODO: finish check_resp
 pub fn transform_method(mut raw_method: TraitItemMethod) -> proc_macro::TokenStream {
     parse_args!(args, raw_method);
-    define_idents!(req_ident, parts_ident, body_ident);
+    define_idents!(req_ident, parts_ident, body_ident, _expect_content_type);
     let import = quote!(
-        use interfacer_http::{polyfill::*, RequestFail, ContentType, http::StatusCode};
+        use interfacer_http::{
+            RequestFail, ContentType, http::StatusCode, IntoStruct, ToContent, HttpClient,
+        };
     );
+    let expect_content_base_type = args.expect.content_type.base_type.as_str();
+    let define_expect_content_type = match args.expect.content_type.encoding.as_ref() {
+        Some(encoding) => quote!(
+            let #_expect_content_type = ContentType::new(#expect_content_base_type, Some(#encoding));
+        ),
+        None => quote!(
+            let #_expect_content_type = ContentType::new(#expect_content_base_type, None);
+        ),
+    };
     let req_define = build_request(&req_ident, &args, &raw_method);
     let send_request = quote!(
         let (#parts_ident, #body_ident) = self.get_client().request(#req_ident).await?.into_parts();
     );
     let check_resp = quote!();
+    let ret = quote!(
+        Ok(#body_ident.into_struct(&#_expect_content_type)?)
+    );
     let body = quote!(
         #import
+        #define_expect_content_type
         #req_define
         #send_request
         #check_resp
-
+        #ret
     );
     raw_method.semi_token = None;
     raw_method.default = Some(parse_quote!({

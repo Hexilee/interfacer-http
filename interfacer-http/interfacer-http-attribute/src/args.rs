@@ -13,8 +13,8 @@ pub trait LoadMeta {
 
 #[derive(Debug)]
 pub struct ContentType {
-    pub content_type: String,
-    pub charset: Option<String>,
+    pub base_type: String,
+    pub encoding: Option<String>,
 }
 
 #[derive(Debug)]
@@ -44,8 +44,8 @@ pub struct Args {
 impl Default for ContentType {
     fn default() -> Self {
         Self {
-            content_type: content_types::APPLICATION_JSON.into(),
-            charset: None,
+            base_type: content_types::APPLICATION_JSON.into(),
+            encoding: None,
         }
     }
 }
@@ -61,10 +61,10 @@ impl LoadMeta for ContentType {
             {
                 match ident.to_string().as_str() {
                     CONTENT_TYPE => {
-                        self.content_type = token.value();
+                        self.base_type = token.value();
                     }
                     CHARSET => {
-                        self.charset = Some(token.value());
+                        self.encoding = Some(token.value());
                     }
                     _ => (),
                 }
