@@ -18,7 +18,7 @@ impl<T: Serialize> ToContent for T {
             )?),
 
             #[cfg(any(feature = "serde-full", feature = "serde-xml"))]
-            APPLICATION_XML => Ok(encode_data(
+            APPLICATION_XML | TEXT_XML => Ok(encode_data(
                 serde_xml_rs::to_string(self)?,
                 content_type.encoding(),
             )?),
@@ -50,7 +50,7 @@ impl<T: DeserializeOwned> FromContent for T {
             )?)?),
 
             #[cfg(any(feature = "serde-full", feature = "serde-xml"))]
-            APPLICATION_XML => Ok(serde_xml_rs::from_str(&decode_data(
+            APPLICATION_XML | TEXT_XML => Ok(serde_xml_rs::from_str(&decode_data(
                 data,
                 content_type.encoding(),
             )?)?),

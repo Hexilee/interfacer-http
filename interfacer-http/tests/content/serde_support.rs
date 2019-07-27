@@ -1,5 +1,7 @@
 use super::User;
-use interfacer_http_util::content_types::APPLICATION_JSON;
+use interfacer_http_util::content_types::{
+    APPLICATION_FORM, APPLICATION_JSON, APPLICATION_MSGPACK, APPLICATION_XML, TEXT_XML,
+};
 
 macro_rules! define_test {
     ($base_type:expr, $encoding:expr) => {
@@ -20,4 +22,28 @@ macro_rules! define_test {
 #[test]
 fn json() {
     define_test!(APPLICATION_JSON, None);
+}
+
+#[cfg(any(feature = "serde-full", feature = "serde-xml"))]
+#[test]
+fn application_xml() {
+    define_test!(APPLICATION_XML, None);
+}
+
+#[cfg(any(feature = "serde-full", feature = "serde-xml"))]
+#[test]
+fn text_xml() {
+    define_test!(TEXT_XML, None);
+}
+
+#[cfg(any(feature = "serde-full", feature = "serde-urlencoded"))]
+#[test]
+fn urlencoded() {
+    define_test!(APPLICATION_FORM, None);
+}
+
+#[cfg(any(feature = "serde-full", feature = "serde-msgpack"))]
+#[test]
+fn msgpack() {
+    define_test!(APPLICATION_MSGPACK, None);
 }
