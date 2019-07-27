@@ -14,6 +14,7 @@ pub trait ToContent<const CONTENT_TYPE: &'static str> {
     fn to_content(&self, encode: Option<&str>) -> StdResult<Vec<u8>, Self::Err>;
 }
 
+#[cfg(any(feature = "serde-base", feature = "serde-full"))]
 mod serde_support;
 
 pub mod fail;
@@ -22,10 +23,10 @@ pub mod fail;
 pub mod encode {
     use crate::fail::StringError;
 
-    pub fn encode_data(raw_data: &str, _encode: &str) -> Result<Vec<u8>, StringError> {
+    pub fn encode_data(_raw_data: &str, _encode: &str) -> Result<Vec<u8>, StringError> {
         panic!("encode feature is disable, please enable it");
     }
-    pub fn decode_data(raw_data: &[u8], _encode: &str) -> Result<String, StringError> {
+    pub fn decode_data(_raw_data: &[u8], _encode: &str) -> Result<String, StringError> {
         panic!("encode feature is disable, please enable it");
     }
 }

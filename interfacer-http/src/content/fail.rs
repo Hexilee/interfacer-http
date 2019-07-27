@@ -1,5 +1,4 @@
 use crate::define_from as request_fail_define_from;
-use crate::fail::StringError;
 use failure::Fail;
 
 #[derive(Fail, Debug)]
@@ -31,6 +30,7 @@ macro_rules! define_from {
 }
 
 // from: Display
+#[allow(unused_macros)]
 macro_rules! define_from_by_str {
     ($from:ty) => {
         define_from_by_str!($from, FromContentFail);
@@ -40,7 +40,7 @@ macro_rules! define_from_by_str {
     ($from:ty, $to:ty) => {
         impl From<$from> for $to {
             fn from(err: $from) -> Self {
-                StringError::new(format!("{}", err)).into()
+                crate::fail::StringError::new(format!("{}", err)).into()
             }
         }
     };

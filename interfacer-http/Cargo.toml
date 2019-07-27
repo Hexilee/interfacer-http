@@ -36,13 +36,20 @@ serde-xml-rs = { version = "0.3", optional = true }
 serde = { version = "1.0", optional = true }
 encoding = { version = "0.2", optional = true }
 
+# for test
+serde_derive = { version = "1.0", optional = true }
+
 [features]
 encode = ["encoding"]
-serde-json = ["serde", "serde_json"]
-serde-msgpack = ["serde", "rmp-serde"]
-serde-urlencoded = ["serde", "serde_urlencoded"]
-serde-xml = ["serde", "serde-xml-rs"]
+serde-base = ["serde"]
+serde-json = ["serde_json"]
+serde-msgpack = ["rmp-serde"]
+serde-urlencoded = ["serde_urlencoded"]
+serde-xml = ["serde-xml-rs"]
 serde-full = ["serde", "serde_json", "rmp-serde", "serde_urlencoded", "serde-xml-rs"]
+
+# only for test
+derive = ["serde_derive"]
 
 [[test]]
 name = "tests"
