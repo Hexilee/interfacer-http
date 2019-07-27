@@ -11,6 +11,18 @@ pub trait FromContent: Sized {
     fn from_content(data: Vec<u8>, content_type: &ContentType) -> StdResult<Self, Self::Err>;
 }
 
+pub trait IntoStruct<T: Sized> {
+    type Err;
+    fn into_struct(self, content_type: &ContentType) -> StdResult<T, Self::Err>;
+}
+
+impl<T: FromContent> IntoStruct<T> for Vec<u8> {
+    type Err = <T as FromContent>::Err;
+    fn into_struct(self, content_type: &ContentType) -> Result<T, Self::Err> {
+        <T as FromContent>::from_content(self, content_type)
+    }
+}
+
 // TODO: use T: AsyncRead as type of ret
 // TODO: declare content_type as generics when const generics is stable
 pub trait ToContent {
