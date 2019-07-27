@@ -46,6 +46,11 @@ macro_rules! define_to_content {
     };
 }
 
+#[cfg(any(feature = "serde-base", feature = "serde-full"))]
 define_from_content!(FromContentSerde);
+
+#[cfg(any(feature = "serde-base", feature = "serde-full"))]
 define_to_content!(ToContentSerde);
+
+#[cfg(feature = "unhtml-html")]
 define_from_content!(FromContentHtml);

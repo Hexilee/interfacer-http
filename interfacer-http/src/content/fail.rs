@@ -64,6 +64,9 @@ define_from!(rmp_serde::encode::Error);
 #[cfg(any(feature = "serde-full", feature = "serde-msgpack"))]
 define_from!(rmp_serde::decode::Error);
 
+#[cfg(feature = "unhtml-html")]
+define_from_by_str!(failure::Error);
+
 define_from!(crate::fail::StringError);
 
 request_fail_define_from!(FromContentFail);
