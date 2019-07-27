@@ -26,8 +26,10 @@
 //! ```
 //!
 
+#[allow(unused_imports)]
 use crate::ContentType;
 
+#[allow(unused_macros)]
 macro_rules! define_from_content {
     ($trait_name:ident) => {
         pub trait $trait_name: Sized {
@@ -37,6 +39,7 @@ macro_rules! define_from_content {
     };
 }
 
+#[allow(unused_macros)]
 macro_rules! define_to_content {
     ($trait_name:ident) => {
         pub trait $trait_name: Sized {

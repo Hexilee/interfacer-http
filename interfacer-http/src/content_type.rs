@@ -1,11 +1,13 @@
-use crate::{fail::StringError, RequestFail, Result};
+use crate::{fail::StringError, url::form_urlencoded, RequestFail, Result};
 
-// TODO: support boundary
-#[derive(Eq, PartialEq, Clone)]
+const CHARSET: &'static str = "charset";
+const BOUNDARY: &'static str = "boundary";
+
+#[derive(Clone)]
 pub struct ContentType {
     base_type: String,
     encoding: Option<String>,
-    //    boundary: Option<String>,
+    boundary: Option<String>,
 }
 
 impl ContentType {
@@ -17,25 +19,40 @@ impl ContentType {
             .map(|segment: &str| segment.trim())
             .collect::<Vec<&str>>();
         match segments.len() {
-            1 => Ok(Self {
-                base_type: segments[0].into(),
-                encoding: None,
-            }),
-            2 => Ok(Self {
-                base_type: segments[0].into(),
-                encoding: Some(segments[1].into()),
-            }),
-            _ => Err(RequestFail::custom(StringError::new(format!(
-                "Content-Type({}) of parse fail",
-                raw.as_ref()
-            )))),
+            0 => Err(RequestFail::custom(StringError::new(
+                "Content-Type({}) is empty",
+            ))),
+            n => {
+                let mut ret = Self {
+                    base_type: segments[0].into(),
+                    encoding: None,
+                    boundary: None,
+                };
+                if n > 1 {
+                    let info: String = segments[1..].join("&");
+                    let pairs = form_urlencoded::parse(info.as_bytes());
+                    for (key, value) in pairs {
+                        match &*key {
+                            CHARSET => {
+                                ret.encoding = Some(value.into_owned());
+                            }
+                            BOUNDARY => {
+                                ret.boundary = Some(value.into_owned());
+                            }
+                            _ => (),
+                        }
+                    }
+                }
+                Ok(ret)
+            }
         }
     }
 
-    pub fn new(base_type: &str, encoding: Option<&str>) -> Self {
+    pub fn new(base_type: &str, encoding: Option<&str>, boundary: Option<&str>) -> Self {
         Self {
             base_type: base_type.into(),
             encoding: encoding.map(|refer| refer.into()),
+            boundary: boundary.map(|refer| refer.into()),
         }
     }
 
@@ -56,13 +73,29 @@ impl ContentType {
     pub fn encoding(&self) -> Option<&str> {
         self.encoding.as_ref().map(|encoding| encoding.as_str())
     }
+
+    pub fn boundary(&self) -> Option<&str> {
+        self.boundary.as_ref().map(|boundary| boundary.as_str())
+    }
 }
+
+impl PartialEq for ContentType {
+    fn eq(&self, other: &Self) -> bool {
+        self.base_type() == other.base_type() && self.encoding() == other.encoding()
+    }
+}
+
+impl Eq for ContentType {}
 
 impl ToString for ContentType {
     fn to_string(&self) -> String {
-        match self.encoding() {
-            Some(encoding) => format!("{}; {}", self.base_type(), encoding),
-            None => self.base_type().to_owned(),
+        let mut list = vec![self.base_type().to_owned()];
+        if let Some(encoding) = self.encoding() {
+            list.push(format!("{}={}", CHARSET, encoding));
         }
+        if let Some(boundary) = self.boundary() {
+            list.push(format!("{}={}", BOUNDARY, boundary));
+        }
+        list.join("; ")
     }
 }
