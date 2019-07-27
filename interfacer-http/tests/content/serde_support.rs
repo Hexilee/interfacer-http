@@ -1,9 +1,16 @@
-use super::User;
+use crate::define_test as define_test_data;
 use interfacer_http::content_types::{
     APPLICATION_FORM, APPLICATION_JSON, APPLICATION_MSGPACK, APPLICATION_XML, TEXT_XML,
 };
 
 use interfacer_http::polyfill::*;
+use serde_derive::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
+struct User {
+    name: String,
+    age: i32,
+}
 
 macro_rules! define_test {
     ($base_type:expr, $encoding:expr) => {
@@ -11,13 +18,7 @@ macro_rules! define_test {
             name: "hexi".to_owned(),
             age: 18,
         };
-        let content_type = interfacer_http::ContentType::new($base_type, $encoding);
-        let data = user
-            .to_content(&content_type)
-            .expect(&format!("to '{}' fail", $base_type));
-        let mirror =
-            User::from_content(data, &content_type).expect(&format!("from '{}' fail", $base_type));
-        assert_eq!(user, mirror);
+        define_test_data!(User, user, $base_type, $encoding);
     };
 }
 
