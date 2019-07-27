@@ -53,3 +53,7 @@ unhtml-html = ["unhtml"]
 
 # only for test
 derive = ["serde_derive", "unhtml_derive"]
+
+[[test]]
+name = "http-service"
+path = "tests/http_service.rs"

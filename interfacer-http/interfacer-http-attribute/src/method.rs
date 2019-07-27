@@ -85,15 +85,31 @@ macro_rules! parse_args {
     };
 }
 
+macro_rules! define_idents {
+    ($($idents:ident),*) => {
+        $(let $idents = quote!($idents);)*
+    };
+}
+
+// TODO: remove use interfacer_http::polyfill when const generics is stable
+// TODO: finish check_resp
 pub fn transform_method(mut raw_method: TraitItemMethod) -> proc_macro::TokenStream {
     parse_args!(args, raw_method);
-    let req_ident = quote!(req);
-    let resp_ident = quote!(resp);
+    define_idents!(req_ident, parts_ident, body_ident);
+    let import = quote!(
+        use interfacer_http::{polyfill::*, RequestFail, ContentType, http::StatusCode};
+    );
     let req_define = build_request(&req_ident, &args, &raw_method);
-    let send_request = send_request(&req_ident, &resp_ident);
+    let send_request = quote!(
+        let (#parts_ident, #body_ident) = self.get_client().request(#req_ident).await?.into_parts();
+    );
+    let check_resp = quote!();
     let body = quote!(
+        #import
         #req_define
         #send_request
+        #check_resp
+
     );
     raw_method.semi_token = None;
     raw_method.default = Some(parse_quote!({
@@ -111,16 +127,10 @@ fn build_request(
     let path = args.req.path.as_str();
     let method = args.req.method.as_str();
     quote!(
-        let mut builder = interfacer_http::Request::builder();
+        let mut builder = interfacer_http::http::Request::builder();
         let #req_ident = builder
             .uri(#path)
             .method(#method)
             .body(vec![])?;
-    )
-}
-
-fn send_request(req_ident: &TokenStream, resp_ident: &TokenStream) -> TokenStream {
-    quote!(
-        let #resp_ident = self.get_client().request(#req_ident).await?;
     )
 }
