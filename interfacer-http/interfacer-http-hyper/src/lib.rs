@@ -4,7 +4,7 @@ use failure::Fail;
 use http::{Request, Response};
 use hyper::client::HttpConnector;
 use hyper::{self, Client};
-use interfacer_http::{async_trait, define_from, HttpClient, HttpService, Url};
+use interfacer_http::{async_trait, define_from, url::Url, HttpClient, HttpService};
 
 // TODO: use generic Connector
 pub struct AsyncClient {

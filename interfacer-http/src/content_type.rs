@@ -3,7 +3,7 @@ use crate::{fail::StringError, url::form_urlencoded, RequestFail, Result};
 const CHARSET: &'static str = "charset";
 const BOUNDARY: &'static str = "boundary";
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ContentType {
     base_type: String,
     encoding: Option<String>,
@@ -23,6 +23,12 @@ impl ContentType {
                 "Content-Type({}) is empty",
             ))),
             n => {
+                if segments[0] == "" {
+                    Err(RequestFail::custom(StringError::new(
+                        "base type of Content-Type({}) is empty",
+                    )))?;
+                }
+
                 let mut ret = Self {
                     base_type: segments[0].into(),
                     encoding: None,
@@ -97,5 +103,71 @@ impl ToString for ContentType {
             list.push(format!("{}={}", BOUNDARY, boundary));
         }
         list.join("; ")
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::ContentType;
+    macro_rules! define_reverse_test {
+        ($raw:expr) => {
+            let content_type = ContentType::from_raw($raw).expect("parse Content-Type fail");
+            assert_eq!($raw, &content_type.to_string());
+        };
+    }
+
+    #[test]
+    fn reverse() {
+        define_reverse_test!("text/html");
+        define_reverse_test!("text/html; charset=gb2312");
+        define_reverse_test!("text/html; boundary=98665v78gh6r9g6trf6tg67stgft");
+        define_reverse_test!("text/html; charset=utf-7; boundary=98665v78gh6r9g6trf6tg67stgft");
+    }
+
+    #[test]
+    #[should_panic(expected = "parse Content-Type fail")]
+    fn empty() {
+        define_reverse_test!("");
+    }
+
+    #[test]
+    #[should_panic(expected = "parse Content-Type fail")]
+    fn base_type_empty() {
+        define_reverse_test!(" ; charset=gbk");
+    }
+
+    macro_rules! define_equal_test {
+        ($raw:expr, $base_type:expr, $encoding:expr) => {
+            let result = ContentType::from_raw($raw).expect("parse Content-Type fail");
+            assert_eq!(&ContentType::new($base_type, $encoding, None), &result);
+        };
+    }
+
+    #[test]
+    fn equal() {
+        define_equal_test!("text/html", "text/html", None);
+        define_equal_test!("text/html; charset=gb2312", "text/html", Some("gb2312"));
+        define_equal_test!(
+            "text/html; boundary=98665v78gh6r9g6trf6tg67stgft",
+            "text/html",
+            None
+        );
+        define_equal_test!(
+            "text/html; charset=utf-7; boundary=98665v78gh6r9g6trf6tg67stgft",
+            "text/html",
+            Some("utf-7")
+        );
+    }
+
+    #[test]
+    #[should_panic]
+    fn different_base_type() {
+        define_equal_test!("text/html", "text/xml", None);
+    }
+
+    #[test]
+    #[should_panic]
+    fn different_encoding() {
+        define_equal_test!("text/html; charset=gb2312", "text/html", Some("utf-7"));
     }
 }
