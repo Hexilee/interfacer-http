@@ -28,11 +28,15 @@ mod implement {
     use crate::fail::StringError;
 
     pub fn encode_data(_raw_data: &str, _encode: &str) -> Result<Vec<u8>, StringError> {
-        panic!("encode feature is disable, please enable it");
+        Err(StringError::new(
+            "encode feature is disable, please enable it",
+        ))
     }
 
     pub fn decode_data(_raw_data: &[u8], _encode: &str) -> Result<String, StringError> {
-        panic!("encode feature is disable, please enable it");
+        Err(StringError::new(
+            "encode feature is disable, please enable it",
+        ))
     }
 }
 
