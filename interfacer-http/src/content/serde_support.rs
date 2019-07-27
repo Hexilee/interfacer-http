@@ -4,10 +4,11 @@ use super::fail::{FromContentFail, ToContentFail};
 use crate::content_type::ContentType;
 use crate::content_types::*;
 use crate::fail::StringError;
-use crate::{FromContent, ToContent};
+//use crate::{FromContent, ToContent};
+use crate::polyfill::{FromContentSerde, ToContentSerde};
 use serde::{de::DeserializeOwned, Serialize};
 
-impl<T: Serialize> ToContent for T {
+impl<T: Serialize> ToContentSerde for T {
     type Err = ToContentFail;
     fn to_content(&self, content_type: &ContentType) -> Result<Vec<u8>, Self::Err> {
         match content_type.base_type() {
@@ -39,7 +40,7 @@ impl<T: Serialize> ToContent for T {
     }
 }
 
-impl<T: DeserializeOwned> FromContent for T {
+impl<T: DeserializeOwned> FromContentSerde for T {
     type Err = FromContentFail;
     fn from_content(data: Vec<u8>, content_type: &ContentType) -> Result<Self, Self::Err> {
         match content_type.base_type() {

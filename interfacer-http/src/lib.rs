@@ -1,6 +1,6 @@
 #![feature(decl_macro)]
 
-pub use content::{FromContent, ToContent};
+pub use content::{polyfill, FromContent, ToContent};
 pub use content_type::ContentType;
 use core::result::Result as StdResult;
 pub use fail::{define_from, RequestFail, Result};

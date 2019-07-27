@@ -1,3 +1,6 @@
+pub mod fail;
+pub mod polyfill;
+
 use crate::content_type::ContentType;
 use crate::StdResult;
 
@@ -20,7 +23,5 @@ mod serde_support;
 
 #[cfg(feature = "unhtml-html")]
 mod unhtml_support;
-
-pub mod fail;
 
 mod encode;
