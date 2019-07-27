@@ -15,7 +15,7 @@ macro_rules! define_mirror_test {
             .to_content(&content_type)
             .expect(&format!("to '{}' fail", $base_type));
         let mirror = data
-            .into_object(&content_type)
+            .into_struct(&content_type)
             .expect(&format!("from '{}' fail", $base_type));
         assert_eq!($object, mirror);
     };

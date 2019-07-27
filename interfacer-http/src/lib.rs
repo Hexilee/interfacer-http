@@ -10,6 +10,12 @@ pub use fail::{define_from, RequestFail, Result};
 pub use failure::Fail;
 #[doc(inline)]
 pub use interfacer_http_attribute::http_service;
+
+pub mod derive {
+    #[doc(inline)]
+    pub use interfacer_http_attribute::{FromContent, ToContent};
+}
+
 #[doc(inline)]
 pub use interfacer_http_util::*;
 #[doc(inline)]

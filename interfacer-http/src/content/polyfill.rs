@@ -1,6 +1,6 @@
-//! ## This is a polyfill
+//! ## NEVER USE THIS
 //!
-//! It will be removed when const generics is stable.
+//! This is a polyfill, used for derive `ToContent` and `FromContent`. It will be removed when const generics is stable.
 //!
 //! ## Why is const generics required?
 //! This is a polyfill module, as const generics is unstable and full of bugs. `ToContent` and `FromContent` cannot have generic constant parameter `CONTENT_TYPE`.
@@ -34,7 +34,7 @@ macro_rules! define_from_content {
     ($trait_name:ident) => {
         pub trait $trait_name: Sized {
             type Err;
-            fn from_content(data: Vec<u8>, content_type: &ContentType) -> Result<Self, Self::Err>;
+            fn _from_content(data: Vec<u8>, content_type: &ContentType) -> Result<Self, Self::Err>;
         }
     };
 }
@@ -44,7 +44,7 @@ macro_rules! define_to_content {
     ($trait_name:ident) => {
         pub trait $trait_name: Sized {
             type Err;
-            fn to_content(&self, content_type: &ContentType) -> Result<Vec<u8>, Self::Err>;
+            fn _to_content(&self, content_type: &ContentType) -> Result<Vec<u8>, Self::Err>;
         }
     };
 }

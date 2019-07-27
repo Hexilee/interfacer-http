@@ -3,10 +3,11 @@ use interfacer_http::content_types::{
     APPLICATION_FORM, APPLICATION_JSON, APPLICATION_MSGPACK, APPLICATION_XML, TEXT_XML,
 };
 
-use interfacer_http::polyfill::*;
+use interfacer_http::derive::{FromContent, ToContent};
+use interfacer_http::{IntoStruct, ToContent};
 use serde_derive::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
+#[derive(Serialize, Deserialize, FromContent, ToContent, Debug, Eq, PartialEq)]
 struct User {
     name: String,
     age: i32,
