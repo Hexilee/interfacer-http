@@ -1,4 +1,4 @@
-#![feature(const_generics, decl_macro)]
+#![feature(decl_macro)]
 
 pub use content::{FromContent, ToContent};
 pub use content_type::ContentType;

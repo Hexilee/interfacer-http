@@ -1,14 +1,14 @@
 use crate::{fail::StringError, RequestFail, Result};
 
 // TODO: support boundary
-#[derive(Eq, PartialEq)]
+#[derive(Eq, PartialEq, Clone)]
 pub struct ContentType {
     base_type: String,
     charset: Option<String>,
 }
 
 impl ContentType {
-    // parse Response Content-Type
+    // parse Content-Type
     pub fn from_raw(raw: impl AsRef<str>) -> Result<Self> {
         let segments = raw
             .as_ref()
@@ -25,7 +25,7 @@ impl ContentType {
                 charset: Some(segments[1].into()),
             }),
             _ => Err(RequestFail::custom(StringError::new(format!(
-                "Content-Type({}) of response parse fail",
+                "Content-Type({}) of parse fail",
                 raw.as_ref()
             )))),
         }
