@@ -18,7 +18,7 @@ macro_rules! define_test {
             name: "hexi".to_owned(),
             age: 18,
         };
-        define_mirror_test!(User, user, $base_type, $encoding);
+        define_mirror_test!(user, $base_type, $encoding);
     };
 }
 
