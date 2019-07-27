@@ -13,4 +13,6 @@ struct User {}
 //}
 
 mod basic;
+
+#[cfg(feature = "derive")]
 mod content;
