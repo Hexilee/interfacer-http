@@ -4,8 +4,11 @@
 ))]
 mod serde_support;
 
+#[cfg(all(feature = "derive", feature = "unhtml-html"))]
+mod unhtml_support;
+
 #[macro_export]
-macro_rules! define_test {
+macro_rules! define_mirror_test {
     ($typ:ident, $object:expr, $base_type:expr, $encoding:expr) => {
         let content_type = interfacer_http::ContentType::new($base_type, $encoding);
         let data = $object

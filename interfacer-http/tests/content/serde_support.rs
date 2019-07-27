@@ -1,4 +1,4 @@
-use crate::define_test as define_test_data;
+use crate::define_mirror_test;
 use interfacer_http::content_types::{
     APPLICATION_FORM, APPLICATION_JSON, APPLICATION_MSGPACK, APPLICATION_XML, TEXT_XML,
 };
@@ -18,7 +18,7 @@ macro_rules! define_test {
             name: "hexi".to_owned(),
             age: 18,
         };
-        define_test_data!(User, user, $base_type, $encoding);
+        define_mirror_test!(User, user, $base_type, $encoding);
     };
 }
 
