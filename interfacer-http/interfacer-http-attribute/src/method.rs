@@ -111,7 +111,7 @@ pub fn transform_method(mut raw_method: TraitItemMethod) -> proc_macro::TokenStr
     };
     let req_define = build_request(&req_ident, &args, &raw_method);
     let send_request = quote!(
-        let (#parts_ident, #body_ident) = self.get_client().request(#req_ident).await?.into_parts();
+        let (#parts_ident, #body_ident) = self.get_client().request(#req_ident).await.map_err(|err| err.into())?.into_parts();
     );
     let check_resp = quote!();
     let ret = quote!(
@@ -145,6 +145,6 @@ fn build_request(
         let #req_ident = builder
             .uri(#path)
             .method(#method)
-            .body(vec![])?;
+            .body(Vec::new())?;
     )
 }

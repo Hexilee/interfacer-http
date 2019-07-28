@@ -4,7 +4,6 @@
 pub use content::{fail::*, polyfill, FromContent, IntoStruct, ToContent};
 #[doc(inline)]
 pub use content_type::ContentType;
-use core::result::Result as StdResult;
 #[doc(inline)]
 pub use fail::{define_from, RequestFail, Result};
 pub use failure::Fail;
