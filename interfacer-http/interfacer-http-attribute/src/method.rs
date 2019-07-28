@@ -13,6 +13,7 @@ macro_rules! use_idents {
     };
 }
 
+// TODO: this function is too complicated, decouple it
 pub fn transform_method(raw_method: &mut TraitItemMethod) -> Result<(), Diagnostic> {
     let args = parse_args(raw_method)?;
     use_idents!(
