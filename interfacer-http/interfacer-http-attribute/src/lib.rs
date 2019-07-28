@@ -20,7 +20,7 @@ pub fn derive_to_content(input: TokenStream) -> TokenStream {
         impl interfacer_http::ToContent for #name {
             type Err = interfacer_http::ToContentFail;
             #[inline]
-            fn to_content(&self, content_type: &interfacer_http::ContentType) -> Result<Vec<u8>, Self::Err> {
+            fn to_content(&self, content_type: &interfacer_http::ContentType) -> core::result::Result<Vec<u8>, Self::Err> {
                 use interfacer_http::polyfill::*;
                 self._to_content(content_type)
             }
@@ -37,7 +37,7 @@ pub fn derive_from_content(input: TokenStream) -> TokenStream {
         impl interfacer_http::FromContent for #name {
             type Err = interfacer_http::FromContentFail;
             #[inline]
-            fn from_content(data: Vec<u8>, content_type: &interfacer_http::ContentType) -> Result<Self, Self::Err> {
+            fn from_content(data: Vec<u8>, content_type: &interfacer_http::ContentType) -> core::result::Result<Self, Self::Err> {
                 use interfacer_http::polyfill::*;
                 Self::_from_content(data, content_type)
             }

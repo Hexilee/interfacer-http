@@ -103,10 +103,10 @@ pub fn transform_method(mut raw_method: TraitItemMethod) -> proc_macro::TokenStr
     let expect_content_base_type = args.expect.content_type.base_type.as_str();
     let define_expect_content_type = match args.expect.content_type.encoding.as_ref() {
         Some(encoding) => quote!(
-            let #_expect_content_type = ContentType::new(#expect_content_base_type, Some(#encoding));
+            let #_expect_content_type = ContentType::new(#expect_content_base_type, Some(#encoding), None);
         ),
         None => quote!(
-            let #_expect_content_type = ContentType::new(#expect_content_base_type, None);
+            let #_expect_content_type = ContentType::new(#expect_content_base_type, None, None);
         ),
     };
     let req_define = build_request(&req_ident, &args, &raw_method);
