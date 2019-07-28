@@ -7,7 +7,10 @@ pub fn implement(mut item_trait: ItemTrait) -> TokenStream {
     let trait_name = item_trait.ident.clone();
     for item in item_trait.items.iter_mut() {
         if let TraitItem::Method(method) = item {
-            transform_method(method);
+            transform_method(method).unwrap_or_else(|err| {
+                err.emit();
+                std::process::exit(1);
+            });
         }
     }
     item_trait

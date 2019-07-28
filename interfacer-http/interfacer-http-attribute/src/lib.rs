@@ -1,7 +1,6 @@
 #![feature(proc_macro_diagnostic)]
 
 extern crate proc_macro;
-
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, DeriveInput, ItemTrait};
@@ -46,6 +45,7 @@ pub fn derive_from_content(input: TokenStream) -> TokenStream {
 }
 
 mod args;
+mod format_uri;
 mod http_service_impl;
 mod method;
 mod parse;

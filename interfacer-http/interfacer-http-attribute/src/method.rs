@@ -4,19 +4,25 @@ use quote::quote;
 use syn::{parse_quote, TraitItemMethod};
 
 use crate::args::Args;
+use crate::format_uri::gen_uri_format_expr;
+use proc_macro::Diagnostic;
 
-macro_rules! define_idents {
+macro_rules! use_idents {
     ($($idents:ident),*) => {
         $(let $idents = quote!($idents);)*
     };
 }
 
-pub fn transform_method(raw_method: &mut TraitItemMethod) {
-    let args = parse_args(raw_method).unwrap_or_else(|err| {
-        err.emit();
-        std::process::exit(1);
-    });
-    define_idents!(req_ident, parts_ident, body_ident, _expect_content_type);
+pub fn transform_method(raw_method: &mut TraitItemMethod) -> Result<(), Diagnostic> {
+    let args = parse_args(raw_method)?;
+    use_idents!(
+        req_ident,
+        parts_ident,
+        body_ident,
+        expect_content_type_ident,
+        uri_format_ident,
+        final_uri_ident
+    );
     let import = quote!(
         use interfacer_http::{
             RequestFail, ContentType,
@@ -24,16 +30,20 @@ pub fn transform_method(raw_method: &mut TraitItemMethod) {
             IntoStruct, ToContent, HttpClient, StringError,
         };
     );
+    let uri_format_expr = gen_uri_format_expr(&args.req.path)?;
+    let uri_format_statement = quote!(let #uri_format_ident = #uri_format_expr;);
+    let define_final_uri =
+        quote!(let #final_uri_ident = self.get_base_url().join(&#uri_format_ident)?;);
     let expect_content_base_type = args.expect.content_type.base_type.as_str();
     let define_expect_content_type = match args.expect.content_type.encoding.as_ref() {
         Some(encoding) => quote!(
-            let #_expect_content_type = ContentType::new(#expect_content_base_type, Some(#encoding), None);
+            let #expect_content_type_ident = ContentType::new(#expect_content_base_type, Some(#encoding), None);
         ),
         None => quote!(
-            let #_expect_content_type = ContentType::new(#expect_content_base_type, None, None);
+            let #expect_content_type_ident = ContentType::new(#expect_content_base_type, None, None);
         ),
     };
-    let req_define = build_request(&req_ident, &args, &raw_method);
+    let req_define = build_request(&args, &raw_method);
     let send_request = quote!(
         let (#parts_ident, #body_ident) = self.get_client().request(#req_ident).await.map_err(|err| err.into())?.into_parts();
     );
@@ -43,13 +53,15 @@ pub fn transform_method(raw_method: &mut TraitItemMethod) {
         let ret_content_type = parts_ident.headers.get(CONTENT_TYPE).ok_or(
             StringError::new("cannot get Content-Type from response headers")
         )?;
-        #_expect_content_type.expect(&ContentType::from_header(ret_content_type)?)?;
+        #expect_content_type_ident.expect(&ContentType::from_header(ret_content_type)?)?;
     );
     let ret = quote!(
-        Ok(#body_ident.into_struct(&#_expect_content_type)?)
+        Ok(#body_ident.into_struct(&#expect_content_type_ident)?)
     );
     let body = quote!(
         #import
+        #uri_format_statement
+        #define_final_uri
         #define_expect_content_type
         #req_define
         #send_request
@@ -60,20 +72,17 @@ pub fn transform_method(raw_method: &mut TraitItemMethod) {
     raw_method.default = Some(parse_quote!({
         #body
     }));
+    Ok(())
 }
 
 // TODO: complete build request; using generic Body type
-fn build_request(
-    req_ident: &TokenStream,
-    args: &Args,
-    _raw_method: &TraitItemMethod,
-) -> TokenStream {
-    let path = args.req.path.as_str();
+fn build_request(args: &Args, _raw_method: &TraitItemMethod) -> TokenStream {
     let method = args.req.method.as_str();
+    use_idents!(req_ident, final_uri_ident);
     quote!(
         let mut builder = interfacer_http::http::Request::builder();
         let #req_ident = builder
-            .uri(#path)
+            .uri(#final_uri_ident.as_str())
             .method(#method)
             .body(Vec::new())?;
     )

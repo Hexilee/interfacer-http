@@ -19,7 +19,7 @@ pub fn parse_args(raw_method: &TraitItemMethod) -> Result<Args, Diagnostic> {
     Ok(args)
 }
 
-fn try_parse<T: Parse>(token: TokenStream) -> Result<T, Diagnostic> {
+pub fn try_parse<T: Parse>(token: TokenStream) -> Result<T, Diagnostic> {
     let copy = token.clone();
     <T as Parse>::parse.parse(token).map_err(|err| {
         Diagnostic::new(
