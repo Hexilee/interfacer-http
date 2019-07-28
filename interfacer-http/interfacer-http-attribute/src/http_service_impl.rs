@@ -19,12 +19,14 @@ pub fn implement(mut item_trait: ItemTrait) -> TokenStream {
         .push(parse_quote!(interfacer_http::HttpService));
     let super_traits = item_trait.supertraits.clone();
     quote! {
-        #[interfacer_http::async_trait]
-        #item_trait
+            #[interfacer_http::async_trait]
+            #item_trait
 
-        #[interfacer_http::async_trait]
-        impl<T: #super_traits> #trait_name for T {
-            #(#methods)*
+            #[interfacer_http::async_trait]
+            impl<T: #super_traits> #trait_name for T
+    //            where interfacer_http::RequestFail: From<<<T as interfacer_http::HttpService>::Client as interfacer_http::HttpClient>::Err>
+            {
+                #(#methods)*
+            }
         }
-    }
 }
