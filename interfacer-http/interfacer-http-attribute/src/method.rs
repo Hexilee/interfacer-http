@@ -67,7 +67,7 @@ fn gen_args(req_meta: MetaList, expect_meta: Option<MetaList>) -> Result<Args, D
 }
 
 macro_rules! parse_args {
-    ($args:ident, $raw_method:ident) => {
+    ($raw_method:ident) => {{
         let ArgsTokens { req, expect } = filter_method(&$raw_method).unwrap_or_else(|err| {
             err.emit();
             std::process::exit(1);
@@ -78,11 +78,11 @@ macro_rules! parse_args {
             Some(token) => Some(parse_macro_input!(token as MetaList)),
             None => None,
         };
-        let $args = gen_args(req_meta, expect_meta).unwrap_or_else(|err| {
+        gen_args(req_meta, expect_meta).unwrap_or_else(|err| {
             err.emit();
             std::process::exit(1);
-        });
-    };
+        })
+    }};
 }
 
 macro_rules! define_idents {
@@ -93,7 +93,7 @@ macro_rules! define_idents {
 
 // TODO: finish check_resp
 pub fn transform_method(mut raw_method: TraitItemMethod) -> proc_macro::TokenStream {
-    parse_args!(args, raw_method);
+    let args = parse_args!(raw_method);
     define_idents!(req_ident, parts_ident, body_ident, _expect_content_type);
     let import = quote!(
         use interfacer_http::{
