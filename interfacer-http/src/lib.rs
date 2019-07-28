@@ -5,7 +5,7 @@ pub use content::{fail::*, polyfill, FromContent, IntoStruct, ToContent};
 #[doc(inline)]
 pub use content_type::ContentType;
 #[doc(inline)]
-pub use fail::{define_from, RequestFail, Result};
+pub use fail::{define_from, RequestFail, Result, StringError};
 pub use failure::Fail;
 #[doc(inline)]
 pub use interfacer_http_attribute::http_service;

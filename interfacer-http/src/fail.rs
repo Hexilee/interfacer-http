@@ -74,3 +74,5 @@ pub macro define_from($from:ty) {
         }
     }
 }
+
+define_from!(StringError);

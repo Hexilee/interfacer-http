@@ -1,4 +1,4 @@
-use crate::{fail::StringError, url::form_urlencoded, RequestFail, Result};
+use crate::{http::HeaderValue, url::form_urlencoded, RequestFail, Result, StringError};
 
 const CHARSET: &'static str = "charset";
 const BOUNDARY: &'static str = "boundary";
@@ -52,6 +52,13 @@ impl ContentType {
                 Ok(ret)
             }
         }
+    }
+
+    pub fn from_header(header: &HeaderValue) -> Result<Self> {
+        let header_raw = header
+            .to_str()
+            .map_err(|err| StringError::new(format!("HeaderValue cannot to str: {}", err)))?;
+        Self::from_raw(header_raw)
     }
 
     pub fn new(base_type: &str, encoding: Option<&str>, boundary: Option<&str>) -> Self {
