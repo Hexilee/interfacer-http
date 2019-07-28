@@ -1,5 +1,6 @@
 #![cfg(feature = "derive")]
 #![feature(custom_attribute, async_await)]
+#![allow(unused_attributes)]
 
 use interfacer_http::derive::{FromContent, ToContent};
 use interfacer_http::{http_service, Result};
