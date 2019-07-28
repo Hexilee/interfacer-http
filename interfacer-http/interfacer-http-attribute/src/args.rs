@@ -31,7 +31,7 @@ pub struct ReqArgs {
 }
 
 pub struct ArgsTokens {
-    pub req: Option<proc_macro::TokenStream>,
+    pub req: proc_macro::TokenStream,
     pub expect: Option<proc_macro::TokenStream>,
 }
 
