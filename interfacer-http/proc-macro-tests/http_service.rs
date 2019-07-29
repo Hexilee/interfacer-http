@@ -3,7 +3,7 @@
 #![allow(unused_attributes)]
 
 use interfacer_http::derive::{FromContent, ToContent};
-use interfacer_http::{http_service, Result};
+use interfacer_http::{http_service, Response, Result};
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, FromContent, ToContent, Debug, Eq, PartialEq)]
@@ -16,5 +16,5 @@ struct User {
 trait UserService: Clone {
     #[get(path = "/api/user/{id}?age={age}")]
     #[expect(status = 200, content_type = "application/json")]
-    async fn put_user(&self, id: u64, age: i32, user: &User) -> Result<User> {}
+    async fn put_user(&self, id: u64, age: i32, user: &User) -> Result<Response<User>> {}
 }

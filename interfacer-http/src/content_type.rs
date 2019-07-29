@@ -113,6 +113,13 @@ impl ToString for ContentType {
     }
 }
 
+impl std::convert::TryFrom<&str> for ContentType {
+    type Error = RequestFail;
+    fn try_from(value: &str) -> Result<Self> {
+        Self::from_raw(value)
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::ContentType;

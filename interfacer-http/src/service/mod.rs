@@ -18,3 +18,5 @@ pub trait HttpService {
     fn get_base_url(&self) -> &Url;
     fn get_client(&self) -> &Self::Client;
 }
+
+pub mod response;

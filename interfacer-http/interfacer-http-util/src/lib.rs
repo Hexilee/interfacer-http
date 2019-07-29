@@ -12,3 +12,4 @@ macro_rules! reexport {
 reexport!(http);
 reexport!(url);
 reexport!(futures);
+reexport!(cookie);

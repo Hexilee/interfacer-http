@@ -41,7 +41,7 @@ fn import() -> TokenStream {
     quote!(
         use interfacer_http::{
             RequestFail, ContentType,
-            http::{StatusCode, header::CONTENT_TYPE},
+            http::{StatusCode, header::CONTENT_TYPE, Response},
             IntoStruct, ToContent, HttpClient, StringError,
         };
     )
@@ -88,9 +88,14 @@ fn check_response(args: &Attr) -> TokenStream {
 }
 
 fn ret() -> TokenStream {
-    use_idents!(body_ident, expect_content_type_ident);
+    use_idents!(body_ident, expect_content_type_ident, parts_ident);
     quote!(
-        Ok(#body_ident.into_struct(&#expect_content_type_ident)?)
+        Ok(
+            Response::from_parts(
+                #parts_ident,
+                #body_ident.into_struct(&#expect_content_type_ident)?,
+            ).into(),
+        )
     )
 }
 

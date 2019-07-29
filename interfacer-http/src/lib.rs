@@ -18,7 +18,7 @@ pub mod derive {
 #[doc(inline)]
 pub use interfacer_http_util::*;
 #[doc(inline)]
-pub use service::{HttpClient, HttpService};
+pub use service::{response::Response, HttpClient, HttpService};
 
 mod content;
 mod content_type;
