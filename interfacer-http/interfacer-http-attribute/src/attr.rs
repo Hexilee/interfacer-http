@@ -9,12 +9,12 @@ use syn::{
     NestedMeta, Path, Token, TraitItemMethod,
 };
 
-const METHODS: [&'static str; 9] = [
+const METHODS: [&str; 9] = [
     "get", "post", "put", "delete", "head", "options", "connect", "patch", "trace",
 ];
-const EXPECT: &'static str = "expect";
+const EXPECT: &str = "expect";
 
-const DEFAULT_PATH: &'static str = "/";
+const DEFAULT_PATH: &str = "/";
 
 #[derive(Clone)]
 pub struct AttrMeta {
@@ -58,7 +58,10 @@ impl Expect {
                 .map_err(|err| {
                     Diagnostic::new(Level::Error, format!("invalid status code: {}", err))
                 }),
-            NestedMeta::Meta(Meta::Path(path)) => Ok(self.status = quote!(#path)),
+            NestedMeta::Meta(Meta::Path(path)) => {
+                self.status = quote!(#path);
+                Ok(())
+            }
             _ => Err(Diagnostic::new(
                 Level::Error,
                 "status should be string literal",
@@ -73,13 +76,13 @@ impl TryFrom<AttrMeta> for Expect {
         let mut expect = Self::default();
         let metas = meta.nested.into_iter().collect::<Vec<NestedMeta>>();
         if metas.len() > 2 {
-            Err(Diagnostic::new(
+            return Err(Diagnostic::new(
                 Level::Error,
                 "expect attribute has two args at most",
-            ))?;
+            ));
         }
 
-        if metas.len() > 0 {
+        if !metas.is_empty() {
             expect.load_status(&metas[0])?;
         }
 
@@ -120,7 +123,8 @@ impl Default for Request {
 impl Request {
     fn load_path(&mut self, meta: &NestedMeta) -> Result<(), Diagnostic> {
         if let NestedMeta::Literal(Lit::Str(token)) = meta {
-            Ok(self.path = token.value())
+            self.path = token.value();
+            Ok(())
         } else {
             Err(Diagnostic::new(
                 Level::Error,
@@ -137,13 +141,13 @@ impl TryFrom<AttrMeta> for Request {
         request.method = meta.name.to_string();
         let metas = meta.nested.into_iter().collect::<Vec<NestedMeta>>();
         if metas.len() > 2 {
-            Err(Diagnostic::new(
+            return Err(Diagnostic::new(
                 Level::Error,
                 "request attribute has two args at most",
-            ))?;
+            ));
         }
 
-        if metas.len() > 0 {
+        if !metas.is_empty() {
             request.load_path(&metas[0])?;
         }
 
@@ -170,8 +174,14 @@ impl Attr {
 // TODO: check lit
 fn load_content_type(content_type: &mut TokenStream, meta: &NestedMeta) -> Result<(), Diagnostic> {
     match meta {
-        NestedMeta::Literal(Lit::Str(token)) => Ok(*content_type = quote!(#token)),
-        NestedMeta::Meta(Meta::Path(path)) => Ok(*content_type = quote!(#path)),
+        NestedMeta::Literal(Lit::Str(token)) => {
+            *content_type = quote!(#token);
+            Ok(())
+        }
+        NestedMeta::Meta(Meta::Path(path)) => {
+            *content_type = quote!(#path);
+            Ok(())
+        }
         _ => Err(Diagnostic::new(
             Level::Error,
             "content_type should be string literal or path",
@@ -200,24 +210,21 @@ fn filter_method(raw_method: &TraitItemMethod) -> Result<AttrMetas, Diagnostic> 
     let mut req = None;
     let mut expect = None;
     for attr in raw_method.attrs.clone() {
-        match try_parse::<MetaList>(gen_meta_tokens(attr)) {
-            Ok(meta) => {
-                let name = meta.path.segments.last().unwrap().ident.clone();
-                if &name.to_string() == EXPECT {
-                    check_duplicate(method_name.as_str(), &expect)?;
-                    expect = Some(AttrMeta {
-                        name,
-                        nested: meta.nested,
-                    })
-                } else if METHODS.contains(&name.to_string().as_str()) {
-                    check_duplicate(method_name.as_str(), &req)?;
-                    req = Some(AttrMeta {
-                        name,
-                        nested: meta.nested,
-                    })
-                }
+        if let Ok(meta) = try_parse::<MetaList>(gen_meta_tokens(attr)) {
+            let name = meta.path.segments.last().unwrap().ident.clone();
+            if name == EXPECT {
+                check_duplicate(method_name.as_str(), &expect)?;
+                expect = Some(AttrMeta {
+                    name,
+                    nested: meta.nested,
+                })
+            } else if METHODS.contains(&name.to_string().as_str()) {
+                check_duplicate(method_name.as_str(), &req)?;
+                req = Some(AttrMeta {
+                    name,
+                    nested: meta.nested,
+                })
             }
-            _ => (),
         }
     }
 

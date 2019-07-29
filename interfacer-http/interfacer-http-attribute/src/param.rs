@@ -3,9 +3,9 @@ use proc_macro2::Ident;
 use std::collections::HashMap;
 use syn::{Expr, FnArg};
 
-const VAL: &'static str = "val";
-const HEADER: &'static str = "header";
-const BODY: &'static str = "body";
+const VAL: &str = "val";
+const HEADER: &str = "header";
+const BODY: &str = "body";
 
 pub struct Parameters {
     pub values: HashMap<String, Ident>,

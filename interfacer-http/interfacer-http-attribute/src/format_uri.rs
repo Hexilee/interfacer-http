@@ -6,7 +6,7 @@ use quote::quote;
 use regex::Regex;
 use syn::{parse_quote, punctuated::Punctuated, Expr, Macro, Token};
 
-const DYN_URI_PATTERN: &'static str = r#"(?P<pattern>\{\w+})"#;
+const DYN_URI_PATTERN: &str = r#"(?P<pattern>\{\w+})"#;
 
 pub fn gen_uri_format_expr(raw_uri: &str) -> Result<Macro, Diagnostic> {
     lazy_static! {
@@ -31,7 +31,7 @@ pub fn gen_uri_format_expr(raw_uri: &str) -> Result<Macro, Diagnostic> {
         let ident = Ident::new(&variable, Span::call_site());
         param_list.push(parse_quote!(#ident));
     }
-    format_expr.tokens = quote!(#param_list).into();
+    format_expr.tokens = quote!(#param_list);
     Ok(format_expr)
 }
 
