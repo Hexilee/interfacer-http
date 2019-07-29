@@ -61,12 +61,12 @@ impl LoadMeta for ContentType {
     fn load_meta(&mut self, meta: &MetaList) -> Result<(), Diagnostic> {
         for nested_meta in meta.nested.iter() {
             if let NestedMeta::Meta(Meta::NameValue(MetaNameValue {
-                ident,
+                path,
                 eq_token: _,
                 lit: Lit::Str(token),
             })) = nested_meta
             {
-                match ident.to_string().as_str() {
+                match path.to_string().as_str() {
                     CONTENT_TYPE => {
                         self.base_type = token.value();
                     }

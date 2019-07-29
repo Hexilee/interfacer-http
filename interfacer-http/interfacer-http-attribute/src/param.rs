@@ -1,7 +1,7 @@
 use proc_macro::Diagnostic;
 use proc_macro2::Ident;
 use std::collections::HashMap;
-use syn::Expr;
+use syn::{Expr, FnArg};
 
 const VAL: &'static str = "val";
 const HEADER: &'static str = "header";
