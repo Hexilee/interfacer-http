@@ -80,17 +80,7 @@ impl TryFrom<AttrMeta> for Expect {
         }
 
         if metas.len() > 1 {
-            match metas[1].clone() {
-                NestedMeta::Literal(Lit::Str(token)) => {
-                    expect.content_type =
-                        AttrExpr::Lit(Lit::new(Literal::string(token.value().as_str())))
-                }
-                NestedMeta::Meta(Meta::Path(path)) => expect.content_type = AttrExpr::Path(path),
-                _ => Err(Diagnostic::new(
-                    Level::Error,
-                    "content_type should be string literal or path",
-                ))?,
-            }
+            load_content_type(&mut expect.content_type, metas[1].clone())?;
         }
         Ok(expect)
     }
@@ -147,17 +137,7 @@ impl TryFrom<AttrMeta> for Request {
         }
 
         if metas.len() > 1 {
-            match metas[1].clone() {
-                NestedMeta::Literal(Lit::Str(token)) => {
-                    request.content_type =
-                        AttrExpr::Lit(Lit::new(Literal::string(token.value().as_str())))
-                }
-                NestedMeta::Meta(Meta::Path(path)) => request.content_type = AttrExpr::Path(path),
-                _ => Err(Diagnostic::new(
-                    Level::Error,
-                    "content_type should be string literal or path",
-                ))?,
-            }
+            load_content_type(&mut request.content_type, metas[1].clone())?;
         }
 
         Ok(request)
@@ -173,6 +153,19 @@ impl Attr {
             None => Default::default(),
         };
         Ok(Attr { req, expect })
+    }
+}
+
+fn load_content_type(content_type: &mut AttrExpr, meta: NestedMeta) -> Result<(), Diagnostic> {
+    match meta {
+        NestedMeta::Literal(Lit::Str(token)) => {
+            Ok(*content_type = AttrExpr::Lit(Lit::new(Literal::string(token.value().as_str()))))
+        }
+        NestedMeta::Meta(Meta::Path(path)) => Ok(*content_type = AttrExpr::Path(path)),
+        _ => Err(Diagnostic::new(
+            Level::Error,
+            "content_type should be string literal or path",
+        )),
     }
 }
 
