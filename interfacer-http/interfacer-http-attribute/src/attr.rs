@@ -53,6 +53,21 @@ pub struct Attr {
     pub expect: Expect,
 }
 
+impl Expect {
+    fn load_status(&mut self, meta: NestedMeta) -> Result<(), Diagnostic> {
+        match meta {
+            NestedMeta::Literal(Lit::Int(lit)) => Ok(
+                self.status = AttrExpr::Lit(Lit::new(Literal::u16_suffixed(lit.value() as u16)))
+            ),
+            NestedMeta::Meta(Meta::Path(path)) => Ok(self.status = AttrExpr::Path(path)),
+            _ => Err(Diagnostic::new(
+                Level::Error,
+                "status should be string literal",
+            )),
+        }
+    }
+}
+
 impl TryFrom<AttrMeta> for Expect {
     type Error = Diagnostic;
     fn try_from(meta: AttrMeta) -> Result<Self, Self::Error> {
@@ -66,17 +81,7 @@ impl TryFrom<AttrMeta> for Expect {
         }
 
         if metas.len() > 0 {
-            match metas[0].clone() {
-                NestedMeta::Literal(Lit::Int(lit)) => {
-                    expect.status =
-                        AttrExpr::Lit(Lit::new(Literal::u16_suffixed(lit.value() as u16)))
-                }
-                NestedMeta::Meta(Meta::Path(path)) => expect.status = AttrExpr::Path(path),
-                _ => Err(Diagnostic::new(
-                    Level::Error,
-                    "status should be string literal",
-                ))?,
-            }
+            expect.load_status(metas[0].clone())?;
         }
 
         if metas.len() > 1 {
@@ -112,11 +117,24 @@ impl Default for Request {
     }
 }
 
+impl Request {
+    fn load_path(&mut self, meta: &NestedMeta) -> Result<(), Diagnostic> {
+        if let NestedMeta::Literal(Lit::Str(token)) = meta {
+            Ok(self.path = token.value())
+        } else {
+            Err(Diagnostic::new(
+                Level::Error,
+                "path should be string literal",
+            ))
+        }
+    }
+}
+
 impl TryFrom<AttrMeta> for Request {
     type Error = Diagnostic;
     fn try_from(meta: AttrMeta) -> Result<Self, Self::Error> {
         let mut request = Self::default();
-        let method = meta.name.to_string();
+        request.method = meta.name.to_string();
         let metas = meta.nested.into_iter().collect::<Vec<NestedMeta>>();
         if metas.len() > 2 {
             Err(Diagnostic::new(
@@ -126,14 +144,7 @@ impl TryFrom<AttrMeta> for Request {
         }
 
         if metas.len() > 0 {
-            if let NestedMeta::Literal(Lit::Str(token)) = &metas[0] {
-                request.path = token.value()
-            } else {
-                Err(Diagnostic::new(
-                    Level::Error,
-                    "path should be string literal",
-                ))?
-            }
+            request.load_path(&metas[0])?;
         }
 
         if metas.len() > 1 {
