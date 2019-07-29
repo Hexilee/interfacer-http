@@ -24,20 +24,20 @@ pub struct Expect {
 }
 
 #[derive(Debug)]
-pub struct ReqArgs {
+pub struct ReqAttr {
     pub method: String,
     pub path: String,
     pub content_type: ContentType,
 }
 
-pub struct ArgsTokens {
+pub struct AttrTokens {
     pub req: proc_macro::TokenStream,
     pub expect: Option<proc_macro::TokenStream>,
 }
 
 #[derive(Default)]
-pub struct Args {
-    pub req: ReqArgs,
+pub struct Attr {
+    pub req: ReqAttr,
     pub expect: Expect,
 }
 
@@ -113,7 +113,7 @@ impl LoadMeta for Expect {
     }
 }
 
-impl Default for ReqArgs {
+impl Default for ReqAttr {
     fn default() -> Self {
         Self {
             method: Default::default(),
@@ -123,7 +123,7 @@ impl Default for ReqArgs {
     }
 }
 
-impl LoadMeta for ReqArgs {
+impl LoadMeta for ReqAttr {
     fn load_meta(&mut self, meta: &MetaList) -> Result<(), Diagnostic> {
         self.method = meta.ident.to_string();
         for nested_meta in meta.nested.iter() {

@@ -1,14 +1,14 @@
-use crate::parse::parse_args;
+use crate::parse::parse_attr;
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{parse_quote, TraitItemMethod};
 
-use crate::args::Args;
+use crate::attr::Attr;
 use crate::format_uri::gen_uri_format_expr;
 use proc_macro::Diagnostic;
 
 pub fn transform_method(raw_method: &mut TraitItemMethod) -> Result<(), Diagnostic> {
-    let args = parse_args(raw_method)?;
+    let args = parse_attr(raw_method)?;
     let import_stmt = import();
     let define_final_uri = gen_final_uri(&args)?;
     let define_expect_content_type = gen_expect_content_type(&args);
@@ -48,7 +48,7 @@ fn import() -> TokenStream {
     )
 }
 
-fn gen_final_uri(args: &Args) -> Result<TokenStream, Diagnostic> {
+fn gen_final_uri(args: &Attr) -> Result<TokenStream, Diagnostic> {
     use_idents!(final_uri_ident);
     let uri_format_expr = gen_uri_format_expr(&args.req.path)?;
     Ok(quote!(
@@ -56,7 +56,7 @@ fn gen_final_uri(args: &Args) -> Result<TokenStream, Diagnostic> {
     ))
 }
 
-fn gen_expect_content_type(args: &Args) -> TokenStream {
+fn gen_expect_content_type(args: &Attr) -> TokenStream {
     use_idents!(expect_content_type_ident);
     let expect_content_base_type = args.expect.content_type.base_type.as_str();
     match args.expect.content_type.encoding.as_ref() {
@@ -76,7 +76,7 @@ fn send_request() -> TokenStream {
     )
 }
 
-fn check_response(args: &Args) -> TokenStream {
+fn check_response(args: &Attr) -> TokenStream {
     use_idents!(parts_ident, expect_content_type_ident);
     let expect_status = args.expect.status.as_u16();
     quote!(
@@ -96,7 +96,7 @@ fn ret() -> TokenStream {
 }
 
 // TODO: complete build request; using generic Body type
-fn build_request(args: &Args, _raw_method: &TraitItemMethod) -> TokenStream {
+fn build_request(args: &Attr, _raw_method: &TraitItemMethod) -> TokenStream {
     let method = args.req.method.as_str();
     use_idents!(request_ident, final_uri_ident);
     quote!(

@@ -1,4 +1,4 @@
-use crate::args::{Args, ArgsTokens, LoadMeta};
+use crate::attr::{Attr, AttrTokens, LoadMeta};
 use proc_macro::{Diagnostic, Level, TokenStream};
 use quote::quote;
 use syn::parse::{Parse, Parser};
@@ -9,14 +9,14 @@ const METHODS: [&'static str; 9] = [
 ];
 const EXPECT: &'static str = "expect";
 
-pub fn parse_args(raw_method: &TraitItemMethod) -> Result<Args, Diagnostic> {
-    let mut args = Args::default();
-    let ArgsTokens { req, expect } = filter_method(raw_method)?;
-    args.req.load_meta(&try_parse::<MetaList>(req)?)?;
+pub fn parse_attr(raw_method: &TraitItemMethod) -> Result<Attr, Diagnostic> {
+    let mut attr = Attr::default();
+    let AttrTokens { req, expect } = filter_method(raw_method)?;
+    attr.req.load_meta(&try_parse::<MetaList>(req)?)?;
     if let Some(token) = expect {
-        args.expect.load_meta(&try_parse::<MetaList>(token)?)?;
+        attr.expect.load_meta(&try_parse::<MetaList>(token)?)?;
     }
-    Ok(args)
+    Ok(attr)
 }
 
 pub fn try_parse<T: Parse>(token: TokenStream) -> Result<T, Diagnostic> {
@@ -45,7 +45,7 @@ fn check_duplicate(method_name: &str, attr: &Option<TokenStream>) -> Result<(), 
     }
 }
 
-fn filter_method(raw_method: &TraitItemMethod) -> Result<ArgsTokens, Diagnostic> {
+fn filter_method(raw_method: &TraitItemMethod) -> Result<AttrTokens, Diagnostic> {
     let method_name = raw_method.sig.ident.to_string();
     let mut req = None;
     let mut expect = None;
@@ -63,7 +63,7 @@ fn filter_method(raw_method: &TraitItemMethod) -> Result<ArgsTokens, Diagnostic>
     }
 
     match req {
-        Some(req) => Ok(ArgsTokens { req, expect }),
+        Some(req) => Ok(AttrTokens { req, expect }),
         None => Err(Diagnostic::new(
             Level::Error,
             format!("method `{}` has no request attribute", method_name,),

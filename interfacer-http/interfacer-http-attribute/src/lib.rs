@@ -44,7 +44,7 @@ pub fn derive_from_content(input: TokenStream) -> TokenStream {
     ).into()
 }
 
-mod args;
+mod attr;
 mod format_uri;
 mod http_service_impl;
 mod method;
