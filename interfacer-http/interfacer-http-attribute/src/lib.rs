@@ -48,4 +48,5 @@ mod attr;
 mod format_uri;
 mod http_service_impl;
 mod method;
+mod param;
 mod parse;

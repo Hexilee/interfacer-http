@@ -1,4 +1,3 @@
-use crate::parse::parse_attr;
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{parse_quote, TraitItemMethod};
@@ -8,7 +7,7 @@ use crate::format_uri::gen_uri_format_expr;
 use proc_macro::Diagnostic;
 
 pub fn transform_method(raw_method: &mut TraitItemMethod) -> Result<(), Diagnostic> {
-    let args = parse_attr(raw_method)?;
+    let args = Attr::from_raw(raw_method)?;
     let import_stmt = import();
     let define_final_uri = gen_final_uri(&args)?;
     let define_expect_content_type = gen_expect_content_type(&args);
