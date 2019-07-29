@@ -63,7 +63,7 @@ fn gen_expect_content_type(args: &Attr) -> TokenStream {
         AttrExpr::Path(path) => quote!(#path),
     };
     quote!(
-        let #expect_content_type_ident = #expect_content_type.try_into()?;
+        let #expect_content_type_ident: ContentType = #expect_content_type.try_into()?;
     )
 }
 
