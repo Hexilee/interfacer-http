@@ -2,7 +2,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{parse_quote, TraitItemMethod};
 
-use crate::attr::Attr;
+use crate::attr::{Attr, AttrExpr};
 use crate::format_uri::gen_uri_format_expr;
 use proc_macro::Diagnostic;
 
@@ -44,6 +44,7 @@ fn import() -> TokenStream {
             http::{StatusCode, header::CONTENT_TYPE, Response},
             IntoStruct, ToContent, HttpClient, StringError,
         };
+        use std::convert::TryInto;
     )
 }
 
@@ -57,15 +58,13 @@ fn gen_final_uri(args: &Attr) -> Result<TokenStream, Diagnostic> {
 
 fn gen_expect_content_type(args: &Attr) -> TokenStream {
     use_idents!(expect_content_type_ident);
-    let expect_content_base_type = args.expect.content_type.base_type.as_str();
-    match args.expect.content_type.encoding.as_ref() {
-        Some(encoding) => quote!(
-            let #expect_content_type_ident = ContentType::new(#expect_content_base_type, Some(#encoding), None);
-        ),
-        None => quote!(
-            let #expect_content_type_ident = ContentType::new(#expect_content_base_type, None, None);
-        ),
-    }
+    let expect_content_type = match &args.expect.content_type {
+        AttrExpr::Lit(lit) => quote!(#lit), // TODO: check lit
+        AttrExpr::Path(path) => quote!(#path),
+    };
+    quote!(
+        let #expect_content_type_ident = #expect_content_type.try_into()?;
+    )
 }
 
 fn send_request() -> TokenStream {
@@ -77,7 +76,10 @@ fn send_request() -> TokenStream {
 
 fn check_response(args: &Attr) -> TokenStream {
     use_idents!(parts_ident, expect_content_type_ident);
-    let expect_status = args.expect.status.as_u16();
+    let expect_status = match &args.expect.status {
+        AttrExpr::Lit(lit) => quote!(#lit), // TODO: check lit
+        AttrExpr::Path(path) => quote!(#path),
+    };
     quote!(
         RequestFail::expect_status(StatusCode::from_u16(#expect_status).unwrap(), #parts_ident.status)?;
         let ret_content_type = parts_ident.headers.get(CONTENT_TYPE).ok_or(

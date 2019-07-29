@@ -31,7 +31,7 @@ pub fn gen_uri_format_expr(raw_uri: &str) -> Result<Macro, Diagnostic> {
         let ident = Ident::new(&variable, Span::call_site());
         param_list.push(parse_quote!(#ident));
     }
-    format_expr.tts = quote!(#param_list).into();
+    format_expr.tokens = quote!(#param_list).into();
     Ok(format_expr)
 }
 

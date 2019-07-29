@@ -14,7 +14,7 @@ struct User {
 
 #[http_service]
 trait UserService: Clone {
-    #[get(path = "/api/user/{id}?age={age}")]
-    #[expect(status = 200, content_type = "application/json")]
+    #[get("/api/user/{id}?age={age}")]
+    #[expect(200, "application/json")]
     async fn put_user(&self, id: u64, age: i32, user: &User) -> Result<Response<User>> {}
 }
