@@ -1,7 +1,7 @@
 use crate::parse::try_parse;
 use interfacer_http_util::{content_types, http::StatusCode};
-use proc_macro::{Diagnostic, Level, TokenStream};
-use proc_macro2::{Ident, Literal, Span};
+use proc_macro::{Diagnostic, Level};
+use proc_macro2::{Ident, Literal, Span, TokenStream};
 use quote::quote;
 use std::convert::{TryFrom, TryInto};
 use syn::{
@@ -17,21 +17,6 @@ const EXPECT: &'static str = "expect";
 const DEFAULT_PATH: &'static str = "/";
 
 #[derive(Clone)]
-pub enum AttrExpr {
-    Path(Path),
-    Lit(Lit),
-}
-
-impl AttrExpr {
-    pub fn as_tokens(&self) -> proc_macro2::TokenStream {
-        match self {
-            AttrExpr::Path(path) => quote!(#path),
-            AttrExpr::Lit(lit) => quote!(#lit),
-        }
-    }
-}
-
-#[derive(Clone)]
 pub struct AttrMeta {
     name: Ident,
     nested: Punctuated<NestedMeta, Token![,]>,
@@ -39,15 +24,15 @@ pub struct AttrMeta {
 
 #[derive(Clone)]
 pub struct Expect {
-    pub status: AttrExpr,
-    pub content_type: AttrExpr,
+    pub status: TokenStream,
+    pub content_type: TokenStream,
 }
 
 #[derive(Clone)]
 pub struct Request {
     pub method: String,
     pub path: String,
-    pub content_type: AttrExpr,
+    pub content_type: TokenStream,
 }
 
 #[derive(Clone)]
@@ -63,12 +48,17 @@ pub struct Attr {
 }
 
 impl Expect {
-    fn load_status(&mut self, meta: NestedMeta) -> Result<(), Diagnostic> {
+    fn load_status(&mut self, meta: &NestedMeta) -> Result<(), Diagnostic> {
         match meta {
-            NestedMeta::Literal(Lit::Int(lit)) => Ok(
-                self.status = AttrExpr::Lit(Lit::new(Literal::u16_suffixed(lit.value() as u16)))
-            ),
-            NestedMeta::Meta(Meta::Path(path)) => Ok(self.status = AttrExpr::Path(path)),
+            NestedMeta::Literal(Lit::Int(lit)) => StatusCode::from_u16(lit.value() as u16)
+                .map(|code| {
+                    let code = code.as_u16();
+                    self.status = quote!(StatusCode::from_u16(#code).unwrap());
+                })
+                .map_err(|err| {
+                    Diagnostic::new(Level::Error, format!("invalid status code: {}", err))
+                }),
+            NestedMeta::Meta(Meta::Path(path)) => Ok(self.status = quote!(#path)),
             _ => Err(Diagnostic::new(
                 Level::Error,
                 "status should be string literal",
@@ -90,11 +80,11 @@ impl TryFrom<AttrMeta> for Expect {
         }
 
         if metas.len() > 0 {
-            expect.load_status(metas[0].clone())?;
+            expect.load_status(&metas[0])?;
         }
 
         if metas.len() > 1 {
-            load_content_type(&mut expect.content_type, metas[1].clone())?;
+            load_content_type(&mut expect.content_type, &metas[1])?;
         }
         Ok(expect)
     }
@@ -102,9 +92,10 @@ impl TryFrom<AttrMeta> for Expect {
 
 impl Default for Expect {
     fn default() -> Self {
-        let status = AttrExpr::Lit(Lit::new(Literal::u16_suffixed(StatusCode::OK.as_u16()))); // TODO: replace with path
-        let content_type =
-            AttrExpr::Lit(Lit::new(Literal::string(content_types::APPLICATION_JSON)));
+        let code = StatusCode::OK.as_u16();
+        let status = quote!(StatusCode::from_u16(#code).unwrap()); // TODO: replace with path
+        let default_content_type = content_types::APPLICATION_JSON;
+        let content_type = quote!(#default_content_type);
         Self {
             status,
             content_type,
@@ -116,8 +107,8 @@ impl Default for Request {
     fn default() -> Self {
         let method = "get".to_owned();
         let path = DEFAULT_PATH.to_owned();
-        let content_type =
-            AttrExpr::Lit(Lit::new(Literal::string(content_types::APPLICATION_JSON)));
+        let default_content_type = content_types::APPLICATION_JSON;
+        let content_type = quote!(#default_content_type);
         Self {
             method,
             path,
@@ -157,7 +148,7 @@ impl TryFrom<AttrMeta> for Request {
         }
 
         if metas.len() > 1 {
-            load_content_type(&mut request.content_type, metas[1].clone())?;
+            load_content_type(&mut request.content_type, &metas[1])?;
         }
 
         Ok(request)
@@ -176,12 +167,11 @@ impl Attr {
     }
 }
 
-fn load_content_type(content_type: &mut AttrExpr, meta: NestedMeta) -> Result<(), Diagnostic> {
+// TODO: check lit
+fn load_content_type(content_type: &mut TokenStream, meta: &NestedMeta) -> Result<(), Diagnostic> {
     match meta {
-        NestedMeta::Literal(Lit::Str(token)) => {
-            Ok(*content_type = AttrExpr::Lit(Lit::new(Literal::string(token.value().as_str()))))
-        }
-        NestedMeta::Meta(Meta::Path(path)) => Ok(*content_type = AttrExpr::Path(path)),
+        NestedMeta::Literal(Lit::Str(token)) => Ok(*content_type = quote!(#token)),
+        NestedMeta::Meta(Meta::Path(path)) => Ok(*content_type = quote!(#path)),
         _ => Err(Diagnostic::new(
             Level::Error,
             "content_type should be string literal or path",
@@ -189,7 +179,7 @@ fn load_content_type(content_type: &mut AttrExpr, meta: NestedMeta) -> Result<()
     }
 }
 
-fn gen_meta_tokens(attr: Attribute) -> TokenStream {
+fn gen_meta_tokens(attr: Attribute) -> proc_macro::TokenStream {
     let name = &attr.path;
     let tokens = &attr.tokens;
     quote!(#name#tokens).into()
