@@ -2,7 +2,7 @@ use crate::parse::try_parse;
 use interfacer_http_util::{content_types, http::StatusCode};
 use proc_macro::{Diagnostic, Level, TokenStream};
 use proc_macro2::{Ident, Literal, Span};
-use quote::quote;
+use quote::{quote, ToTokens};
 use std::convert::{TryFrom, TryInto};
 use syn::{
     punctuated::Punctuated, AttrStyle, Attribute, Lit, LitStr, Meta, MetaList, MetaNameValue,
@@ -20,6 +20,15 @@ const DEFAULT_PATH: &'static str = "/";
 pub enum AttrExpr {
     Path(Path),
     Lit(Lit),
+}
+
+impl ToTokens for AttrExpr {
+    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        match self {
+            AttrExpr::Path(path) => path.to_tokens(tokens),
+            AttrExpr::Lit(lit) => lit.to_tokens(tokens),
+        }
+    }
 }
 
 #[derive(Clone)]

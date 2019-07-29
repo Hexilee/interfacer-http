@@ -4,6 +4,7 @@ use syn::{parse_quote, TraitItemMethod};
 
 use crate::attr::{Attr, AttrExpr};
 use crate::format_uri::gen_uri_format_expr;
+use interfacer_http_util::http::StatusCode;
 use proc_macro::Diagnostic;
 
 pub fn transform_method(raw_method: &mut TraitItemMethod) -> Result<(), Diagnostic> {
@@ -58,10 +59,7 @@ fn gen_final_uri(args: &Attr) -> Result<TokenStream, Diagnostic> {
 
 fn gen_expect_content_type(args: &Attr) -> TokenStream {
     use_idents!(expect_content_type_ident);
-    let expect_content_type = match &args.expect.content_type {
-        AttrExpr::Lit(lit) => quote!(#lit), // TODO: check lit
-        AttrExpr::Path(path) => quote!(#path),
-    };
+    let expect_content_type = &args.expect.content_type;
     quote!(
         let #expect_content_type_ident: ContentType = #expect_content_type.try_into()?;
     )
@@ -76,10 +74,7 @@ fn send_request() -> TokenStream {
 
 fn check_response(args: &Attr) -> TokenStream {
     use_idents!(parts_ident, expect_content_type_ident);
-    let expect_status = match &args.expect.status {
-        AttrExpr::Lit(lit) => quote!(#lit), // TODO: check lit
-        AttrExpr::Path(path) => quote!(#path),
-    };
+    let expect_status = &args.expect.status;
     quote!(
         RequestFail::expect_status(StatusCode::from_u16(#expect_status).unwrap(), #parts_ident.status)?;
         let ret_content_type = parts_ident.headers.get(CONTENT_TYPE).ok_or(
