@@ -1,4 +1,4 @@
-use crate::parse::try_parse;
+use crate::parse::{gen_meta_list, try_parse, AttrMeta};
 use interfacer_http_util::{content_types, http::StatusCode};
 use proc_macro::{Diagnostic, Level};
 use proc_macro2::{Ident, Literal, Span, TokenStream};
@@ -17,12 +17,6 @@ const EXPECT: &str = "expect";
 const DEFAULT_PATH: &str = "/";
 
 #[derive(Clone)]
-pub struct AttrMeta {
-    name: Ident,
-    nested: Punctuated<NestedMeta, Token![,]>,
-}
-
-#[derive(Clone)]
 pub struct Expect {
     pub status: TokenStream,
     pub content_type: TokenStream,
@@ -36,7 +30,7 @@ pub struct Request {
 }
 
 #[derive(Clone)]
-pub struct AttrMetas {
+struct AttrMetas {
     pub req: AttrMeta,
     pub expect: Option<AttrMeta>,
 }
@@ -189,12 +183,6 @@ fn load_content_type(content_type: &mut TokenStream, meta: &NestedMeta) -> Resul
     }
 }
 
-fn gen_meta_tokens(attr: Attribute) -> proc_macro::TokenStream {
-    let name = &attr.path;
-    let tokens = &attr.tokens;
-    quote!(#name#tokens).into()
-}
-
 fn check_duplicate(method_name: &str, attr: &Option<AttrMeta>) -> Result<(), Diagnostic> {
     match attr {
         None => Ok(()),
@@ -210,7 +198,7 @@ fn filter_method(raw_method: &TraitItemMethod) -> Result<AttrMetas, Diagnostic> 
     let mut req = None;
     let mut expect = None;
     for attr in raw_method.attrs.clone() {
-        if let Ok(meta) = try_parse::<MetaList>(gen_meta_tokens(attr)) {
+        if let Ok(meta) = gen_meta_list(&attr) {
             let name = meta.path.segments.last().unwrap().ident.clone();
             if name == EXPECT {
                 check_duplicate(method_name.as_str(), &expect)?;
