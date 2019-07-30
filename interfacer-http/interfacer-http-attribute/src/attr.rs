@@ -96,7 +96,7 @@ impl TryFrom<AttrMeta> for Expect {
 impl Default for Expect {
     fn default() -> Self {
         let code = StatusCode::OK.as_u16();
-        let status = quote!(StatusCode::from_u16(#code).unwrap()); // TODO: replace with path
+        let status = quote!(StatusCode::from_u16(#code).unwrap());
         let default_content_type = content_types::APPLICATION_JSON;
         let content_type = quote!(#default_content_type);
         Self {

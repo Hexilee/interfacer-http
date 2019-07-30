@@ -1,5 +1,5 @@
 #![cfg(feature = "derive")]
-#![feature(custom_attribute, async_await)]
+#![feature(custom_attribute, async_await, param_attrs)]
 #![allow(unused_attributes)]
 
 use interfacer_http::derive::{FromContent, ToContent};
@@ -14,7 +14,12 @@ struct User {
 
 #[http_service]
 trait UserService: Clone {
-    #[put("/api/user/{id}?age={age}")]
+    #[put("/api/user/{uid}?age={age}")]
     #[expect(200, content_types::APPLICATION_JSON)]
-    async fn put_user(&self, id: u64, age: i32, user: &User) -> Result<Response<User>> {}
+    async fn put_user(
+        &self,
+        #[val(uid)] id: u64,
+        age: i32,
+        #[body] user: &User,
+    ) -> Result<Response<User>> {}
 }
