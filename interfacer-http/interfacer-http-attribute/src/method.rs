@@ -66,7 +66,7 @@ fn import() -> TokenStream {
 
 fn gen_final_uri(Context { attr, params }: &Context) -> Result<TokenStream, Diagnostic> {
     use_idents!(final_uri_ident);
-    let uri_format_expr = gen_uri_format_expr(&attr.req.path)?;
+    let uri_format_expr = gen_uri_format_expr(&attr.req.path, params)?;
     Ok(quote!(
         let #final_uri_ident = self.get_base_url().join(&#uri_format_expr)?;
     ))
@@ -125,9 +125,10 @@ fn build_request(Context { attr, params }: &Context) -> TokenStream {
 }
 
 mod format_uri {
+    use super::Parameters;
     use crate::parse::try_parse;
     use lazy_static::lazy_static;
-    use proc_macro::Diagnostic;
+    use proc_macro::{Diagnostic, Level};
     use proc_macro2::{Ident, Span};
     use quote::quote;
     use regex::Regex;
@@ -135,28 +136,33 @@ mod format_uri {
 
     const DYN_URI_PATTERN: &str = r#"(?P<pattern>\{\w+})"#;
 
-    pub fn gen_uri_format_expr(raw_uri: &str) -> Result<Macro, Diagnostic> {
+    pub fn gen_uri_format_expr(raw_uri: &str, params: &Parameters) -> Result<Macro, Diagnostic> {
         lazy_static! {
             static ref URI_REGEX: Regex = Regex::new(DYN_URI_PATTERN).unwrap();
         };
         let mut uri_template = raw_uri.to_owned();
         let mut format_expr = try_parse::<Macro>(quote!(format!()).into())?;
-        let mut varables = Vec::new();
+        let mut values = Vec::new();
         let mut param_list = Punctuated::<Expr, Token![,]>::new();
         for capture in URI_REGEX.captures_iter(raw_uri) {
             let pattern: &str = &capture["pattern"];
-            varables.push(
-                pattern
-                    .trim_start_matches('{')
-                    .trim_end_matches('}')
-                    .to_owned(),
-            );
+            match params
+                .values
+                .get(pattern.trim_start_matches('{').trim_end_matches('}'))
+            {
+                Some(ident) => values.push(ident),
+                None => {
+                    return Err(Diagnostic::new(
+                        Level::Error,
+                        format!("uri template variable {} has no parameter support", pattern),
+                    ))
+                }
+            }
             uri_template = uri_template.replace(pattern, "{}");
         }
         param_list.push(parse_quote!(#uri_template));
-        for variable in varables {
-            let ident = Ident::new(&variable, Span::call_site());
-            param_list.push(parse_quote!(#ident));
+        for value in values {
+            param_list.push(parse_quote!(#value));
         }
         format_expr.tokens = quote!(#param_list);
         Ok(format_expr)
