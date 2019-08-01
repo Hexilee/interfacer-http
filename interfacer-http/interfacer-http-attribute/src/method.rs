@@ -4,17 +4,32 @@ use syn::{parse_quote, TraitItemMethod};
 
 use crate::attr::Attr;
 use crate::format_uri::gen_uri_format_expr;
+use crate::param::Parameters;
 use interfacer_http_util::http::StatusCode;
 use proc_macro::Diagnostic;
+use std::convert::TryInto;
+
+struct Context {
+    attr: Attr,
+    params: Parameters,
+}
+
+impl Context {
+    fn parse(raw_method: &TraitItemMethod) -> Result<Self, Diagnostic> {
+        let attr = Attr::from_raw(raw_method)?;
+        let params = raw_method.clone().sig.inputs.try_into()?;
+        Ok(Self { attr, params })
+    }
+}
 
 pub fn transform_method(raw_method: &mut TraitItemMethod) -> Result<(), Diagnostic> {
-    let args = Attr::from_raw(raw_method)?;
+    let context = Context::parse(raw_method)?;
     let import_stmt = import();
-    let define_final_uri = gen_final_uri(&args)?;
-    let define_expect_content_type = gen_expect_content_type(&args);
-    let define_request = build_request(&args, &raw_method);
+    let define_final_uri = gen_final_uri(&context)?;
+    let define_expect_content_type = gen_expect_content_type(&context);
+    let define_request = build_request(&context);
     let send_request_stmt = send_request();
-    let check_response_stmt = check_response(&args);
+    let check_response_stmt = check_response(&context);
     let ret = ret();
     let body = quote!(
         #import_stmt
@@ -49,17 +64,17 @@ fn import() -> TokenStream {
     )
 }
 
-fn gen_final_uri(args: &Attr) -> Result<TokenStream, Diagnostic> {
+fn gen_final_uri(Context { attr, params }: &Context) -> Result<TokenStream, Diagnostic> {
     use_idents!(final_uri_ident);
-    let uri_format_expr = gen_uri_format_expr(&args.req.path)?;
+    let uri_format_expr = gen_uri_format_expr(&attr.req.path)?;
     Ok(quote!(
         let #final_uri_ident = self.get_base_url().join(&#uri_format_expr)?;
     ))
 }
 
-fn gen_expect_content_type(args: &Attr) -> TokenStream {
+fn gen_expect_content_type(Context { attr, params }: &Context) -> TokenStream {
     use_idents!(expect_content_type_ident);
-    let expect_content_type = &args.expect.content_type;
+    let expect_content_type = &attr.expect.content_type;
     quote!(
         let #expect_content_type_ident: ContentType = #expect_content_type.try_into()?;
     )
@@ -72,9 +87,9 @@ fn send_request() -> TokenStream {
     )
 }
 
-fn check_response(args: &Attr) -> TokenStream {
+fn check_response(Context { attr, params }: &Context) -> TokenStream {
     use_idents!(parts_ident, expect_content_type_ident);
-    let expect_status = &args.expect.status;
+    let expect_status = &attr.expect.status;
     quote!(
         RequestFail::expect_status(#expect_status, #parts_ident.status)?;
         let ret_content_type = parts_ident.headers.get(CONTENT_TYPE).ok_or(
@@ -97,8 +112,8 @@ fn ret() -> TokenStream {
 }
 
 // TODO: complete build request; using generic Body type
-fn build_request(args: &Attr, _raw_method: &TraitItemMethod) -> TokenStream {
-    let method = args.req.method.as_str();
+fn build_request(Context { attr, params }: &Context) -> TokenStream {
+    let method = attr.req.method.as_str();
     use_idents!(request_ident, final_uri_ident);
     quote!(
         let mut builder = interfacer_http::http::Request::builder();
