@@ -7,9 +7,9 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-proc-macro2-next = { version = "0.4.4" }
-quote-next = { version = "0.6" }
-syn-next = { version = "0.15.42", features = ["full", "visit-mut"] }
+proc-macro2-next = { version = "1.0.0-rc1" }
+quote-next = { version = "1.0.0-rc1" }
+syn-next = { version = "1.0.0-rc1", features = ["full", "visit-mut"] }
 regex = "1.2"
 lazy_static = "1.3"
 interfacer-http-util = { path = "../interfacer-http-util", version = "0.0" }
