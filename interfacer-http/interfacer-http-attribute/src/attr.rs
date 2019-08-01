@@ -44,14 +44,16 @@ pub struct Attr {
 impl Expect {
     fn load_status(&mut self, meta: &NestedMeta) -> Result<(), Diagnostic> {
         match meta {
-            NestedMeta::Literal(Lit::Int(lit)) => StatusCode::from_u16(lit.value() as u16)
-                .map(|code| {
-                    let code = code.as_u16();
-                    self.status = quote!(StatusCode::from_u16(#code).unwrap());
-                })
-                .map_err(|err| {
-                    Diagnostic::new(Level::Error, format!("invalid status code: {}", err))
-                }),
+            NestedMeta::Literal(Lit::Int(lit)) => {
+                StatusCode::from_u16(lit.base10_digits().parse().unwrap())
+                    .map(|code| {
+                        let code = code.as_u16();
+                        self.status = quote!(StatusCode::from_u16(#code).unwrap());
+                    })
+                    .map_err(|err| {
+                        Diagnostic::new(Level::Error, format!("invalid status code: {}", err))
+                    })
+            }
             NestedMeta::Meta(Meta::Path(path)) => {
                 self.status = quote!(#path);
                 Ok(())
