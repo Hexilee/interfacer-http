@@ -79,6 +79,16 @@ impl TryFrom<Punctuated<FnArg, Token![,]>> for Parameters {
         for arg in args.iter() {
             if let FnArg::Typed(pat) = arg {
                 if let Pat::Ident(name) = pat.pat.as_ref() {
+                    Diagnostic::new(
+                        Level::Note,
+                        format!(
+                            "arg({}), PatType.attrs.len = {}, PatIdent.attrs.len = {}",
+                            name.ident,
+                            pat.attrs.len(),
+                            name.attrs.len()
+                        ),
+                    )
+                    .emit();
                     let params = pat
                         .attrs
                         .iter()
@@ -95,7 +105,9 @@ impl TryFrom<Punctuated<FnArg, Token![,]>> for Parameters {
                             }
                             .try_into()
                         })
-                        .filter_map(|result| result.ok())
+                        .filter_map(|result: Result<Parameter, Diagnostic>| {
+                            result.map_err(|err| err.emit()).ok()
+                        })
                         .collect::<Vec<Parameter>>();
                     match params.len() {
                         0 => {

@@ -155,7 +155,7 @@ mod format_uri {
                     return Err(Diagnostic::new(
                         Level::Error,
                         format!("uri template variable {} has no parameter support", pattern),
-                    ))
+                    ));
                 }
             }
             uri_template = uri_template.replace(pattern, "{}");
