@@ -1,9 +1,10 @@
 use crate::parse::{gen_meta_list, AttrMeta};
 use proc_macro::{Diagnostic, Level};
 use proc_macro2::{Ident, TokenStream};
+use quote::quote;
 use std::collections::HashMap;
 use std::convert::{TryFrom, TryInto};
-use syn::{punctuated::Punctuated, Expr, FnArg, NestedMeta, Pat, PatType, Token};
+use syn::{punctuated::Punctuated, FnArg, Lit, Meta, NestedMeta, Pat, Token};
 
 const VAL: &str = "val";
 const HEADER: &str = "header";
@@ -21,14 +22,36 @@ enum Parameter {
     Body,
 }
 
-// TODO: complete me
 impl Parameter {
-    fn value(nested: &Punctuated<NestedMeta, Token![,]>) -> Result<Self, Diagnostic> {
-        unimplemented!()
+    fn value(nested: &Punctuated<NestedMeta, Token![,]>) -> Result<Option<Ident>, Diagnostic> {
+        match nested.first() {
+            Some(NestedMeta::Meta(Meta::Path(path))) => {
+                if path.segments.len() != 1 {
+                    Err(Diagnostic::new(
+                        Level::Error,
+                        "invalid value parameter name",
+                    ))
+                } else {
+                    Ok(Some(path.segments.first().unwrap().ident.clone()))
+                }
+            }
+            None => Ok(None),
+            _ => Err(Diagnostic::new(
+                Level::Error,
+                "invalid value parameter, rename should be ident",
+            )),
+        }
     }
 
-    fn header(nested: &Punctuated<NestedMeta, Token![,]>) -> Result<Self, Diagnostic> {
-        unimplemented!()
+    fn header(nested: &Punctuated<NestedMeta, Token![,]>) -> Result<TokenStream, Diagnostic> {
+        match nested.first() {
+            Some(NestedMeta::Meta(Meta::Path(path))) => Ok(quote!(#path)),
+            Some(NestedMeta::Literal(Lit::Str(lit))) => Ok(quote!(#lit)),
+            _ => Err(Diagnostic::new(
+                Level::Error,
+                "header parameter name should be path or str literal",
+            )),
+        }
     }
 }
 
@@ -36,8 +59,8 @@ impl TryFrom<AttrMeta> for Parameter {
     type Error = Diagnostic;
     fn try_from(meta: AttrMeta) -> Result<Self, Self::Error> {
         match meta.name.to_string().as_str() {
-            VAL => Self::value(&meta.nested),
-            HEADER => Self::header(&meta.nested),
+            VAL => Ok(Parameter::Value(Self::value(&meta.nested)?)),
+            HEADER => Ok(Parameter::Header(Self::header(&meta.nested)?)),
             BODY => Ok(Parameter::Body),
             _ => Err(Diagnostic::new(
                 Level::Error,
