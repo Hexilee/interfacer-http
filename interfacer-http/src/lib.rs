@@ -15,7 +15,6 @@ pub mod derive {
     pub use interfacer_http_attribute::{FromContent, ToContent};
 }
 
-#[doc(inline)]
 pub use interfacer_http_util::*;
 #[doc(inline)]
 pub use service::{response::Response, HttpClient, HttpService};
