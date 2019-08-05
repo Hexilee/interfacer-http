@@ -14,11 +14,11 @@ struct User {
 
 #[http_service]
 trait UserService: Clone {
-    #[put("/api/user/{uid}?age={age}")]
+    #[put("/api/user/{id}?age={age}")]
     #[expect(200, content_types::APPLICATION_JSON)]
     async fn put_user(
         &self,
-        #[val(uid)] id: u64,
+        id: u64,
         age: i32,
         #[body] user: &User,
         #[header(COOKIE)] cookie: &str

@@ -152,6 +152,7 @@ mod format_uri {
     use crate::parse::try_parse;
     use lazy_static::lazy_static;
     use proc_macro::{Diagnostic, Level};
+    use proc_macro2::{Ident, Span};
     use quote::quote;
     use regex::Regex;
     use syn::{parse_quote, punctuated::Punctuated, Expr, Macro, Token};
@@ -168,10 +169,10 @@ mod format_uri {
         let mut param_list = Punctuated::<Expr, Token![,]>::new();
         for capture in URI_REGEX.captures_iter(raw_uri) {
             let pattern: &str = &capture["pattern"];
-            match params
-                .values
-                .get(pattern.trim_start_matches('{').trim_end_matches('}'))
-            {
+            match params.values.get(&Ident::new(
+                pattern.trim_start_matches('{').trim_end_matches('}'),
+                Span::call_site(),
+            )) {
                 Some(ident) => values.push(ident),
                 None => {
                     return Err(Diagnostic::new(
