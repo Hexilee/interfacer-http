@@ -88,16 +88,6 @@ impl TryFrom<Punctuated<FnArg, Token![,]>> for Parameters {
         for arg in args.iter() {
             if let FnArg::Typed(pat) = arg {
                 if let Pat::Ident(name) = pat.pat.as_ref() {
-                    Diagnostic::new(
-                        Level::Note,
-                        format!(
-                            "arg({}), PatType.attrs.len = {}, PatIdent.attrs.len = {}",
-                            name.ident,
-                            pat.attrs.len(),
-                            name.attrs.len()
-                        ),
-                    )
-                    .emit();
                     let params = pat
                         .attrs
                         .iter()

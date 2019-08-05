@@ -1,13 +1,10 @@
-use crate::parse::{try_parse, AttrMeta};
+use crate::parse::AttrMeta;
 use interfacer_http_util::{content_types, http::StatusCode};
 use proc_macro::{Diagnostic, Level};
-use proc_macro2::{Ident, Literal, Span, TokenStream};
+use proc_macro2::TokenStream;
 use quote::quote;
 use std::convert::{TryFrom, TryInto};
-use syn::{
-    punctuated::Punctuated, AttrStyle, Attribute, Lit, LitStr, Meta, MetaList, MetaNameValue,
-    NestedMeta, Path, Token, TraitItemMethod,
-};
+use syn::{Lit, Meta, NestedMeta, TraitItemMethod};
 
 const METHODS: [&str; 9] = [
     "get", "post", "put", "delete", "head", "options", "connect", "patch", "trace",

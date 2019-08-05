@@ -3,9 +3,7 @@ use proc_macro2::Ident;
 use quote::quote;
 use std::convert::TryFrom;
 use syn::parse::{Parse, Parser};
-use syn::{
-    punctuated::Punctuated, Attribute, Meta, MetaList, MetaNameValue, NestedMeta, Path, Token,
-};
+use syn::{punctuated::Punctuated, Attribute, Meta, NestedMeta, Path, Token};
 
 #[derive(Clone)]
 pub enum AttrMeta {

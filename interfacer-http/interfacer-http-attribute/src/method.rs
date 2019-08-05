@@ -5,7 +5,6 @@ use syn::{parse_quote, TraitItemMethod};
 use crate::attr::{Attr, Request};
 use crate::param::Parameters;
 use format_uri::gen_uri_format_expr;
-use interfacer_http_util::http::StatusCode;
 use proc_macro::Diagnostic;
 use std::convert::TryInto;
 
@@ -73,7 +72,7 @@ fn gen_final_uri(Context { attr, params }: &Context) -> Result<TokenStream, Diag
     ))
 }
 
-fn gen_expect_content_type(Context { attr, params }: &Context) -> TokenStream {
+fn gen_expect_content_type(Context { attr, params: _ }: &Context) -> TokenStream {
     use_idents!(expect_content_type_ident);
     let expect_content_type = &attr.expect.content_type;
     quote!(
@@ -88,7 +87,7 @@ fn send_request() -> TokenStream {
     )
 }
 
-fn check_response(Context { attr, params }: &Context) -> TokenStream {
+fn check_response(Context { attr, params: _ }: &Context) -> TokenStream {
     use_idents!(parts_ident, expect_content_type_ident);
     let expect_status = &attr.expect.status;
     quote!(
@@ -144,7 +143,7 @@ fn gen_request_content_type(req: &Request) -> TokenStream {
 fn gen_headers(params: &Parameters) -> TokenStream {
     params.headers.iter().fold(
         quote!(),
-        (|ret, (key, value)| quote!(#ret.header(#key, #value))),
+        |ret, (key, value)| quote!(#ret.header(#key, #value)),
     )
 }
 
@@ -153,7 +152,6 @@ mod format_uri {
     use crate::parse::try_parse;
     use lazy_static::lazy_static;
     use proc_macro::{Diagnostic, Level};
-    use proc_macro2::{Ident, Span};
     use quote::quote;
     use regex::Regex;
     use syn::{parse_quote, punctuated::Punctuated, Expr, Macro, Token};
