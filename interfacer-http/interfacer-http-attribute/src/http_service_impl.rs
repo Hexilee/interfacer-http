@@ -21,12 +21,12 @@ pub fn implement(mut item_trait: ItemTrait) -> TokenStream {
         .push(parse_quote!(core::marker::Sync));
     let super_traits = item_trait.supertraits.clone();
     quote! {
-    //        #[interfacer_http::async_trait]
-            #item_trait
+        #[interfacer_http::async_trait]
+        #item_trait
 
-    //        #[interfacer_http::async_trait]
-            impl<T: #super_traits> #trait_name for T {
+        #[interfacer_http::async_trait]
+        impl<T: #super_traits> #trait_name for T {
 
-            }
         }
+    }
 }

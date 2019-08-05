@@ -40,6 +40,7 @@ pub fn transform_method(raw_method: &mut TraitItemMethod) -> Result<(), Diagnost
         #check_response_stmt
         #ret
     );
+    polyfill::remove_params_attributes(raw_method); // TODO: remove it when async_trait support formal parameter attributes
     raw_method.semi_token = None;
     raw_method.default = Some(parse_quote!({
         #body
@@ -183,6 +184,20 @@ mod format_uri {
         #[test]
         fn parse_dyn_uri_test() {
             parse_dyn_uri("/api/user/{id}?age={age}");
+        }
+    }
+}
+
+// TODO: remove it when async_trait support formal parameter attributes
+mod polyfill {
+    use super::*;
+    use syn::FnArg;
+
+    pub fn remove_params_attributes(raw_method: &mut TraitItemMethod) {
+        for arg in raw_method.sig.inputs.iter_mut() {
+            if let FnArg::Typed(pat) = arg {
+                pat.attrs = Vec::new()
+            }
         }
     }
 }
