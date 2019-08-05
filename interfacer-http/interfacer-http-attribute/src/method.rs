@@ -116,6 +116,7 @@ fn ret() -> TokenStream {
 fn build_request(Context { attr, params }: &Context) -> TokenStream {
     use_idents!(request_ident, final_uri_ident);
     let method = attr.req.method.as_str();
+    let headers = gen_headers(params);
     let body = match params.body.as_ref() {
         Some(body) => {
             let content_type = gen_request_content_type(&attr.req);
@@ -127,6 +128,7 @@ fn build_request(Context { attr, params }: &Context) -> TokenStream {
         let mut builder = interfacer_http::http::Request::builder();
         let #request_ident = builder
             .uri(#final_uri_ident.as_str())
+            #headers
             .method(#method)
             .body(#body)?;
     )
@@ -136,6 +138,13 @@ fn gen_request_content_type(req: &Request) -> TokenStream {
     let request_content_type = &req.content_type;
     quote!(
         #request_content_type.try_into()?
+    )
+}
+
+fn gen_headers(params: &Parameters) -> TokenStream {
+    params.headers.iter().fold(
+        quote!(),
+        (|ret, (key, value)| quote!(#ret.header(#key, #value))),
     )
 }
 
