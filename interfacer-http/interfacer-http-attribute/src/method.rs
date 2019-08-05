@@ -2,7 +2,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{parse_quote, TraitItemMethod};
 
-use crate::attr::Attr;
+use crate::attr::{Attr, Request};
 use crate::param::Parameters;
 use format_uri::gen_uri_format_expr;
 use interfacer_http_util::http::StatusCode;
@@ -112,16 +112,30 @@ fn ret() -> TokenStream {
     )
 }
 
-// TODO: complete build request; using generic Body type
+// TODO: using generic Body type
 fn build_request(Context { attr, params }: &Context) -> TokenStream {
-    let method = attr.req.method.as_str();
     use_idents!(request_ident, final_uri_ident);
+    let method = attr.req.method.as_str();
+    let body = match params.body.as_ref() {
+        Some(body) => {
+            let content_type = gen_request_content_type(&attr.req);
+            quote!(#body.to_content(&#content_type)?)
+        }
+        None => quote!(Vec::new()),
+    };
     quote!(
         let mut builder = interfacer_http::http::Request::builder();
         let #request_ident = builder
             .uri(#final_uri_ident.as_str())
             .method(#method)
-            .body(Vec::new())?;
+            .body(#body)?;
+    )
+}
+
+fn gen_request_content_type(req: &Request) -> TokenStream {
+    let request_content_type = &req.content_type;
+    quote!(
+        #request_content_type.try_into()?
     )
 }
 

@@ -1,3 +1,5 @@
+// TODO: concat content-types and encodings
+
 // encoding
 pub const ENCODING_UTF8: &str = "utf-8";
 pub const ENCODING_GB2312: &str = "gb2312";
