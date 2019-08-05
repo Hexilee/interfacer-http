@@ -1,4 +1,4 @@
-use crate::parse::{gen_meta_list, try_parse, AttrMeta};
+use crate::parse::{try_parse, AttrMeta};
 use interfacer_http_util::{content_types, http::StatusCode};
 use proc_macro::{Diagnostic, Level};
 use proc_macro2::{Ident, Literal, Span, TokenStream};
@@ -70,20 +70,20 @@ impl TryFrom<AttrMeta> for Expect {
     type Error = Diagnostic;
     fn try_from(meta: AttrMeta) -> Result<Self, Self::Error> {
         let mut expect = Self::default();
-        let metas = meta.nested.into_iter().collect::<Vec<NestedMeta>>();
-        if metas.len() > 2 {
-            return Err(Diagnostic::new(
-                Level::Error,
-                "expect attribute has two args at most",
-            ));
-        }
-
-        if !metas.is_empty() {
-            expect.load_status(&metas[0])?;
-        }
-
-        if metas.len() > 1 {
-            load_content_type(&mut expect.content_type, &metas[1])?;
+        if let AttrMeta::List { name: _, nested } = meta {
+            let metas = nested.into_iter().collect::<Vec<NestedMeta>>();
+            if metas.len() > 2 {
+                return Err(Diagnostic::new(
+                    Level::Error,
+                    "expect attribute has two args at most",
+                ));
+            }
+            if !metas.is_empty() {
+                expect.load_status(&metas[0])?;
+            }
+            if metas.len() > 1 {
+                load_content_type(&mut expect.content_type, &metas[1])?;
+            }
         }
         Ok(expect)
     }
@@ -134,35 +134,36 @@ impl TryFrom<AttrMeta> for Request {
     type Error = Diagnostic;
     fn try_from(meta: AttrMeta) -> Result<Self, Self::Error> {
         let mut request = Self::default();
-        request.method = meta.name.to_string();
-        let metas = meta.nested.into_iter().collect::<Vec<NestedMeta>>();
-        if metas.len() > 2 {
-            return Err(Diagnostic::new(
-                Level::Error,
-                "request attribute has two args at most",
-            ));
-        }
+        request.method = meta.name().to_string();
+        if let AttrMeta::List { name: _, nested } = meta {
+            let metas = nested.into_iter().collect::<Vec<NestedMeta>>();
+            if metas.len() > 2 {
+                return Err(Diagnostic::new(
+                    Level::Error,
+                    "request attribute has two args at most",
+                ));
+            }
 
-        if !metas.is_empty() {
-            request.load_path(&metas[0])?;
-        }
+            if !metas.is_empty() {
+                request.load_path(&metas[0])?;
+            }
 
-        if metas.len() > 1 {
-            load_content_type(&mut request.content_type, &metas[1])?;
+            if metas.len() > 1 {
+                load_content_type(&mut request.content_type, &metas[1])?;
+            }
         }
-
         Ok(request)
     }
 }
 
 impl Attr {
     pub fn from_raw(raw_method: &TraitItemMethod) -> Result<Attr, Diagnostic> {
-        let AttrMetas { req, expect } = filter_method(raw_method)?;
-        let req = req.clone().try_into()?;
-        let expect = match expect {
+        let AttrMetas { req, mut expect } = filter_method(raw_method)?;
+        let expect = match expect.take() {
             Some(meta) => meta.try_into()?,
             None => Default::default(),
         };
+        let req = req.try_into()?;
         Ok(Attr { req, expect })
     }
 }
@@ -199,21 +200,14 @@ fn filter_method(raw_method: &TraitItemMethod) -> Result<AttrMetas, Diagnostic> 
     let method_name = raw_method.sig.ident.to_string();
     let mut req = None;
     let mut expect = None;
-    for attr in raw_method.attrs.clone() {
-        if let Ok(meta) = gen_meta_list(&attr) {
-            let name = meta.path.segments.last().unwrap().ident.clone();
-            if name == EXPECT {
+    for attr in raw_method.attrs.iter() {
+        if let Ok(meta) = AttrMeta::try_from((*attr).clone()) {
+            if meta.name() == EXPECT {
                 check_duplicate(method_name.as_str(), &expect)?;
-                expect = Some(AttrMeta {
-                    name,
-                    nested: meta.nested,
-                })
-            } else if METHODS.contains(&name.to_string().as_str()) {
+                expect = Some(meta)
+            } else if METHODS.contains(&meta.name().to_string().as_str()) {
                 check_duplicate(method_name.as_str(), &req)?;
-                req = Some(AttrMeta {
-                    name,
-                    nested: meta.nested,
-                })
+                req = Some(meta)
             }
         }
     }

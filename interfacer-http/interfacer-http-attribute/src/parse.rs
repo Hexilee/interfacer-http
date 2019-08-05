@@ -1,13 +1,19 @@
 use proc_macro::{Diagnostic, Level, TokenStream};
 use proc_macro2::Ident;
 use quote::quote;
+use std::convert::TryFrom;
 use syn::parse::{Parse, Parser};
-use syn::{punctuated::Punctuated, Attribute, MetaList, NestedMeta, Token};
+use syn::{
+    punctuated::Punctuated, Attribute, Meta, MetaList, MetaNameValue, NestedMeta, Path, Token,
+};
 
 #[derive(Clone)]
-pub struct AttrMeta {
-    pub name: Ident,
-    pub nested: Punctuated<NestedMeta, Token![,]>,
+pub enum AttrMeta {
+    Name(Ident),
+    List {
+        name: Ident,
+        nested: Punctuated<NestedMeta, Token![,]>,
+    },
 }
 
 pub fn try_parse<T: Parse>(token: TokenStream) -> Result<T, Diagnostic> {
@@ -20,8 +26,45 @@ pub fn try_parse<T: Parse>(token: TokenStream) -> Result<T, Diagnostic> {
     })
 }
 
-pub fn gen_meta_list(attr: &Attribute) -> Result<MetaList, Diagnostic> {
-    let name = &attr.path;
-    let tokens = &attr.tokens;
-    try_parse::<MetaList>(quote!(#name#tokens).into())
+impl TryFrom<Attribute> for AttrMeta {
+    type Error = Diagnostic;
+    fn try_from(attr: Attribute) -> Result<Self, Self::Error> {
+        let raw_meta = attr.parse_meta().map_err(|err| {
+            Diagnostic::new(
+                Level::Error,
+                format!("attr ({}) is not a meta: {}", quote!(#attr), err),
+            )
+        })?;
+        match raw_meta {
+            Meta::Path(ref path) => Ok(AttrMeta::Name(Self::parse_path(path)?)),
+            Meta::List(list) => Ok(AttrMeta::List {
+                name: Self::parse_path(&list.path)?,
+                nested: list.nested,
+            }),
+            _ => Err(Diagnostic::new(
+                Level::Error,
+                format!("attr ({}) is not a valid AttrMeta", quote!(#attr)),
+            )),
+        }
+    }
+}
+
+impl AttrMeta {
+    pub fn name(&self) -> &Ident {
+        match self {
+            AttrMeta::Name(name) => name,
+            AttrMeta::List { name, nested: _ } => name,
+        }
+    }
+
+    pub fn parse_path(path: &Path) -> Result<Ident, Diagnostic> {
+        if path.segments.len() != 1 {
+            Err(Diagnostic::new(
+                Level::Error,
+                format!("path({}) is not a ident", quote!(#path)),
+            ))
+        } else {
+            Ok(path.segments.first().unwrap().ident.clone())
+        }
+    }
 }

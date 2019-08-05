@@ -176,7 +176,7 @@ mod format_uri {
 
         fn parse_dyn_uri(raw_uri: &str) {
             for capture in Regex::new(DYN_URI_PATTERN).unwrap().captures_iter(raw_uri) {
-                println!("captured {}", &capture["var"]);
+                println!("captured {}", &capture["pattern"]);
             }
         }
 

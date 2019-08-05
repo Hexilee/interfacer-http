@@ -1,4 +1,4 @@
-use crate::parse::{gen_meta_list, AttrMeta};
+use crate::parse::AttrMeta;
 use proc_macro::{Diagnostic, Level};
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
@@ -23,7 +23,7 @@ enum Parameter {
 }
 
 impl Parameter {
-    fn value(nested: &Punctuated<NestedMeta, Token![,]>) -> Result<Option<Ident>, Diagnostic> {
+    fn value(nested: Punctuated<NestedMeta, Token![,]>) -> Result<Option<Ident>, Diagnostic> {
         match nested.first() {
             Some(NestedMeta::Meta(Meta::Path(path))) => {
                 if path.segments.len() != 1 {
@@ -43,7 +43,7 @@ impl Parameter {
         }
     }
 
-    fn header(nested: &Punctuated<NestedMeta, Token![,]>) -> Result<TokenStream, Diagnostic> {
+    fn header(nested: Punctuated<NestedMeta, Token![,]>) -> Result<TokenStream, Diagnostic> {
         match nested.first() {
             Some(NestedMeta::Meta(Meta::Path(path))) => Ok(quote!(#path)),
             Some(NestedMeta::Literal(Lit::Str(lit))) => Ok(quote!(#lit)),
@@ -58,13 +58,22 @@ impl Parameter {
 impl TryFrom<AttrMeta> for Parameter {
     type Error = Diagnostic;
     fn try_from(meta: AttrMeta) -> Result<Self, Self::Error> {
-        match meta.name.to_string().as_str() {
-            VAL => Ok(Parameter::Value(Self::value(&meta.nested)?)),
-            HEADER => Ok(Parameter::Header(Self::header(&meta.nested)?)),
+        match meta.name().to_string().as_str() {
+            VAL => match meta {
+                AttrMeta::Name(_) => Ok(Parameter::Value(None)),
+                AttrMeta::List { name: _, nested } => Ok(Parameter::Value(Self::value(nested)?)),
+            },
+            HEADER => match meta {
+                AttrMeta::List { name: _, nested } => Ok(Parameter::Header(Self::header(nested)?)),
+                _ => Err(Diagnostic::new(
+                    Level::Error,
+                    "header parameter attribute must be MetaList",
+                )),
+            },
             BODY => Ok(Parameter::Body),
             _ => Err(Diagnostic::new(
                 Level::Error,
-                format!("unsupported attribute name `{}`", meta.name),
+                format!("unsupported attribute name `{}`", meta.name()),
             )),
         }
     }
@@ -93,17 +102,8 @@ impl TryFrom<Punctuated<FnArg, Token![,]>> for Parameters {
                         .attrs
                         .iter()
                         .map(|attr| {
-                            let meta = gen_meta_list(attr)?;
-                            let segment = meta.path.segments.first().ok_or(Diagnostic::new(
-                                Level::Error,
-                                "meta attribute has no name",
-                            ))?;
-                            let name = segment.ident.clone();
-                            AttrMeta {
-                                name,
-                                nested: meta.nested,
-                            }
-                            .try_into()
+                            let meta: AttrMeta = attr.clone().try_into()?;
+                            meta.try_into()
                         })
                         .filter_map(|result: Result<Parameter, Diagnostic>| {
                             result.map_err(|err| err.emit()).ok()
@@ -122,6 +122,7 @@ impl TryFrom<Punctuated<FnArg, Token![,]>> for Parameters {
                                         values.insert(rename.to_string(), name.ident.clone())
                                     }
                                     None => {
+                                        // TODO: check duplicate rename
                                         values.insert(name.ident.to_string(), name.ident.clone())
                                     }
                                 };
