@@ -21,11 +21,21 @@ members = [
 
 [patch.crates-io]
 hyper = { git = "https://github.com/hyperium/hyper", branch = "master" }
-tokio-io = { git = "https://github.com/tokio-rs/tokio", branch = "master" }
 syn-next = { git = "https://github.com/dtolnay/syn", branch = "master"}
 proc-macro2-next = { git = "https://github.com/alexcrichton/proc-macro2", branch = "next" }
 quote-next = { git = "https://github.com/dtolnay/quote" }
 const-concat = { git = "https://github.com/Vurich/const-concat", branch = "master" }
+
+[patch."https://github.com/tokio-rs/tokio"]
+tokio = { git = "https://github.com/tokio-rs/tokio.git", rev = "6cbe3d4f82f2c10be108366ece63e1fb180c90b9" }
+tokio-executor = { git = "https://github.com/tokio-rs/tokio.git", rev = "6cbe3d4f82f2c10be108366ece63e1fb180c90b9" }
+tokio-io = { git = "https://github.com/tokio-rs/tokio.git", rev = "6cbe3d4f82f2c10be108366ece63e1fb180c90b9" }
+tokio-reactor = { git = "https://github.com/tokio-rs/tokio.git", rev = "6cbe3d4f82f2c10be108366ece63e1fb180c90b9" }
+tokio-sync = { git = "https://github.com/tokio-rs/tokio.git", rev = "6cbe3d4f82f2c10be108366ece63e1fb180c90b9" }
+tokio-tcp = { git = "https://github.com/tokio-rs/tokio.git", rev = "6cbe3d4f82f2c10be108366ece63e1fb180c90b9" }
+tokio-timer = { git = "https://github.com/tokio-rs/tokio.git", rev = "6cbe3d4f82f2c10be108366ece63e1fb180c90b9" }
+tokio-threadpool = { git = "https://github.com/tokio-rs/tokio.git", rev = "6cbe3d4f82f2c10be108366ece63e1fb180c90b9" }
+tokio-tls = { git = "https://github.com/tokio-rs/tokio.git", rev = "6cbe3d4f82f2c10be108366ece63e1fb180c90b9" }
 
 [dependencies]
 interfacer-http-attribute = { path = "interfacer-http-attribute", version = "0.1" }
