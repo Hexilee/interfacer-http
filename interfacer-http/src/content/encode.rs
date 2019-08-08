@@ -1,10 +1,10 @@
-use crate::content_types::ENCODING_UTF8;
+use crate::content_types::CHARSET_UTF8;
 use crate::fail::StringError;
 
 #[allow(dead_code)]
 pub fn encode_data(raw_data: String, encode: Option<&str>) -> Result<Vec<u8>, StringError> {
     match encode {
-        None | Some(ENCODING_UTF8) => Ok(raw_data.into_bytes()),
+        None | Some(CHARSET_UTF8) => Ok(raw_data.into_bytes()),
         Some(encode) => implement::encode_data(raw_data.as_str(), encode),
     }
 }
@@ -12,7 +12,7 @@ pub fn encode_data(raw_data: String, encode: Option<&str>) -> Result<Vec<u8>, St
 #[allow(dead_code)]
 pub fn decode_data(raw_data: Vec<u8>, encode: Option<&str>) -> Result<String, StringError> {
     match encode {
-        None | Some(ENCODING_UTF8) => match String::from_utf8(raw_data) {
+        None | Some(CHARSET_UTF8) => match String::from_utf8(raw_data) {
             Ok(data) => Ok(data),
             Err(err) => Err(StringError::new(format!(
                 "decode data error: encoding is not utf-8. cause by `{}`",

@@ -12,3 +12,4 @@ cookie = "0.12"
 async-trait = "0.1.2"
 futures-preview = "0.3.0-alpha.17"
 url = "1.7"
+const-concat = { version = "0.1.0"}
