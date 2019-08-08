@@ -3,6 +3,13 @@ name = "interfacer-http-hyper"
 version = "0.1.0"
 authors = ["Hexilee <hexileee@gmail.com>"]
 edition = "2018"
+license = "MIT"
+description = "hyper based http-service for interfacer-http"
+repository = "https://github.com/Hexilee/interfacer"
+keywords = ["SDK-Builder"]
+categories = ["api-bindings"]
+readme = "../README.md"
+documentation = "https://docs.rs/interfacer-http-hyper"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
