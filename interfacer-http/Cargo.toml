@@ -1,6 +1,6 @@
 [package]
 name = "interfacer-http"
-version = "0.0.1"
+version = "0.1.0"
 authors = ["Hexilee <hexileee@gmail.com>"]
 edition = "2018"
 license = "MIT"
@@ -28,8 +28,8 @@ quote-next = { git = "https://github.com/dtolnay/quote" }
 const-concat = { git = "https://github.com/Vurich/const-concat", branch = "master" }
 
 [dependencies]
-interfacer-http-attribute = { path = "interfacer-http-attribute", version = "0.0" }
-interfacer-http-util = { path = "interfacer-http-util", version = "0.0" }
+interfacer-http-attribute = { path = "interfacer-http-attribute", version = "0.1" }
+interfacer-http-util = { path = "interfacer-http-util", version = "0.1" }
 failure = "0.1"
 failure_derive = "0.1"
 
