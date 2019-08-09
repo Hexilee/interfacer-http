@@ -1,6 +1,6 @@
 [package]
 name = "interfacer-http-util"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Hexilee <hexileee@gmail.com>"]
 edition = "2018"
 license = "MIT"
@@ -16,6 +16,6 @@ documentation = "https://docs.rs/interfacer-http-util"
 [dependencies]
 http = "0.1"
 cookie = "0.12"
-async-trait = "0.1.2"
+async-trait = "0.1"
 url = "1.7"
 const-concat = { version = "0.1.0"}
