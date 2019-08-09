@@ -4,10 +4,10 @@ version = "0.1.2"
 authors = ["Hexilee <hexileee@gmail.com>"]
 edition = "2018"
 license = "MIT"
-description = "SDK builder for HTTP API, like retrofit"
-repository = "https://github.com/Hexilee/interfacer"
-keywords = ["SDK-Builder"]
-categories = ["api-bindings"]
+description = "A magic HTTP client, like retrofit in Java"
+repository = "https://github.com/Hexilee/interfacer-http"
+keywords = ["http", "client", "interfacer"]
+categories = ["network-programming", "web-programming::http-client"]
 readme = "README.md"
 documentation = "https://docs.rs/interfacer-http"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

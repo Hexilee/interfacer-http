@@ -5,9 +5,9 @@ authors = ["Hexilee <hexileee@gmail.com>"]
 edition = "2018"
 license = "MIT"
 description = "proc macro for interfacer-http"
-repository = "https://github.com/Hexilee/interfacer"
-keywords = ["SDK-Builder"]
-categories = ["api-bindings"]
+repository = "https://github.com/Hexilee/interfacer-http"
+keywords = ["http", "client", "interfacer"]
+categories = ["network-programming", "web-programming::http-client"]
 readme = "../README.md"
 documentation = "https://docs.rs/interfacer-http-attribute"
 
