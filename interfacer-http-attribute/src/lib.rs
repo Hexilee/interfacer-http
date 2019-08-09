@@ -15,8 +15,9 @@ pub fn http_interface(_args: TokenStream, input: TokenStream) -> TokenStream {
 pub fn derive_to_content(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = input.ident.clone();
+    let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
     quote!(
-        impl interfacer_http::ToContent for #name {
+        impl #impl_generics interfacer_http::ToContent for #name #ty_generics #where_clause {
             type Err = interfacer_http::ToContentFail;
             #[inline]
             fn to_content(&self, content_type: &interfacer_http::ContentType) -> core::result::Result<Vec<u8>, Self::Err> {
@@ -32,8 +33,9 @@ pub fn derive_to_content(input: TokenStream) -> TokenStream {
 pub fn derive_from_content(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = input.ident.clone();
+    let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
     quote!(
-        impl interfacer_http::FromContent for #name {
+        impl #impl_generics interfacer_http::FromContent for #name #ty_generics #where_clause {
             type Err = interfacer_http::FromContentFail;
             #[inline]
             fn from_content(data: Vec<u8>, content_type: &interfacer_http::ContentType) -> core::result::Result<Self, Self::Err> {

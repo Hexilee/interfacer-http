@@ -10,7 +10,7 @@ use interfacer_http::derive::{FromContent, ToContent};
 use interfacer_http::{content_types, http::header::COOKIE, http_interface, Response, Result};
 use serde_derive::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, FromContent, ToContent, Debug, Eq, PartialEq)]
+#[derive(Serialize, Deserialize, FromContent, ToContent, Debug)]
 struct User {
     name: String,
     age: i32,
