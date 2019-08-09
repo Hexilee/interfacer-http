@@ -1,7 +1,7 @@
 use crate::{http::HeaderValue, url::form_urlencoded, RequestFail, Result, StringError};
 
-const CHARSET: &'static str = "charset";
-const BOUNDARY: &'static str = "boundary";
+const CHARSET: &str = "charset";
+const BOUNDARY: &str = "boundary";
 
 #[derive(Clone, Debug)]
 pub struct ContentType {
@@ -19,14 +19,14 @@ impl ContentType {
             .map(|segment: &str| segment.trim())
             .collect::<Vec<&str>>();
         match segments.len() {
-            0 => Err(RequestFail::custom(StringError::new(
+            0 => Err(StringError::new(
                 "Content-Type({}) is empty",
-            ))),
+            ).into()),
             n => {
                 if segments[0] == "" {
-                    Err(RequestFail::custom(StringError::new(
+                    return Err(StringError::new(
                         "base type of Content-Type({}) is empty",
-                    )))?;
+                    ).into());
                 }
 
                 let mut ret = Self {
