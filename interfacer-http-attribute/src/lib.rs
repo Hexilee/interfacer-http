@@ -6,8 +6,8 @@ use quote::quote;
 use syn::{parse_macro_input, DeriveInput, ItemTrait};
 
 #[proc_macro_attribute]
-pub fn http_service(_args: TokenStream, input: TokenStream) -> TokenStream {
-    http_service_impl::implement(parse_macro_input!(input as ItemTrait)).into()
+pub fn http_interface(_args: TokenStream, input: TokenStream) -> TokenStream {
+    interface_impl::implement(parse_macro_input!(input as ItemTrait)).into()
 }
 
 // TODO: remove when const generics is stable
@@ -45,7 +45,7 @@ pub fn derive_from_content(input: TokenStream) -> TokenStream {
 }
 
 mod attr;
-mod http_service_impl;
+mod interface_impl;
 mod method;
 mod param;
 mod parse;

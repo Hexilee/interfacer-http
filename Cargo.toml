@@ -1,6 +1,6 @@
 [package]
 name = "interfacer-http"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Hexilee <hexileee@gmail.com>"]
 edition = "2018"
 license = "MIT"
@@ -35,7 +35,6 @@ tokio-sync = { git = "https://github.com/tokio-rs/tokio.git", rev = "6cbe3d4f82f
 tokio-tcp = { git = "https://github.com/tokio-rs/tokio.git", rev = "6cbe3d4f82f2c10be108366ece63e1fb180c90b9" }
 tokio-timer = { git = "https://github.com/tokio-rs/tokio.git", rev = "6cbe3d4f82f2c10be108366ece63e1fb180c90b9" }
 tokio-threadpool = { git = "https://github.com/tokio-rs/tokio.git", rev = "6cbe3d4f82f2c10be108366ece63e1fb180c90b9" }
-tokio-tls = { git = "https://github.com/tokio-rs/tokio.git", rev = "6cbe3d4f82f2c10be108366ece63e1fb180c90b9" }
 
 [dependencies]
 interfacer-http-attribute = { path = "interfacer-http-attribute", version = "0.1" }

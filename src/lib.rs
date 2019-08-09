@@ -8,7 +8,7 @@ pub use content_type::ContentType;
 pub use fail::{define_from, RequestFail, Result, StringError};
 pub use failure::Fail;
 #[doc(inline)]
-pub use interfacer_http_attribute::http_service;
+pub use interfacer_http_attribute::http_interface;
 
 pub mod derive {
     #[doc(inline)]
