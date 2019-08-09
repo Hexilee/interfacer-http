@@ -3,6 +3,7 @@ use crate::Result;
 use crate::{http, RequestFail};
 use cookie::Cookie;
 use std::ops::Deref;
+use std::collections::HashMap;
 
 pub struct Response<T>(http::Response<T>);
 
@@ -26,6 +27,15 @@ impl<T> Response<T> {
             cookies.push(Cookie::parse(cookie.to_str()?)?)
         }
         Ok(cookies)
+    }
+
+    pub fn cookie_map(&self) -> Result<HashMap<String, Cookie>> {
+        Ok(self
+            .cookies()?
+            .into_iter()
+            .map(|cookie| (cookie.name().to_owned(), cookie))
+            .collect()
+        )
     }
 }
 

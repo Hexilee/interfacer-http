@@ -38,3 +38,10 @@ mod serde_support;
 mod unhtml_support;
 
 mod encode;
+
+impl FromContent for () {
+    type Err = fail::FromContentFail;
+    fn from_content(_data: Vec<u8>, _content_type: &ContentType) -> Result<Self, Self::Err> {
+        Ok(())
+    }
+}
