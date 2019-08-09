@@ -19,14 +19,10 @@ impl ContentType {
             .map(|segment: &str| segment.trim())
             .collect::<Vec<&str>>();
         match segments.len() {
-            0 => Err(StringError::new(
-                "Content-Type({}) is empty",
-            ).into()),
+            0 => Err(StringError::new("Content-Type({}) is empty").into()),
             n => {
                 if segments[0] == "" {
-                    return Err(StringError::new(
-                        "base type of Content-Type({}) is empty",
-                    ).into());
+                    return Err(StringError::new("base type of Content-Type({}) is empty").into());
                 }
 
                 let mut ret = Self {

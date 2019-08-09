@@ -3,7 +3,7 @@
 #![allow(unused_attributes)]
 
 use interfacer_http::derive::{FromContent, ToContent};
-use interfacer_http::{content_types, http_service, Response, Result, http::header::COOKIE};
+use interfacer_http::{content_types, http::header::COOKIE, http_service, Response, Result};
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, FromContent, ToContent, Debug, Eq, PartialEq)]
@@ -22,5 +22,5 @@ trait UserService: Clone {
         age: i32,
         #[body] user: &User,
         #[header(COOKIE)] cookie: &str
-    ) -> Result<Response<User>> {}
+    ) -> Result<Response<User>>;
 }
