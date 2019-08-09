@@ -29,13 +29,18 @@ impl<T> Response<T> {
         Ok(cookies)
     }
 
-    pub fn cookie_map(&self) -> Result<HashMap<String, Cookie>> {
-        Ok(self
-            .cookies()?
-            .into_iter()
-            .map(|cookie| (cookie.name().to_owned(), cookie))
-            .collect()
-        )
+    pub fn cookie_map(&self) -> Result<HashMap<String, Vec<Cookie>>> {
+        let mut map = HashMap::new();
+        for cookie in self.headers().get_all(http::header::SET_COOKIE) {
+            let cookie = Cookie::parse(cookie.to_str()?)?;
+            match map.get_mut(cookie.name()) {
+                None => {
+                    map.insert(cookie.name().to_owned(), vec![cookie]);
+                }
+                Some(list) => list.push(cookie),
+            }
+        }
+        Ok(map)
     }
 }
 
