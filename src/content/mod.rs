@@ -37,7 +37,7 @@ mod serde_support;
 #[cfg(feature = "unhtml-html")]
 mod unhtml_support;
 
-mod encode;
+mod encoding;
 
 impl FromContent for () {
     type Err = fail::FromContentFail;

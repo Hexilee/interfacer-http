@@ -2,8 +2,8 @@ use crate::cookie;
 use crate::Result;
 use crate::{http, RequestFail};
 use cookie::Cookie;
-use std::ops::Deref;
 use std::collections::HashMap;
+use std::ops::Deref;
 
 pub struct Response<T>(http::Response<T>);
 

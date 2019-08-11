@@ -67,6 +67,8 @@ define_from!(rmp_serde::decode::Error);
 #[cfg(feature = "unhtml-html")]
 define_from_by_str!(failure::Error);
 
+define_from_by_str!(std::string::FromUtf8Error);
+
 define_from!(crate::fail::StringError);
 
 request_fail_define_from!(FromContentFail);
