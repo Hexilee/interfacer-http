@@ -1,6 +1,6 @@
 [package]
 name = "interfacer-http-hyper"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Hexilee <hexileee@gmail.com>"]
 edition = "2018"
 license = "MIT"
@@ -14,7 +14,7 @@ documentation = "https://docs.rs/interfacer-http-hyper"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-hyper = "0.13.0-a.0"
+hyper = { git = "https://github.com/hyperium/hyper", branch = "master" }
 http = "0.1"
 failure = "0.1"
 failure_derive = "0.1"
