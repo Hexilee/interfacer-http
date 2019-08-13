@@ -18,4 +18,4 @@ http = "0.1"
 cookie = "0.12"
 async-trait = "0.1"
 url = "2"
-const-concat = { version = "0.1", git = "https://github.com/Vurich/const-concat", branch = "master" }
+const-concat = "0.1"

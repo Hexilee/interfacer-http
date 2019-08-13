@@ -1,3 +1,5 @@
+use const_concat::const_concat;
+
 // encoding
 pub const CHARSET_UTF8: &str = "utf-8";
 pub const CHARSET_GB2312: &str = "gb2312";
