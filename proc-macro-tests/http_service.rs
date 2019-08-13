@@ -12,11 +12,6 @@ struct User {
     age: i32,
 }
 
-#[derive(Serialize, ToContent, Debug)]
-struct Test<'a> {
-    name: &'a str,
-}
-
 #[http_interface]
 trait UserInterface: Clone {
     #[put("/api/user/{id}?age={age}")]

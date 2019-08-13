@@ -24,7 +24,7 @@ impl Parameter {
     fn header(nested: Punctuated<NestedMeta, Token![,]>) -> Result<TokenStream, Diagnostic> {
         match nested.first() {
             Some(NestedMeta::Meta(Meta::Path(path))) => Ok(quote!(#path)),
-            Some(NestedMeta::Literal(Lit::Str(lit))) => Ok(quote!(#lit)),
+            Some(NestedMeta::Lit(Lit::Str(lit))) => Ok(quote!(#lit)),
             _ => Err(Diagnostic::new(
                 Level::Error,
                 "header parameter name should be path or str literal",

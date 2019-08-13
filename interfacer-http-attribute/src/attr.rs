@@ -41,7 +41,7 @@ pub struct Attr {
 impl Expect {
     fn load_status(&mut self, meta: &NestedMeta) -> Result<(), Diagnostic> {
         match meta {
-            NestedMeta::Literal(Lit::Int(lit)) => {
+            NestedMeta::Lit(Lit::Int(lit)) => {
                 StatusCode::from_u16(lit.base10_digits().parse().unwrap())
                     .map(|code| {
                         let code = code.as_u16();
@@ -115,7 +115,7 @@ impl Default for Request {
 
 impl Request {
     fn load_path(&mut self, meta: &NestedMeta) -> Result<(), Diagnostic> {
-        if let NestedMeta::Literal(Lit::Str(token)) = meta {
+        if let NestedMeta::Lit(Lit::Str(token)) = meta {
             self.path = token.value();
             Ok(())
         } else {
@@ -168,7 +168,7 @@ impl Attr {
 // TODO: check lit
 fn load_content_type(content_type: &mut TokenStream, meta: &NestedMeta) -> Result<(), Diagnostic> {
     match meta {
-        NestedMeta::Literal(Lit::Str(token)) => {
+        NestedMeta::Lit(Lit::Str(token)) => {
             *content_type = quote!(#token);
             Ok(())
         }
