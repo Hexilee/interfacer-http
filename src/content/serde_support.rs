@@ -1,9 +1,7 @@
-#[allow(unused_imports)]
+#![allow(unused_imports)]
 use super::encoding::disable_encoding_error;
-
 #[cfg(feature = "encoding")]
 use super::encoding::{decode_data, encode_data};
-
 use super::fail::{FromContentFail, ToContentFail};
 use crate::content_type::ContentType;
 use crate::content_types::*;

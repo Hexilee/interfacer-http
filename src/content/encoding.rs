@@ -2,6 +2,7 @@
 use crate::content_type::ContentType;
 use crate::fail::StringError;
 
+#[allow(dead_code)]
 pub fn disable_encoding_error(encoding: &str) -> StringError {
     StringError::new(format!(
         "unsupported encoding: {}; please enable feature `encoding`",
