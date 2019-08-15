@@ -31,11 +31,11 @@ serde_urlencoded = { version = "0.6", optional = true }
 serde-xml-rs = { version = "0.3", optional = true }
 serde = { version = "1.0", optional = true }
 lib-encoding = { package = "encoding", version = "0.2", optional = true }
-unhtml = { version = "0.6", optional = true }
+unhtml = { version = "0.7", optional = true }
 
 # for test
 serde_derive = { version = "1.0", optional = true }
-unhtml_derive = { version = "0.5", optional = true }
+unhtml_derive = { version = "0.7", optional = true }
 
 [features]
 encoding = ["lib-encoding"]
@@ -54,4 +54,4 @@ derive = ["serde_derive", "unhtml_derive"]
 name = "http-service"
 path = "proc-macro-tests/http_service.rs"
 edition = "2018"
-required-features = ["derive"]
+required-features = ["derive", "serde-full"]

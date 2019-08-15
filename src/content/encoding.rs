@@ -1,18 +1,12 @@
+#[allow(unused_imports)]
 use crate::content_type::ContentType;
 use crate::fail::StringError;
 
-#[allow(dead_code)]
-pub fn check_encoding(content_type: &ContentType) -> Result<(), StringError> {
-    match content_type.encoding() {
-        #[cfg(not(feature = "encoding"))]
-        Some(encoding) if encoding != crate::content_types::CHARSET_UTF8 => {
-            Err(StringError::new(format!(
-                "unsupported encoding: {}; please enable feature `encoding`",
-                encoding
-            )))
-        }
-        _ => Ok(()),
-    }
+pub fn disable_encoding_error(encoding: &str) -> StringError {
+    StringError::new(format!(
+        "unsupported encoding: {}; please enable feature `encoding`",
+        encoding
+    ))
 }
 
 #[cfg(feature = "encoding")]
