@@ -53,7 +53,7 @@ fn msgpack() {
     define_test!(APPLICATION_MSGPACK, None);
 }
 
-#[cfg(any(feature = "serde-full", feature = "encode"))]
+#[cfg(all(feature = "serde-full", feature = "encoding"))]
 #[test]
 fn encoding() {
     define_test!(APPLICATION_JSON, Some("utf-8"));

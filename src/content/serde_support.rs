@@ -104,7 +104,7 @@ impl<T: DeserializeOwned> FromContentSerde for T {
 
 /// Serializes a value into a `application/x-wwww-url-encoded` `String` buffer in custom encoding.
 ///
-/// ```
+/// ```ignore
 /// use std::borrow::Cow;
 ///
 /// let meal = &[
@@ -117,10 +117,9 @@ impl<T: DeserializeOwned> FromContentSerde for T {
 /// }
 ///
 /// assert_eq!(
-///     serde_urlencoded::encode_into(meal, caesar_cipher_encode),
+///     encode_into_form(meal, caesar_cipher_encode),
 ///     Ok("euhdg=edjxhwwh&idw=exwwhu".to_owned()));
 /// ```
-
 #[cfg(all(
     feature = "encoding",
     any(feature = "serde-full", feature = "serde-urlencoded")
@@ -133,4 +132,27 @@ fn encode_into_form(
     urlencoder.encoding_override(Some(&encoding));
     input.serialize(serde_urlencoded::Serializer::new(&mut urlencoder))?;
     Ok(urlencoder.finish())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::borrow::Cow;
+
+    #[test]
+    fn test_encode_into_form() {
+        let meal = &[("bread", "baguette"), ("fat", "butter")];
+        fn caesar_cipher_encode(raw: &str) -> Cow<[u8]> {
+            Cow::Owned(
+                raw.as_bytes()
+                    .iter()
+                    .map(|ascii| (ascii - 94) % 26 + 97)
+                    .collect(),
+            )
+        }
+        assert_eq!(
+            encode_into_form(meal, caesar_cipher_encode),
+            Ok("euhdg=edjxhwwh&idw=exwwhu".to_owned())
+        );
+    }
 }

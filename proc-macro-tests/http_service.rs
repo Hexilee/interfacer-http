@@ -12,15 +12,15 @@ struct User {
     age: i32,
 }
 
-//#[http_interface]
-//trait UserInterface: Clone {
-//    #[put("/api/user/{id}?age={age}")]
-//    #[expect(200, content_types::APPLICATION_JSON)]
-//    async fn put_user(
-//        &self,
-//        id: u64,
-//        age: i32,
-//        #[body] user: &User,
-//        #[header(COOKIE)] cookie: &str
-//    ) -> Result<Response<User>>;
-//}
+#[http_interface]
+trait UserInterface: Clone {
+    #[put("/api/user/{id}?age={age}")]
+    #[expect(200, content_types::APPLICATION_JSON)]
+    async fn put_user(
+        &self,
+        id: u64,
+        age: i32,
+        #[body] user: &User,
+        #[header(COOKIE)] cookie: &str
+    ) -> Result<Response<User>>;
+}
