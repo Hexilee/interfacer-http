@@ -19,16 +19,6 @@ members = [
     "interfacer-http-util",
 ]
 
-[patch."https://github.com/tokio-rs/tokio"]
-tokio = { git = "https://github.com/tokio-rs/tokio.git", rev = "73102760cfe1632b6b8073dfa5a506c0e69e4b5e" }
-tokio-executor = { git = "https://github.com/tokio-rs/tokio.git", rev = "73102760cfe1632b6b8073dfa5a506c0e69e4b5e" }
-tokio-io = { git = "https://github.com/tokio-rs/tokio.git", rev = "73102760cfe1632b6b8073dfa5a506c0e69e4b5e" }
-tokio-reactor = { git = "https://github.com/tokio-rs/tokio.git", rev = "73102760cfe1632b6b8073dfa5a506c0e69e4b5e" }
-tokio-sync = { git = "https://github.com/tokio-rs/tokio.git", rev = "73102760cfe1632b6b8073dfa5a506c0e69e4b5e" }
-tokio-tcp = { git = "https://github.com/tokio-rs/tokio.git", rev = "73102760cfe1632b6b8073dfa5a506c0e69e4b5e" }
-tokio-timer = { git = "https://github.com/tokio-rs/tokio.git", rev = "73102760cfe1632b6b8073dfa5a506c0e69e4b5e" }
-tokio-threadpool = { git = "https://github.com/tokio-rs/tokio.git", rev = "73102760cfe1632b6b8073dfa5a506c0e69e4b5e" }
-
 [dependencies]
 interfacer-http-attribute = { path = "interfacer-http-attribute", version = "0.1" }
 interfacer-http-util = { path = "interfacer-http-util", version = "0.1" }
