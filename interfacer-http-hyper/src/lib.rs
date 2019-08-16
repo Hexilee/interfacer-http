@@ -3,16 +3,17 @@
 use failure::Fail;
 use http::{Request, Response};
 use hyper::client::HttpConnector;
-use hyper::{self, Client};
 use interfacer_http::{async_trait, define_from, url::Url, HttpClient, HttpService};
 
 // TODO: use generic Connector
-pub struct AsyncClient {
+#[derive(Clone)]
+pub struct Client {
     inner: hyper::Client<HttpConnector, hyper::Body>,
 }
 
-pub struct AsyncService {
-    client: AsyncClient,
+#[derive(Clone)]
+pub struct Service {
+    client: Client,
     base_url: Url,
 }
 
@@ -30,25 +31,25 @@ impl From<hyper::Error> for Error {
 
 define_from!(Error);
 
-impl AsyncClient {
+impl Client {
     pub fn new() -> Self {
         Self {
-            inner: Client::new(),
+            inner: hyper::Client::new(),
         }
     }
 }
 
-impl AsyncService {
+impl Service {
     pub fn new(base_url: Url) -> Self {
         Self {
-            client: AsyncClient::new(),
+            client: Client::new(),
             base_url,
         }
     }
 }
 
 #[async_trait]
-impl HttpClient for AsyncClient {
+impl HttpClient for Client {
     type Err = Error;
     async fn request(&self, req: Request<Vec<u8>>) -> Result<Response<Vec<u8>>, Self::Err> {
         let (parts, body) = req.into_parts();
@@ -65,8 +66,8 @@ impl HttpClient for AsyncClient {
     }
 }
 
-impl HttpService for AsyncService {
-    type Client = AsyncClient;
+impl HttpService for Service {
+    type Client = Client;
 
     fn get_base_url(&self) -> &Url {
         &self.base_url
