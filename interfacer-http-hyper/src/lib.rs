@@ -3,7 +3,7 @@
 use failure::Fail;
 use http::{Request, Response};
 use hyper::client::HttpConnector;
-use interfacer_http::{async_trait, define_from, url::Url, HttpClient, HttpService};
+use interfacer_http::{async_trait, define_from, url::Url, HttpClient, HttpClient};
 
 // TODO: use generic Connector
 #[derive(Clone)]
@@ -66,7 +66,7 @@ impl HttpClient for Client {
     }
 }
 
-impl HttpService for Service {
+impl HttpClient for Service {
     type Client = Client;
 
     fn get_base_url(&self) -> &Url {

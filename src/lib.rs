@@ -1,4 +1,4 @@
-#![feature(decl_macro, async_await)]
+#![feature(decl_macro, async_await, trait_alias)]
 
 #[doc(inline)]
 pub use content::{fail::*, polyfill, FromContent, IntoStruct, ToContent};
@@ -15,11 +15,11 @@ pub mod derive {
     pub use interfacer_http_attribute::{FromContent, ToContent};
 }
 
-pub use interfacer_http_util::*;
 #[doc(inline)]
-pub use service::{response::Response, HttpClient, HttpService};
+pub use client::{HttpClient, HttpConfig, Response};
+pub use interfacer_http_util::*;
 
+mod client;
 mod content;
 mod content_type;
 mod fail;
-mod service;

@@ -20,7 +20,7 @@ trait UserInterface: Clone {
         &self,
         id: u64,
         age: i32,
-        #[body] user: &User,
-        #[header(COOKIE)] cookie: &str
+        //        #[body] user: &User,
+        //        #[header(COOKIE)] cookie: &str
     ) -> Result<Response<User>>;
 }
