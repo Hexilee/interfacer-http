@@ -46,10 +46,6 @@ impl Service {
             base_url,
         }
     }
-
-    fn __check() {
-        let _: Box<dyn HttpService<Client = Client>> = Box::new(Service::new("".parse().unwrap()));
-    }
 }
 
 #[async_trait]
