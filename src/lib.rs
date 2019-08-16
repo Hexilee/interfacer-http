@@ -1,4 +1,4 @@
-#![feature(decl_macro)]
+#![feature(decl_macro, async_await)]
 
 #[doc(inline)]
 pub use content::{fail::*, polyfill, FromContent, IntoStruct, ToContent};
