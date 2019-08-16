@@ -55,57 +55,59 @@ macro_rules! use_idents {
 
 fn import() -> TokenStream {
     quote!(
+        #[allow(unused_imports)]
         use interfacer_http::{
             RequestFail, ContentType,
             http::{StatusCode, header::CONTENT_TYPE, Response},
             IntoStruct, ToContent, HttpClient, StringError,
         };
+        #[allow(unused_imports)]
         use std::convert::TryInto;
     )
 }
 
 fn gen_final_uri(Context { attr, params }: &Context) -> Result<TokenStream, Diagnostic> {
-    use_idents!(final_uri_ident);
+    use_idents!(_final_uri);
     let uri_format_expr = gen_uri_format_expr(&attr.req.path, params)?;
     Ok(quote!(
-        let #final_uri_ident = self.get_base_url().join(&#uri_format_expr)?;
+        let #_final_uri = self.get_base_url().join(&#uri_format_expr)?;
     ))
 }
 
 fn gen_expect_content_type(Context { attr, params: _ }: &Context) -> TokenStream {
-    use_idents!(expect_content_type_ident);
+    use_idents!(_expect_content_type);
     let expect_content_type = &attr.expect.content_type;
     quote!(
-        let #expect_content_type_ident: ContentType = #expect_content_type.try_into()?;
+        let #_expect_content_type: ContentType = #expect_content_type.try_into()?;
     )
 }
 
 fn send_request() -> TokenStream {
-    use_idents!(request_ident, parts_ident, body_ident);
+    use_idents!(_request, _parts, _body);
     quote!(
-        let (#parts_ident, #body_ident) = self.get_client().request(#request_ident).await.map_err(|err| err.into())?.into_parts();
+        let (#_parts, #_body) = self.get_client().request(#_request).await.map_err(|err| err.into())?.into_parts();
     )
 }
 
 fn check_response(Context { attr, params: _ }: &Context) -> TokenStream {
-    use_idents!(parts_ident, expect_content_type_ident);
+    use_idents!(_parts, _expect_content_type);
     let expect_status = &attr.expect.status;
     quote!(
-        RequestFail::expect_status(#expect_status, #parts_ident.status)?;
-        let ret_content_type = parts_ident.headers.get(CONTENT_TYPE).ok_or(
+        RequestFail::expect_status(#expect_status, #_parts.status)?;
+        let _ret_content_type = _parts.headers.get(CONTENT_TYPE).ok_or(
             StringError::new("cannot get Content-Type from response headers")
         )?;
-        #expect_content_type_ident.expect(&ContentType::from_header(ret_content_type)?)?;
+        #_expect_content_type.expect(&ContentType::from_header(_ret_content_type)?)?;
     )
 }
 
 fn ret() -> TokenStream {
-    use_idents!(body_ident, expect_content_type_ident, parts_ident);
+    use_idents!(_body, _expect_content_type, _parts);
     quote!(
         Ok(
             Response::from_parts(
-                #parts_ident,
-                #body_ident.into_struct(&#expect_content_type_ident)?,
+                #_parts,
+                #_body.into_struct(&#_expect_content_type)?,
             ).into(),
         )
     )
@@ -113,7 +115,7 @@ fn ret() -> TokenStream {
 
 // TODO: using generic Body type
 fn build_request(Context { attr, params }: &Context) -> TokenStream {
-    use_idents!(request_ident, final_uri_ident);
+    use_idents!(_request, _final_uri);
     let method = attr.req.method.as_str();
     let headers = gen_headers(params);
     let body = match params.body.as_ref() {
@@ -125,8 +127,8 @@ fn build_request(Context { attr, params }: &Context) -> TokenStream {
     };
     quote!(
         let mut builder = interfacer_http::http::Request::builder();
-        let #request_ident = builder
-            .uri(#final_uri_ident.as_str())
+        let #_request = builder
+            .uri(#_final_uri.as_str())
             #headers
             .method(#method)
             .body(#body)?;
