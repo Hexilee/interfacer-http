@@ -6,6 +6,7 @@ use std::fmt::Display;
 
 pub type Result<T> = std::result::Result<T, RequestFail>;
 
+// TODO: StatusCode and ContentType should own a response
 #[derive(Fail, Debug)]
 pub enum RequestFail {
     #[fail(display = "url parse fail: {}", err)]
