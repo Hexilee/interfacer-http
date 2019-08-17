@@ -16,7 +16,7 @@ pub mod derive {
 }
 
 #[doc(inline)]
-pub use client::{HttpClient, HttpConfig, Response};
+pub use client::{Config, HttpClient, Response};
 pub use interfacer_http_util::*;
 
 mod client;

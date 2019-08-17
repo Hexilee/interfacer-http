@@ -1,90 +1,83 @@
 use crate::{
-    http::request::Builder,
+    http::request::Builder as RequestBuilder,
     url::{ParseError, Url},
 };
-use std::sync::Arc;
-
-pub trait UrlParser = Sync + Send + Fn(&str) -> Result<Url, ParseError>;
-
-pub type RequestInitializer = fn(&mut Builder) -> &mut Builder;
 
 #[derive(Clone)]
-pub struct HttpConfig {
-    pub url_parser: Arc<dyn UrlParser>,
-    pub request_initializer: RequestInitializer,
+pub struct Config {
+    pub base_url: Option<Url>,
+    pub request_initializer: fn() -> RequestBuilder,
 }
 
-impl HttpConfig {
+impl Config {
     pub fn new() -> Self {
         Self {
-            url_parser: Arc::new(|raw_url| raw_url.parse()),
-            request_initializer: |builder| builder,
+            base_url: None,
+            request_initializer: RequestBuilder::new,
         }
     }
 }
 
-impl Default for HttpConfig {
+impl Default for Config {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl HttpConfig {
-    pub fn with_url_parser(self, parser: impl 'static + UrlParser) -> Self {
+impl Config {
+    pub fn with_base_url(self, base_url: Url) -> Self {
         Self {
-            url_parser: Arc::new(parser),
+            base_url: Some(base_url),
             ..self
         }
     }
 
-    pub fn with_request_initializer(self, initializer: RequestInitializer) -> Self {
+    pub fn with_request_initializer(self, request_initializer: fn() -> RequestBuilder) -> Self {
         Self {
-            request_initializer: initializer,
+            request_initializer,
             ..self
         }
     }
-}
 
-pub fn base_on(base_url: Url) -> impl Fn(&str) -> Result<Url, ParseError> {
-    move |path| base_url.join(path)
+    pub fn parse_url(&self, raw_url: &str) -> Result<Url, ParseError> {
+        match self.base_url {
+            Some(ref base_url) => base_url.join(raw_url),
+            None => raw_url.parse(),
+        }
+    }
+
+    pub fn request(&self) -> RequestBuilder {
+        (self.request_initializer)()
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{base_on, Builder, HttpConfig, ParseError};
-    use crate::http::{header::USER_AGENT, Error, Request, Version};
-    use crate::url::Url;
+    use super::{Config, ParseError, RequestBuilder};
+    use crate::http::{header::USER_AGENT, Error, Version};
 
     #[test]
     fn test_with_request_initializer() -> Result<(), Error> {
-        let config = HttpConfig::new()
-            .with_request_initializer(|builder: &mut Builder|
+        let config = Config::new()
+            .with_request_initializer(|| {
+                let mut builder = RequestBuilder::new();
                 builder
                     .version(Version::HTTP_10)
-                    .header(USER_AGENT, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36")
-            );
-        let request =
-            (config.request_initializer)(&mut Request::get("https://github.com")).body(())?;
+                    .header(USER_AGENT, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36");
+                builder
+            });
+        let request = (config.request_initializer)()
+            .method("get")
+            .uri("https://github.com")
+            .body(())?;
         Ok(*request.body())
     }
 
     #[test]
-    fn test_with_url_parser() -> Result<(), ParseError> {
-        let config = HttpConfig::new().with_url_parser((|base_uri: Url| {
-            move |path: &str| base_uri.join(path)
-        })("https://github.com".parse()?));
+    fn with_base_url() -> Result<(), ParseError> {
+        let config = Config::new().with_base_url("https://github.com".parse()?);
         assert_eq!(
-            (*config.url_parser)("path")?.as_str(),
-            "https://github.com/path"
-        );
-        Ok(())
-    }
-
-    #[test]
-    fn test_base_on() -> Result<(), ParseError> {
-        let config = HttpConfig::new().with_url_parser(base_on("https://github.com".parse()?));
-        assert_eq!(
-            (*config.url_parser)("path")?.as_str(),
+            config.parse_url("path")?.as_str(),
             "https://github.com/path"
         );
         Ok(())
