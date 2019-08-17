@@ -27,14 +27,14 @@
 //!
 
 #[allow(unused_imports)]
-use crate::ContentType;
+use crate::mime::Mime;
 
 #[allow(unused_macros)]
 macro_rules! define_from_content {
     ($trait_name:ident) => {
         pub trait $trait_name: Sized {
             type Err;
-            fn _from_content(data: Vec<u8>, content_type: &ContentType) -> Result<Self, Self::Err>;
+            fn _from_content(data: Vec<u8>, content_type: &Mime) -> Result<Self, Self::Err>;
         }
     };
 }
@@ -44,7 +44,7 @@ macro_rules! define_to_content {
     ($trait_name:ident) => {
         pub trait $trait_name: Sized {
             type Err;
-            fn _to_content(&self, content_type: &ContentType) -> Result<Vec<u8>, Self::Err>;
+            fn _to_content(&self, content_type: &Mime) -> Result<Vec<u8>, Self::Err>;
         }
     };
 }

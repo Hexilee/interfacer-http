@@ -15,7 +15,7 @@ documentation = "https://docs.rs/interfacer-http-util"
 
 [dependencies]
 http = "0.1"
+mime = "0.3"
 cookie = "0.12"
 async-trait = "0.1"
 url = "2"
-const-concat = "0.1"

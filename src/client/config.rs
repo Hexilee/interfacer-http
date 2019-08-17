@@ -1,5 +1,6 @@
 use crate::{
     http::request::Builder as RequestBuilder,
+    mime::Mime,
     url::{ParseError, Url},
 };
 
@@ -7,6 +8,7 @@ use crate::{
 pub struct Config {
     pub base_url: Option<Url>,
     pub request_initializer: fn() -> RequestBuilder,
+    pub mime_matcher: fn(&Mime, &str) -> bool,
 }
 
 impl Config {
@@ -14,6 +16,7 @@ impl Config {
         Self {
             base_url: None,
             request_initializer: RequestBuilder::new,
+            mime_matcher: |expect, actual| expect == &actual,
         }
     }
 }

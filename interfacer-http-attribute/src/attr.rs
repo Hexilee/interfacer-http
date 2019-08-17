@@ -1,5 +1,5 @@
 use crate::parse::AttrMeta;
-use interfacer_http_util::{content_types, http::StatusCode};
+use interfacer_http_util::http::StatusCode;
 use proc_macro::{Diagnostic, Level};
 use proc_macro2::TokenStream;
 use quote::quote;
@@ -90,8 +90,7 @@ impl Default for Expect {
     fn default() -> Self {
         let code = StatusCode::OK.as_u16();
         let status = quote!(StatusCode::from_u16(#code).unwrap());
-        let default_content_type = content_types::APPLICATION_JSON;
-        let content_type = quote!(#default_content_type);
+        let content_type = quote!(interfacer_http::mime::APPLICATION_JSON);
         Self {
             status,
             content_type,
@@ -103,8 +102,7 @@ impl Default for Request {
     fn default() -> Self {
         let method = "get".to_owned();
         let path = DEFAULT_PATH.to_owned();
-        let default_content_type = content_types::APPLICATION_JSON;
-        let content_type = quote!(#default_content_type);
+        let content_type = quote!(interfacer_http::mime::APPLICATION_JSON);
         Self {
             method,
             path,

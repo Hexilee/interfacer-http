@@ -28,12 +28,12 @@ pub fn transform_method(raw_method: &mut TraitItemMethod) -> Result<(), Diagnost
     let check_response_stmt = check_response(&context);
     let ret = ret();
     let body = quote!(
-        #import_stmt
-        #define_expect_content_type
-        #send_request_stmt
-        #check_response_stmt
-        #ret
-    );
+            #import_stmt
+    //        #define_expect_content_type
+            #send_request_stmt
+            #check_response_stmt
+            #ret
+        );
     polyfill::remove_params_attributes(raw_method); // TODO: remove it when async_trait support formal parameter attributes
     raw_method.semi_token = None;
     raw_method.default = Some(parse_quote!({

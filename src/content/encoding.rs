@@ -1,5 +1,3 @@
-#[allow(unused_imports)]
-use crate::content_type::ContentType;
 use crate::fail::StringError;
 
 #[allow(dead_code)]

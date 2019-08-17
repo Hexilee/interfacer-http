@@ -3,9 +3,10 @@ use super::encoding::disable_encoding_error;
 #[cfg(feature = "encoding")]
 use super::encoding::{decode_data, encode_data};
 use super::fail::{FromContentFail, ToContentFail};
-use crate::content_type::ContentType;
-use crate::content_types::*;
 use crate::fail::StringError;
+use crate::mime::{
+    self, Mime, APPLICATION, CHARSET, JSON, MSGPACK, TEXT, UTF_8, WWW_FORM_URLENCODED, XML,
+};
 use crate::polyfill::{FromContentSerde, ToContentSerde};
 use crate::url::form_urlencoded::Serializer as UrlEncodedSerializer;
 use serde::{de::DeserializeOwned, Serialize};
@@ -14,90 +15,96 @@ use std::io::Cursor;
 
 impl<T: Serialize> ToContentSerde for T {
     type Err = ToContentFail;
-    fn _to_content(&self, content_type: &ContentType) -> Result<Vec<u8>, Self::Err> {
-        match content_type.base_type() {
+    fn _to_content(&self, content_type: &Mime) -> Result<Vec<u8>, Self::Err> {
+        match (content_type.type_(), content_type.subtype()) {
             #[cfg(any(feature = "serde-full", feature = "serde-json"))]
-            APPLICATION_JSON => {
+            (APPLICATION, JSON) => {
                 let data = serde_json::to_string(self)?;
-                match content_type.encoding() {
-                    None | Some(CHARSET_UTF8) => Ok(data.into_bytes()),
+                match content_type.get_param(CHARSET) {
+                    None | Some(UTF_8) => Ok(data.into_bytes()),
                     #[cfg(feature = "encoding")]
-                    Some(encoding) => Ok(encode_data(data.as_str(), encoding)?),
+                    Some(encoding) => Ok(encode_data(data.as_str(), encoding.as_str())?),
                     #[cfg(not(feature = "encoding"))]
-                    Some(encoding) => Err(disable_encoding_error(encoding).into()),
+                    Some(encoding) => Err(disable_encoding_error(encoding.as_str()).into()),
                 }
             }
 
             #[cfg(any(feature = "serde-full", feature = "serde-xml"))]
-            APPLICATION_XML | TEXT_XML => {
+            (APPLICATION, XML) | (TEXT, XML) => {
                 let data = serde_xml_rs::to_string(self)?;
-                match content_type.encoding() {
-                    None | Some(CHARSET_UTF8) => Ok(data.into_bytes()),
+                match content_type.get_param(CHARSET) {
+                    None | Some(UTF_8) => Ok(data.into_bytes()),
                     #[cfg(feature = "encoding")]
-                    Some(encoding) => Ok(encode_data(data.as_str(), encoding)?),
+                    Some(encoding) => Ok(encode_data(data.as_str(), encoding.as_str())?),
                     #[cfg(not(feature = "encoding"))]
-                    Some(encoding) => Err(disable_encoding_error(encoding).into()),
+                    Some(encoding) => Err(disable_encoding_error(encoding.as_str()).into()),
                 }
             }
 
             #[cfg(any(feature = "serde-full", feature = "serde-urlencoded"))]
-            APPLICATION_FORM => {
-                match content_type.encoding() {
-                    None | Some(CHARSET_UTF8) => Ok(serde_urlencoded::to_string(self)?.into_bytes()),
+            (APPLICATION, WWW_FORM_URLENCODED) => {
+                match content_type.get_param(CHARSET) {
+                    None | Some(UTF_8) => Ok(serde_urlencoded::to_string(self)?.into_bytes()),
                     #[cfg(feature = "encoding")]
                     Some(encoding) => Ok(encode_into_form(self, |raw_str| {
-                        match encode_data(raw_str, encoding) {
+                        match encode_data(raw_str, encoding.as_str()) {
                             Ok(data) => Cow::Owned(data),
                             Err(_) => Cow::Borrowed(raw_str.as_bytes()), // Fixme: throw error when encoding fails
                         }
                     })?
                     .into_bytes()),
                     #[cfg(not(feature = "encoding"))]
-                    Some(encoding) => Err(disable_encoding_error(encoding).into()),
+                    Some(encoding) => Err(disable_encoding_error(encoding.as_str()).into()),
                 }
             }
 
             #[cfg(any(feature = "serde-full", feature = "serde-msgpack"))]
-            APPLICATION_MSGPACK => Ok(rmp_serde::to_vec(self)?),
+            (APPLICATION, MSGPACK) => Ok(rmp_serde::to_vec(self)?),
 
-            unsupported => {
-                Err(StringError::new(format!("unsupported content type '{}'", unsupported)).into())
-            }
+            _ => Err(
+                StringError::new(format!("unsupported content type '{}'", &content_type)).into(),
+            ),
         }
     }
 }
 
 impl<T: DeserializeOwned> FromContentSerde for T {
     type Err = FromContentFail;
-    fn _from_content(data: Vec<u8>, content_type: &ContentType) -> Result<Self, Self::Err> {
-        match content_type.base_type() {
+    fn _from_content(data: Vec<u8>, content_type: &Mime) -> Result<Self, Self::Err> {
+        match (content_type.type_(), content_type.subtype()) {
             #[cfg(any(feature = "serde-full", feature = "serde-json"))]
-            APPLICATION_JSON => match content_type.encoding() {
-                None | Some(CHARSET_UTF8) => Ok(serde_json::from_slice(&data)?),
+            (APPLICATION, JSON) => match content_type.get_param(CHARSET) {
+                None | Some(UTF_8) => Ok(serde_json::from_slice(&data)?),
                 #[cfg(feature = "encoding")]
-                Some(encoding) => Ok(serde_json::from_str(&decode_data(&data, encoding)?)?),
+                Some(encoding) => Ok(serde_json::from_str(&decode_data(
+                    &data,
+                    encoding.as_str(),
+                )?)?),
                 #[cfg(not(feature = "encoding"))]
-                Some(encoding) => Err(disable_encoding_error(encoding).into()),
+                Some(encoding) => Err(disable_encoding_error(encoding.as_str()).into()),
             },
 
             #[cfg(any(feature = "serde-full", feature = "serde-xml"))]
-            APPLICATION_XML | TEXT_XML => match content_type.encoding() {
-                None | Some(CHARSET_UTF8) => Ok(serde_xml_rs::from_reader(Cursor::new(data))?),
+            (APPLICATION, XML) | (TEXT, XML) => match content_type.get_param(CHARSET) {
+                None | Some(UTF_8) => Ok(serde_xml_rs::from_reader(Cursor::new(data))?),
                 #[cfg(feature = "encoding")]
-                Some(encoding) => Ok(serde_xml_rs::from_str(&decode_data(&data, encoding)?)?),
+                Some(encoding) => Ok(serde_xml_rs::from_str(&decode_data(
+                    &data,
+                    encoding.as_str(),
+                )?)?),
                 #[cfg(not(feature = "encoding"))]
-                Some(encoding) => Err(disable_encoding_error(encoding).into()),
+                Some(encoding) => Err(disable_encoding_error(encoding.as_str()).into()),
             },
 
             #[cfg(any(feature = "serde-full", feature = "serde-urlencoded"))]
-            APPLICATION_FORM => Ok(serde_urlencoded::from_bytes(&data)?),
+            (APPLICATION, WWW_FORM_URLENCODED) => Ok(serde_urlencoded::from_bytes(&data)?),
 
             #[cfg(any(feature = "serde-full", feature = "serde-msgpack"))]
-            APPLICATION_MSGPACK => Ok(rmp_serde::from_slice(&data)?),
+            (APPLICATION, MSGPACK) => Ok(rmp_serde::from_slice(&data)?),
 
-            unsupported => {
-                Err(StringError::new(format!("unsupported content type '{}'", unsupported)).into())
-            }
+            _ => Err(
+                StringError::new(format!("unsupported content type '{}'", &content_type)).into(),
+            ),
         }
     }
 }
