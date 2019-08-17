@@ -24,15 +24,12 @@ impl Context {
 pub fn transform_method(raw_method: &mut TraitItemMethod) -> Result<(), Diagnostic> {
     let context = Context::parse(raw_method)?;
     let import_stmt = import();
-    let define_expect_content_type = gen_expect_content_type(&context);
-    let define_request = build_request(&context)?;
-    let send_request_stmt = send_request();
+    let send_request_stmt = send_request(build_request(&context)?);
     let check_response_stmt = check_response(&context);
     let ret = ret();
     let body = quote!(
         #import_stmt
         #define_expect_content_type
-        #define_request
         #send_request_stmt
         #check_response_stmt
         #ret
@@ -64,18 +61,17 @@ fn import() -> TokenStream {
     )
 }
 
-fn gen_expect_content_type(Context { attr, params: _ }: &Context) -> TokenStream {
-    use_idents!(_expect_content_type);
+fn expect_content_type(Context { attr, params: _ }: &Context) -> TokenStream {
     let expect_content_type = &attr.expect.content_type;
     quote!(
-        let #_expect_content_type: ContentType = #expect_content_type.try_into()?;
+        #expect_content_type.parse()?;
     )
 }
 
-fn send_request() -> TokenStream {
-    use_idents!(_request, _parts, _body);
+fn send_request(request: TokenStream) -> TokenStream {
+    use_idents!(_parts, _body);
     quote!(
-        let (#_parts, #_body) = self.get_client().request(#_request).await.map_err(|err| err.into())?.into_parts();
+        let (#_parts, #_body) = self.request(#request).await.map_err(|err| err.into())?.into_parts();
     )
 }
 
@@ -105,7 +101,6 @@ fn ret() -> TokenStream {
 
 // TODO: using generic Body type
 fn build_request(Context { attr, params }: &Context) -> Result<TokenStream, Diagnostic> {
-    use_idents!(_request);
     let method = attr.req.method.as_str();
     let headers = gen_headers(params);
     let body = match params.body.as_ref() {
@@ -117,8 +112,9 @@ fn build_request(Context { attr, params }: &Context) -> Result<TokenStream, Diag
     };
     let uri_format_expr = gen_uri_format_expr(&attr.req.path, params)?;
     Ok(quote!(
-        let mut builder = self.config().request();
-        let #_request = builder
+        self
+            .config()
+            .request()
             .uri(self.config.parse_uri(&#uri_format_expr)?)
             #headers
             .method(#method)
