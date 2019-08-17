@@ -6,19 +6,19 @@ use std::sync::Arc;
 
 pub trait UrlParser = Sync + Send + Fn(&str) -> Result<Url, ParseError>;
 
-pub trait RequestInitializer = Sync + Send + Fn(&mut Builder) -> &mut Builder;
+pub type RequestInitializer = fn(&mut Builder) -> &mut Builder;
 
 #[derive(Clone)]
 pub struct HttpConfig {
     pub url_parser: Arc<dyn UrlParser>,
-    pub request_initializer: Arc<dyn RequestInitializer>,
+    pub request_initializer: RequestInitializer,
 }
 
 impl HttpConfig {
     pub fn new() -> Self {
         Self {
             url_parser: Arc::new(|raw_url| raw_url.parse()),
-            request_initializer: Arc::new(|builder| builder),
+            request_initializer: |builder| builder,
         }
     }
 }
@@ -37,9 +37,9 @@ impl HttpConfig {
         }
     }
 
-    pub fn with_request_initializer(self, initializer: impl 'static + RequestInitializer) -> Self {
+    pub fn with_request_initializer(self, initializer: RequestInitializer) -> Self {
         Self {
-            request_initializer: Arc::new(initializer),
+            request_initializer: initializer,
             ..self
         }
     }
@@ -64,7 +64,7 @@ mod tests {
                     .header(USER_AGENT, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36")
             );
         let request =
-            (*config.request_initializer)(&mut Request::get("https://github.com")).body(())?;
+            (config.request_initializer)(&mut Request::get("https://github.com")).body(())?;
         Ok(*request.body())
     }
 
