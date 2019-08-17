@@ -24,15 +24,13 @@ impl Context {
 pub fn transform_method(raw_method: &mut TraitItemMethod) -> Result<(), Diagnostic> {
     let context = Context::parse(raw_method)?;
     let import_stmt = import();
-    let define_final_uri = gen_final_uri(&context)?;
     let define_expect_content_type = gen_expect_content_type(&context);
-    let define_request = build_request(&context);
+    let define_request = build_request(&context)?;
     let send_request_stmt = send_request();
     let check_response_stmt = check_response(&context);
     let ret = ret();
     let body = quote!(
         #import_stmt
-        #define_final_uri
         #define_expect_content_type
         #define_request
         #send_request_stmt
@@ -64,14 +62,6 @@ fn import() -> TokenStream {
         #[allow(unused_imports)]
         use std::convert::TryInto;
     )
-}
-
-fn gen_final_uri(Context { attr, params }: &Context) -> Result<TokenStream, Diagnostic> {
-    use_idents!(_final_uri);
-    let uri_format_expr = gen_uri_format_expr(&attr.req.path, params)?;
-    Ok(quote!(
-        let #_final_uri = self.get_base_url().join(&#uri_format_expr)?;
-    ))
 }
 
 fn gen_expect_content_type(Context { attr, params: _ }: &Context) -> TokenStream {
@@ -114,8 +104,8 @@ fn ret() -> TokenStream {
 }
 
 // TODO: using generic Body type
-fn build_request(Context { attr, params }: &Context) -> TokenStream {
-    use_idents!(_request, _final_uri);
+fn build_request(Context { attr, params }: &Context) -> Result<TokenStream, Diagnostic> {
+    use_idents!(_request);
     let method = attr.req.method.as_str();
     let headers = gen_headers(params);
     let body = match params.body.as_ref() {
@@ -125,14 +115,15 @@ fn build_request(Context { attr, params }: &Context) -> TokenStream {
         }
         None => quote!(Vec::new()),
     };
-    quote!(
-        let mut builder = interfacer_http::http::Request::builder();
+    let uri_format_expr = gen_uri_format_expr(&attr.req.path, params)?;
+    Ok(quote!(
+        let mut builder = self.config().request();
         let #_request = builder
-            .uri(#_final_uri.as_str())
+            .uri(self.config.parse_uri(&#uri_format_expr)?)
             #headers
             .method(#method)
             .body(#body)?;
-    )
+    ))
 }
 
 fn gen_request_content_type(req: &Request) -> TokenStream {

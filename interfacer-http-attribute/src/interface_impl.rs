@@ -15,7 +15,7 @@ pub fn implement(mut item_trait: ItemTrait) -> TokenStream {
     }
     item_trait
         .supertraits
-        .push(parse_quote!(interfacer_http::HttpService));
+        .push(parse_quote!(interfacer_http::HttpClient));
     let super_traits = item_trait.supertraits.clone();
     quote! {
         #[interfacer_http::async_trait]
