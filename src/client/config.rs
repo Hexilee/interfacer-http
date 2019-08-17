@@ -51,15 +51,28 @@ pub fn base_on(base_url: Url) -> impl Fn(&str) -> Result<Url, ParseError> {
 
 #[cfg(test)]
 mod tests {
-    use super::{base_on, HttpConfig, ParseError};
-    use interfacer_http_util::url::Url;
+    use super::{base_on, Builder, HttpConfig, ParseError};
+    use crate::http::{header::USER_AGENT, Error, Request, Version};
+    use crate::url::Url;
+
+    #[test]
+    fn test_with_request_initializer() -> Result<(), Error> {
+        let config = HttpConfig::new()
+            .with_request_initializer(|builder: &mut Builder|
+                builder
+                    .version(Version::HTTP_10)
+                    .header(USER_AGENT, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36")
+            );
+        let request =
+            (*config.request_initializer)(&mut Request::get("https://github.com")).body(())?;
+        Ok(*request.body())
+    }
 
     #[test]
     fn test_with_url_parser() -> Result<(), ParseError> {
-        let config =
-            HttpConfig::new().with_url_parser((|base_uri: Url| move |path| base_uri.join(path))(
-                "https://github.com".parse()?,
-            ));
+        let config = HttpConfig::new().with_url_parser((|base_uri: Url| {
+            move |path: &str| base_uri.join(path)
+        })("https://github.com".parse()?));
         assert_eq!(
             (*config.url_parser)("path")?.as_str(),
             "https://github.com/path"
