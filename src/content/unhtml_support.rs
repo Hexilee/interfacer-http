@@ -4,14 +4,14 @@ use super::encoding::disable_encoding_error;
 #[cfg(feature = "encoding")]
 use super::encoding::decode_data;
 
-use super::fail::FromContentFail;
-use crate::fail::StringError;
+use super::error::FromContentError;
+use crate::error::StringError;
 use crate::mime::{self, Mime, UTF_8};
 use crate::polyfill::FromContentHtml;
 use unhtml::FromHtml;
 
 impl<T: FromHtml> FromContentHtml for T {
-    type Err = FromContentFail;
+    type Err = FromContentError;
     fn _from_content(data: Vec<u8>, content_type: &Mime) -> Result<Self, Self::Err> {
         if content_type.type_() == mime::TEXT && content_type.subtype() == mime::HTML {
             match content_type.get_param(mime::CHARSET) {

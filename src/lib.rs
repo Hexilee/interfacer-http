@@ -1,10 +1,11 @@
-#![feature(decl_macro, async_await, trait_alias)]
+#![feature(async_await, trait_alias)]
 
 #[doc(inline)]
-pub use content::{fail::*, polyfill, FromContent, IntoStruct, ToContent};
+pub use content::{
+    polyfill, ContentInto, FromContent, FromContentError, ToContent, ToContentError,
+};
 #[doc(inline)]
-pub use fail::{define_from, RequestFail, Result, StringError};
-pub use failure::Fail;
+pub use error::{Error, Report};
 #[doc(inline)]
 pub use interfacer_http_attribute::http_service;
 
@@ -14,9 +15,9 @@ pub mod derive {
 }
 
 #[doc(inline)]
-pub use client::{Config, HttpClient, Response};
+pub use client::{Helper, HttpClient, ResponseError, ResponseExt};
 pub use interfacer_http_util::*;
 
 mod client;
 mod content;
-mod fail;
+mod error;

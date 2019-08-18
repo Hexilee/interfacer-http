@@ -2,8 +2,8 @@
 use super::encoding::disable_encoding_error;
 #[cfg(feature = "encoding")]
 use super::encoding::{decode_data, encode_data};
-use super::fail::{FromContentFail, ToContentFail};
-use crate::fail::StringError;
+use super::error::{FromContentError, ToContentError};
+use crate::error::StringError;
 use crate::mime::{
     self, Mime, APPLICATION, CHARSET, JSON, MSGPACK, TEXT, UTF_8, WWW_FORM_URLENCODED, XML,
 };
@@ -14,7 +14,7 @@ use std::borrow::Cow;
 use std::io::Cursor;
 
 impl<T: Serialize> ToContentSerde for T {
-    type Err = ToContentFail;
+    type Err = ToContentError;
     fn _to_content(&self, content_type: &Mime) -> Result<Vec<u8>, Self::Err> {
         match (content_type.type_(), content_type.subtype()) {
             #[cfg(any(feature = "serde-full", feature = "serde-json"))]
@@ -69,7 +69,7 @@ impl<T: Serialize> ToContentSerde for T {
 }
 
 impl<T: DeserializeOwned> FromContentSerde for T {
-    type Err = FromContentFail;
+    type Err = FromContentError;
     fn _from_content(data: Vec<u8>, content_type: &Mime) -> Result<Self, Self::Err> {
         match (content_type.type_(), content_type.subtype()) {
             #[cfg(any(feature = "serde-full", feature = "serde-json"))]

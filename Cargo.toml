@@ -22,8 +22,7 @@ members = [
 [dependencies]
 interfacer-http-attribute = { path = "interfacer-http-attribute", version = "0.1" }
 interfacer-http-util = { path = "interfacer-http-util", version = "0.1" }
-failure = "0.1"
-failure_derive = "0.1"
+derive_more = "0.13"
 
 serde_json = { version = "1.0", optional = true }
 rmp-serde = { version = "0.13", optional = true }

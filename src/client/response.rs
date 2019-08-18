@@ -1,38 +1,44 @@
 use crate::cookie;
-use crate::Result;
-use crate::{http, RequestFail};
+use crate::http::{header, HeaderValue, Response};
 use cookie::Cookie;
+use derive_more::{Display, From};
 use std::collections::HashMap;
-use std::ops::Deref;
 
-pub struct Response<T>(http::Response<T>);
+#[derive(Debug, Display, From)]
+pub enum ResponseError {
+    #[display(fmt = "header value (`{:?}`) is not string: {}", value, msg)]
+    HeaderValueNotStr {
+        value: HeaderValue,
+        msg: header::ToStrError,
+    },
 
-impl<T> Deref for Response<T> {
-    type Target = http::Response<T>;
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
+    #[display(fmt = "parse cookie('{}') error: {}", value, msg)]
+    ParseCookieError {
+        value: String,
+        msg: cookie::ParseError,
+    },
 }
 
-impl<T> From<http::Response<T>> for Response<T> {
-    fn from(resp: http::Response<T>) -> Self {
-        Self(resp)
-    }
+pub trait ResponseExt {
+    fn cookies(&self) -> Result<Vec<Cookie>, ResponseError>;
+    fn cookie_map(&self) -> Result<HashMap<String, Vec<Cookie>>, ResponseError>;
 }
 
-impl<T> Response<T> {
-    pub fn cookies(&self) -> Result<Vec<Cookie>> {
+impl<T> ResponseExt for Response<T> {
+    fn cookies(&self) -> Result<Vec<Cookie>, ResponseError> {
         let mut cookies = Vec::new();
-        for cookie in self.headers().get_all(http::header::SET_COOKIE) {
-            cookies.push(Cookie::parse(cookie.to_str()?)?)
+        for cookie in self.headers().get_all(header::SET_COOKIE) {
+            let cookie_str = cookie.to_str().map_err(|err| (cookie.clone(), err))?;
+            cookies.push(Cookie::parse(cookie_str).map_err(|err| (cookie_str.to_owned(), err))?)
         }
         Ok(cookies)
     }
 
-    pub fn cookie_map(&self) -> Result<HashMap<String, Vec<Cookie>>> {
+    fn cookie_map(&self) -> Result<HashMap<String, Vec<Cookie>>, ResponseError> {
         let mut map = HashMap::new();
-        for cookie in self.headers().get_all(http::header::SET_COOKIE) {
-            let cookie = Cookie::parse(cookie.to_str()?)?;
+        for cookie in self.headers().get_all(header::SET_COOKIE) {
+            let cookie_str = cookie.to_str().map_err(|err| (cookie.clone(), err))?;
+            let cookie = Cookie::parse(cookie_str).map_err(|err| (cookie_str.to_owned(), err))?;
             match map.get_mut(cookie.name()) {
                 None => {
                     map.insert(cookie.name().to_owned(), vec![cookie]);
@@ -41,17 +47,5 @@ impl<T> Response<T> {
             }
         }
         Ok(map)
-    }
-}
-
-impl From<http::header::ToStrError> for RequestFail {
-    fn from(err: http::header::ToStrError) -> Self {
-        RequestFail::custom(err)
-    }
-}
-
-impl From<cookie::ParseError> for RequestFail {
-    fn from(err: cookie::ParseError) -> Self {
-        RequestFail::custom(err)
     }
 }

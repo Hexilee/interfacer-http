@@ -1,34 +1,23 @@
-use crate::fail::StringError;
+use crate::{FromContentError, ToContentError};
 
-#[allow(dead_code)]
-pub fn disable_encoding_error(encoding: &str) -> StringError {
-    StringError::new(format!(
-        "unsupported encoding: {}; please enable feature `encoding`",
-        encoding
-    ))
-}
-
-#[cfg(feature = "encoding")]
 use lib_encoding::label::encoding_from_whatwg_label;
 
-#[cfg(feature = "encoding")]
 #[allow(dead_code)]
-pub fn encode_data(raw_data: &str, encode: &str) -> Result<Vec<u8>, StringError> {
-    match encoding_from_whatwg_label(encode) {
+pub fn encode_data(raw_data: &str, encoding: &str) -> Result<Vec<u8>, ToContentError> {
+    match encoding_from_whatwg_label(encoding) {
         Some(encoder) => encoder
             .encode(&raw_data, lib_encoding::EncoderTrap::Strict)
-            .map_err(|err| StringError::new(format!("{}", err))),
-        None => Err(StringError::new("unsupported encoding")),
+            .map_err(|err| ToContentError::EncodeError(format!("{}", err))),
+        None => Err(ToContentError::UnsupportedEncoding(encoding.into())),
     }
 }
 
-#[cfg(feature = "encoding")]
 #[allow(dead_code)]
-pub fn decode_data(raw_data: &[u8], encode: &str) -> Result<String, StringError> {
-    match encoding_from_whatwg_label(encode) {
+pub fn decode_data(raw_data: &[u8], encoding: &str) -> Result<String, FromContentError> {
+    match encoding_from_whatwg_label(encoding) {
         Some(encoder) => encoder
             .decode(raw_data, lib_encoding::DecoderTrap::Strict)
-            .map_err(|err| StringError::new(format!("{}", err))),
-        None => Err(StringError::new("unsupported encoding")),
+            .map_err(|err| FromContentError::DecodeError(format!("{}", err))),
+        None => Err(FromContentError::UnsupportedEncoding(encoding.into())),
     }
 }

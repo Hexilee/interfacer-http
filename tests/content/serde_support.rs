@@ -4,7 +4,7 @@ use interfacer_http::content_types::{
 };
 
 use interfacer_http::derive::{FromContent, ToContent};
-use interfacer_http::{IntoStruct, ToContent};
+use interfacer_http::{ContentInto, ToContent};
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, FromContent, ToContent, Debug, Eq, PartialEq)]
