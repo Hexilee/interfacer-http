@@ -1,5 +1,6 @@
 use crate::{
     http::request::Builder as RequestBuilder,
+    http::HeaderValue,
     mime::Mime,
     url::{ParseError, Url},
 };
@@ -8,7 +9,7 @@ use crate::{
 pub struct Helper {
     pub base_url: Option<Url>,
     pub request_initializer: fn() -> RequestBuilder,
-    pub mime_matcher: fn(&Mime, &str) -> bool,
+    pub mime_matcher: fn(&Mime, &HeaderValue) -> bool,
 }
 
 impl Helper {
@@ -16,7 +17,10 @@ impl Helper {
         Self {
             base_url: None,
             request_initializer: RequestBuilder::new,
-            mime_matcher: |expect, actual| expect == &actual,
+            mime_matcher: |expect, actual| match actual.to_str() {
+                Ok(value) => expect == &value,
+                Err(_) => false,
+            },
         }
     }
 }
@@ -42,7 +46,7 @@ impl Helper {
         }
     }
 
-    pub fn with_mime_matcher(self, mime_matcher: fn(&Mime, &str) -> bool) -> Self {
+    pub fn with_mime_matcher(self, mime_matcher: fn(&Mime, &HeaderValue) -> bool) -> Self {
         Self {
             mime_matcher,
             ..self
@@ -60,7 +64,7 @@ impl Helper {
         (self.request_initializer)()
     }
 
-    pub fn match_mime(&self, expect: &Mime, actual: &str) -> bool {
+    pub fn match_mime(&self, expect: &Mime, actual: &&HeaderValue) -> bool {
         (self.mime_matcher)(expect, actual)
     }
 }
