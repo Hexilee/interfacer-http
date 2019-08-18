@@ -42,6 +42,13 @@ impl Helper {
         }
     }
 
+    pub fn with_mime_matcher(self, mime_matcher: fn(&Mime, &str) -> bool) -> Self {
+        Self {
+            mime_matcher,
+            ..self
+        }
+    }
+
     pub fn parse_url(&self, raw_url: &str) -> Result<Url, ParseError> {
         match self.base_url {
             Some(ref base_url) => base_url.join(raw_url),
@@ -51,6 +58,10 @@ impl Helper {
 
     pub fn request(&self) -> RequestBuilder {
         (self.request_initializer)()
+    }
+
+    pub fn match_mime(&self, expect: &Mime, actual: &str) -> bool {
+        (self.mime_matcher)(expect, actual)
     }
 }
 
