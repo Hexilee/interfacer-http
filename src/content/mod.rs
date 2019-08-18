@@ -4,6 +4,7 @@ pub mod polyfill;
 #[cfg(feature = "encoding")]
 mod encoding;
 mod error;
+mod mime;
 #[cfg(any(feature = "serde-base", feature = "serde-full"))]
 mod serde_support;
 #[cfg(feature = "unhtml-html")]
@@ -11,6 +12,7 @@ mod unhtml_support;
 
 use crate::mime::Mime;
 pub use error::{FromContentError, ToContentError};
+pub use mime::MimeExt;
 
 // TODO: use T: AsyncRead as type of data
 // TODO: declare mime as generics when const generics is stable

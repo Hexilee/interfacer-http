@@ -8,7 +8,7 @@ use derive_more::{Display, From};
 #[derive(Display, Debug, From)]
 pub enum ToContentError {
     #[display(fmt = "unsupported content type: {}", _0)]
-    UnsupportedContentType(String),
+    UnsupportedContentType(Mime),
 
     #[display(fmt = "unsupported encoding: {}", _0)]
     UnsupportedEncoding(String),
@@ -27,7 +27,7 @@ pub enum ToContentError {
 #[derive(Display, Debug, From)]
 pub enum FromContentError {
     #[display(fmt = "unsupported content type: {}", _0)]
-    UnsupportedContentType(String),
+    UnsupportedContentType(Mime),
 
     #[display(fmt = "unsupported encoding: {}", _0)]
     UnsupportedEncoding(String),
@@ -72,14 +72,6 @@ impl From<serde_urlencoded::ser::Error> for ToContentError {
 impl From<rmp_serde::encode::Error> for ToContentError {
     fn from(err: rmp_serde::encode::Error) -> Self {
         (APPLICATION_MSGPACK, err.to_string()).into()
-    }
-}
-
-// TODO: wait for updating of unhtml (use a specific Error)
-#[cfg(feature = "unhtml-html")]
-impl From<unhtml::failure::Error> for ToContentError {
-    fn from(err: unhtml::failure::Error) -> Self {
-        (TEXT_HTML, err.to_string()).into()
     }
 }
 

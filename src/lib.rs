@@ -2,7 +2,7 @@
 
 #[doc(inline)]
 pub use content::{
-    polyfill, ContentInto, FromContent, FromContentError, ToContent, ToContentError,
+    polyfill, ContentInto, FromContent, FromContentError, MimeExt, ToContent, ToContentError,
 };
 #[doc(inline)]
 pub use error::{Error, Report};
