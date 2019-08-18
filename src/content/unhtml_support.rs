@@ -1,11 +1,7 @@
-#[allow(unused_imports)]
-use super::encoding::disable_encoding_error;
-
 #[cfg(feature = "encoding")]
 use super::encoding::decode_data;
 
 use super::error::FromContentError;
-use crate::error::StringError;
 use crate::mime::{self, Mime, UTF_8};
 use crate::polyfill::FromContentHtml;
 use unhtml::FromHtml;

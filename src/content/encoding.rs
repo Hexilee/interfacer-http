@@ -7,7 +7,7 @@ pub fn encode_data(raw_data: &str, encoding: &str) -> Result<Vec<u8>, ToContentE
     match encoding_from_whatwg_label(encoding) {
         Some(encoder) => encoder
             .encode(&raw_data, lib_encoding::EncoderTrap::Strict)
-            .map_err(|err| ToContentError::EncodeError(format!("{}", err))),
+            .map_err(|err| (raw_data.to_owned(), encoding.to_owned(), err.to_string()).into()),
         None => Err(ToContentError::UnsupportedEncoding(encoding.into())),
     }
 }
@@ -17,7 +17,7 @@ pub fn decode_data(raw_data: &[u8], encoding: &str) -> Result<String, FromConten
     match encoding_from_whatwg_label(encoding) {
         Some(encoder) => encoder
             .decode(raw_data, lib_encoding::DecoderTrap::Strict)
-            .map_err(|err| FromContentError::DecodeError(format!("{}", err))),
+            .map_err(|err| (raw_data.to_owned(), encoding.to_owned(), err.to_string()).into()),
         None => Err(FromContentError::UnsupportedEncoding(encoding.into())),
     }
 }

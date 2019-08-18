@@ -18,8 +18,8 @@ pub enum ToContentError {
 
     #[display(fmt = "encode error: {}", msg)]
     EncodeError {
-        encoding: String,
         src: String,
+        encoding: String,
         msg: String,
     },
 }
