@@ -5,7 +5,7 @@ pub use content::{
     polyfill, ContentInto, FromContent, FromContentError, MimeExt, ToContent, ToContentError,
 };
 #[doc(inline)]
-pub use error::{Error, Report};
+pub use error::{Error, Unexpected};
 #[doc(inline)]
 pub use interfacer_http_attribute::http_service;
 

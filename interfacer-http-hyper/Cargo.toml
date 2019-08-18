@@ -14,8 +14,7 @@ documentation = "https://docs.rs/interfacer-http-hyper"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+derive_more = "0.13"
 hyper = { git = "https://github.com/hyperium/hyper", branch = "master" }
-http = "0.1"
-failure = "0.1"
-failure_derive = "0.1"
 interfacer-http = { path = "..", version = "0.1" }
+

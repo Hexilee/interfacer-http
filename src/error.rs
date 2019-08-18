@@ -7,11 +7,11 @@ pub trait Error = From<url::ParseError>
     + From<http::Error>
     + From<ToContentError>
     + From<FromContentError>
-    + From<Report>
+    + From<Unexpected>
     + Display
     + Debug;
 
-pub enum Report {
+pub enum Unexpected {
     UnexpectedContentType(Response<Vec<u8>>),
     UnexpectedStatusCode(Response<Vec<u8>>),
 }
