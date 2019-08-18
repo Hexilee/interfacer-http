@@ -1,6 +1,6 @@
 [package]
 name = "interfacer-http-hyper"
-version = "0.1.1"
+version = "0.1.0"
 authors = ["Hexilee <hexileee@gmail.com>"]
 edition = "2018"
 license = "MIT"
@@ -16,5 +16,5 @@ documentation = "https://docs.rs/interfacer-http-hyper"
 [dependencies]
 derive_more = "0.13"
 hyper = { git = "https://github.com/hyperium/hyper", branch = "master" }
-interfacer-http = { path = "..", version = "0.1" }
+interfacer-http = { path = "..", version = "0.2" }
 
