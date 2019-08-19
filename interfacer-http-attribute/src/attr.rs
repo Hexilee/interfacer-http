@@ -1,5 +1,6 @@
 use crate::parse::AttrMeta;
 use interfacer_http_util::http::StatusCode;
+use interfacer_http_util::mime::Mime;
 use proc_macro::{Diagnostic, Level};
 use proc_macro2::TokenStream;
 use quote::quote;
@@ -163,11 +164,17 @@ impl Attr {
     }
 }
 
-// TODO: check lit
 fn load_content_type(content_type: &mut TokenStream, meta: &NestedMeta) -> Result<(), Diagnostic> {
     match meta {
         NestedMeta::Lit(Lit::Str(token)) => {
-            *content_type = quote!(#token);
+            let value = token.value();
+            let _: Mime = value.parse().map_err(|err| {
+                Diagnostic::new(
+                    Level::Error,
+                    format!("invalid content-type('{}'): {}", &value, err),
+                )
+            })?;
+            *content_type = quote!(#value.parse().unwrap());
             Ok(())
         }
         NestedMeta::Meta(Meta::Path(path)) => {
