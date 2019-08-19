@@ -2,7 +2,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{parse_quote, TraitItemMethod};
 
-use crate::attr::{Attr, Request};
+use crate::attr::{Attr, Expect};
 use crate::param::Parameters;
 use format_uri::gen_uri_format_expr;
 use proc_macro::Diagnostic;
@@ -25,15 +25,14 @@ pub fn transform_method(raw_method: &mut TraitItemMethod) -> Result<(), Diagnost
     let context = Context::parse(raw_method)?;
     let import_stmt = import();
     let send_request_stmt = send_request(build_request(&context)?);
-    let check_response_stmt = check_response(&context);
-    let ret = ret();
+    let check_response_stmt = check_response(&context.attr.expect);
+    let return_stmt = return_response(&context.attr.expect);
     let body = quote!(
-            #import_stmt
-    //        #define_expect_content_type
-            #send_request_stmt
-            #check_response_stmt
-            #ret
-        );
+        #import_stmt
+        #send_request_stmt
+        #check_response_stmt
+        #return_stmt
+    );
     polyfill::remove_params_attributes(raw_method); // TODO: remove it when async_trait support formal parameter attributes
     raw_method.semi_token = None;
     raw_method.default = Some(parse_quote!({
@@ -52,81 +51,75 @@ fn import() -> TokenStream {
     quote!(
         #[allow(unused_imports)]
         use interfacer_http::{
-            RequestFail, ContentType,
             http::{StatusCode, header::CONTENT_TYPE, Response},
-            IntoStruct, ToContent, HttpClient, StringError,
+            ContentInto, ToContent, Unexpected,
         };
-        #[allow(unused_imports)]
-        use std::convert::TryInto;
-    )
-}
-
-fn expect_content_type(Context { attr, params: _ }: &Context) -> TokenStream {
-    let expect_content_type = &attr.expect.content_type;
-    quote!(
-        #expect_content_type.parse()?;
     )
 }
 
 fn send_request(request: TokenStream) -> TokenStream {
-    use_idents!(_parts, _body);
+    use_idents!(_resp);
     quote!(
-        let (#_parts, #_body) = self.request(#request).await.map_err(|err| err.into())?.into_parts();
+        let #_resp = self.request(#request).await?;
     )
 }
 
-fn check_response(Context { attr, params: _ }: &Context) -> TokenStream {
-    use_idents!(_parts, _expect_content_type);
-    let expect_status = &attr.expect.status;
+fn check_response(
+    Expect {
+        status,
+        content_type,
+    }: &Expect,
+) -> TokenStream {
+    use_idents!(_resp);
     quote!(
-        RequestFail::expect_status(#expect_status, #_parts.status)?;
-        let _ret_content_type = _parts.headers.get(CONTENT_TYPE).ok_or(
-            StringError::new("cannot get Content-Type from response headers")
-        )?;
-        #_expect_content_type.expect(&ContentType::from_header(_ret_content_type)?)?;
+        if #status != #_resp.status() {
+            return Err(Unexpected::UnexpectedStatusCode(#_resp).into());
+        }
+        match #_resp.headers().get(CONTENT_TYPE) {
+            None => return Err(Unexpected::UnexpectedContentType(#_resp).into()),
+            Some(content_type) if !self.helper().match_mime(&#content_type, content_type) => return Err(Unexpected::UnexpectedContentType(#_resp).into()),
+            _ => (),
+        }
     )
 }
 
-fn ret() -> TokenStream {
-    use_idents!(_body, _expect_content_type, _parts);
+fn return_response(
+    Expect {
+        status: _,
+        content_type,
+    }: &Expect,
+) -> TokenStream {
+    use_idents!(_resp);
     quote!(
-        Ok(
+        Ok({
+            let (_parts, _body) = #_resp.into_parts();
             Response::from_parts(
-                #_parts,
-                #_body.into_struct(&#_expect_content_type)?,
-            ).into(),
-        )
+                _parts,
+                _body.content_into(&#content_type)?,
+            )
+        })
     )
 }
 
 // TODO: using generic Body type
 fn build_request(Context { attr, params }: &Context) -> Result<TokenStream, Diagnostic> {
     let method = attr.req.method.as_str();
-    let headers = gen_headers(params);
+    let content_type = &attr.req.content_type;
+    let add_headers = gen_headers(params);
     let body = match params.body.as_ref() {
-        Some(body) => {
-            let content_type = gen_request_content_type(&attr.req);
-            quote!(#body.to_content(&#content_type)?)
-        }
+        Some(body) => quote!(#body.to_content_map_err(&#content_type)?),
         None => quote!(Vec::new()),
     };
     let uri_format_expr = gen_uri_format_expr(&attr.req.path, params)?;
     Ok(quote!(
         self
-            .config()
+            .helper()
             .request()
-            .uri(self.config.parse_uri(&#uri_format_expr)?)
-            #headers
+            .uri(self.helper().parse_uri(&#uri_format_expr)?)
+            #add_headers
             .method(#method)
-            .body(#body)?;
+            .body(#body)?
     ))
-}
-
-fn gen_request_content_type(req: &Request) -> TokenStream {
-    let request_content_type = &req.content_type;
-    quote!(
-        #request_content_type.try_into()?
-    )
 }
 
 fn gen_headers(params: &Parameters) -> TokenStream {

@@ -53,7 +53,7 @@ impl Helper {
         }
     }
 
-    pub fn parse_url(&self, raw_url: &str) -> Result<Url, ParseError> {
+    pub fn parse_uri(&self, raw_url: &str) -> Result<Url, ParseError> {
         match self.base_url {
             Some(ref base_url) => base_url.join(raw_url),
             None => raw_url.parse(),
@@ -64,7 +64,7 @@ impl Helper {
         (self.request_initializer)()
     }
 
-    pub fn match_mime(&self, expect: &Mime, actual: &&HeaderValue) -> bool {
+    pub fn match_mime(&self, expect: &Mime, actual: &HeaderValue) -> bool {
         (self.mime_matcher)(expect, actual)
     }
 }
@@ -95,7 +95,7 @@ mod tests {
     fn with_base_url() -> Result<(), ParseError> {
         let helper = Helper::new().with_base_url("https://github.com".parse()?);
         assert_eq!(
-            helper.parse_url("path")?.as_str(),
+            helper.parse_uri("path")?.as_str(),
             "https://github.com/path"
         );
         Ok(())

@@ -18,9 +18,9 @@ pub fn derive_to_content(input: TokenStream) -> TokenStream {
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
     quote!(
         impl #impl_generics interfacer_http::ToContent for #name #ty_generics #where_clause {
-            type Err = interfacer_http::ToContentFail;
+            type Err = interfacer_http::FromContentError;
             #[inline]
-            fn to_content(&self, content_type: &interfacer_http::ContentType) -> core::result::Result<Vec<u8>, Self::Err> {
+            fn to_content(&self, content_type: &interfacer_http::mime::Mime) -> core::result::Result<Vec<u8>, Self::Err> {
                 use interfacer_http::polyfill::*;
                 self._to_content(content_type)
             }
@@ -36,9 +36,9 @@ pub fn derive_from_content(input: TokenStream) -> TokenStream {
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
     quote!(
         impl #impl_generics interfacer_http::FromContent for #name #ty_generics #where_clause {
-            type Err = interfacer_http::FromContentFail;
+            type Err = interfacer_http::FromContentError;
             #[inline]
-            fn from_content(data: Vec<u8>, content_type: &interfacer_http::ContentType) -> core::result::Result<Self, Self::Err> {
+            fn from_content(data: Vec<u8>, content_type: &interfacer_http::mime::Mime) -> core::result::Result<Self, Self::Err> {
                 use interfacer_http::polyfill::*;
                 Self::_from_content(data, content_type)
             }

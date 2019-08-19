@@ -3,7 +3,10 @@
 #![allow(unused_attributes)]
 
 use interfacer_http::derive::{FromContent, ToContent};
-use interfacer_http::{content_types, http::header::COOKIE, http_service, Response, Result};
+use interfacer_http::{
+    http::{header::COOKIE, Response},
+    http_service, mime,
+};
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, FromContent, ToContent, Debug)]
@@ -13,14 +16,15 @@ struct User {
 }
 
 #[http_service]
-trait UserInterface: Clone {
+trait UserInterface {
+    type Error;
     #[put("/api/user/{id}?age={age}")]
-    #[expect(200, content_types::APPLICATION_JSON)]
+    #[expect(200, mime::APPLICATION_JSON)]
     async fn put_user(
         &self,
         id: u64,
         age: i32,
         //        #[body] user: &User,
         //        #[header(COOKIE)] cookie: &str
-    ) -> Result<Response<User>>;
+    ) -> Result<Response<User>, Self::Error>;
 }
