@@ -7,7 +7,7 @@ use syn::{parse_macro_input, DeriveInput, ItemTrait};
 
 #[proc_macro_attribute]
 pub fn http_service(_args: TokenStream, input: TokenStream) -> TokenStream {
-    interface_impl::implement(parse_macro_input!(input as ItemTrait)).into()
+    service_impl::implement(parse_macro_input!(input as ItemTrait)).into()
 }
 
 // TODO: remove when const generics is stable
@@ -18,7 +18,7 @@ pub fn derive_to_content(input: TokenStream) -> TokenStream {
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
     quote!(
         impl #impl_generics interfacer_http::ToContent for #name #ty_generics #where_clause {
-            type Err = interfacer_http::FromContentError;
+            type Err = interfacer_http::ToContentError;
             #[inline]
             fn to_content(&self, content_type: &interfacer_http::mime::Mime) -> core::result::Result<Vec<u8>, Self::Err> {
                 use interfacer_http::polyfill::*;
@@ -47,7 +47,7 @@ pub fn derive_from_content(input: TokenStream) -> TokenStream {
 }
 
 mod attr;
-mod interface_impl;
 mod method;
 mod param;
 mod parse;
+mod service_impl;

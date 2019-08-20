@@ -20,7 +20,7 @@ members = [
 ]
 
 [dependencies]
-interfacer-http-attribute = { path = "interfacer-http-attribute", version = "0.1" }
+interfacer-http-attribute = { path = "interfacer-http-attribute", version = "0.2" }
 interfacer-http-util = { path = "interfacer-http-util", version = "0.1" }
 derive_more = "0.13"
 

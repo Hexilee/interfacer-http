@@ -1,9 +1,10 @@
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{parse_quote, TraitItemMethod};
+use syn::{Block, TraitItemMethod};
 
 use crate::attr::{Attr, Expect};
 use crate::param::Parameters;
+use crate::parse::try_parse;
 use format_uri::gen_uri_format_expr;
 use proc_macro::Diagnostic;
 use std::convert::TryInto;
@@ -21,24 +22,18 @@ impl Context {
     }
 }
 
-pub fn transform_method(raw_method: &mut TraitItemMethod) -> Result<(), Diagnostic> {
-    let context = Context::parse(raw_method)?;
+pub fn gen_block(method: &TraitItemMethod) -> Result<Block, Diagnostic> {
+    let context = Context::parse(method)?;
     let import_stmt = import();
     let send_request_stmt = send_request(build_request(&context)?);
     let check_response_stmt = check_response(&context.attr.expect);
     let return_stmt = return_response(&context.attr.expect);
-    let body = quote!(
+    try_parse(quote!({
         #import_stmt
         #send_request_stmt
         #check_response_stmt
         #return_stmt
-    );
-    polyfill::remove_params_attributes(raw_method); // TODO: remove it when async_trait support formal parameter attributes
-    raw_method.semi_token = None;
-    raw_method.default = Some(parse_quote!({
-        #body
-    }));
-    Ok(())
+    }))
 }
 
 macro_rules! use_idents {
@@ -115,7 +110,7 @@ fn build_request(Context { attr, params }: &Context) -> Result<TokenStream, Diag
         self
             .helper()
             .request()
-            .uri(self.helper().parse_uri(&#uri_format_expr)?)
+            .uri(self.helper().parse_uri(&#uri_format_expr)?.as_str())
             #add_headers
             .method(#method)
             .body(#body)?
@@ -146,7 +141,7 @@ mod format_uri {
             static ref URI_REGEX: Regex = Regex::new(DYN_URI_PATTERN).unwrap();
         };
         let mut uri_template = raw_uri.to_owned();
-        let mut format_expr = try_parse::<Macro>(quote!(format!()).into())?;
+        let mut format_expr = try_parse::<Macro>(quote!(format!()))?;
         let mut values = Vec::new();
         let mut param_list = Punctuated::<Expr, Token![,]>::new();
         for capture in URI_REGEX.captures_iter(raw_uri) {
@@ -192,16 +187,16 @@ mod format_uri {
     }
 }
 
-// TODO: remove it when async_trait support formal parameter attributes
-mod polyfill {
-    use super::*;
-    use syn::FnArg;
-
-    pub fn remove_params_attributes(raw_method: &mut TraitItemMethod) {
-        for arg in raw_method.sig.inputs.iter_mut() {
-            if let FnArg::Typed(pat) = arg {
-                pat.attrs = Vec::new()
-            }
-        }
-    }
-}
+//// TODO: remove it when async_trait support formal parameter attributes
+//mod polyfill {
+//    use super::*;
+//    use syn::FnArg;
+//
+//    pub fn remove_params_attributes(raw_method: &mut TraitItemMethod) {
+//        for arg in raw_method.sig.inputs.iter_mut() {
+//            if let FnArg::Typed(pat) = arg {
+//                pat.attrs = Vec::new()
+//            }
+//        }
+//    }
+//}

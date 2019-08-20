@@ -16,7 +16,7 @@ struct User {
 }
 
 #[http_service]
-trait UserInterface {
+trait UserService {
     type Error;
     #[put("/api/user/{id}?age={age}")]
     #[expect(200, mime::APPLICATION_JSON)]
@@ -24,7 +24,7 @@ trait UserInterface {
         &self,
         id: u64,
         age: i32,
-        //        #[body] user: &User,
-        //        #[header(COOKIE)] cookie: &str
+        #[body] user: &User,
+        #[header(COOKIE)] cookie: &str
     ) -> Result<Response<User>, Self::Error>;
 }

@@ -9,7 +9,7 @@ pub use response::{ResponseError, ResponseExt};
 // TODO: use T: AsyncRead as type of Request::Body
 // TODO: use T: AsyncRead as type of Response::Body
 #[async_trait]
-pub trait HttpClient {
+pub trait HttpClient: Sync {
     type Err: Error;
     async fn request(&self, req: Request<Vec<u8>>) -> Result<Response<Vec<u8>>, Self::Err>;
     fn helper(&self) -> &Helper;
