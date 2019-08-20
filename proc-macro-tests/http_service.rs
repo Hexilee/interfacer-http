@@ -4,7 +4,7 @@
 
 use interfacer_http::{
     http::{header::COOKIE, Response},
-    http_service, mime, FromContent, ToContent
+    http_service, mime, FromContent, ToContent,
 };
 use serde_derive::{Deserialize, Serialize};
 

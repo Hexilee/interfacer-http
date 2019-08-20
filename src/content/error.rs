@@ -1,8 +1,5 @@
 #[allow(unused_imports)]
-use crate::mime::{
-    Mime, APPLICATION_JSON, APPLICATION_MSGPACK, APPLICATION_WWW_FORM_URLENCODED, TEXT_HTML,
-    TEXT_XML, UTF_8,
-};
+use crate::mime::{Mime, UTF_8};
 use derive_more::{Display, From};
 
 #[derive(Display, Debug, From)]
@@ -45,34 +42,6 @@ pub enum FromContentError {
         encoding: String,
         msg: String,
     },
-}
-
-#[cfg(any(feature = "serde-full", feature = "serde-json"))]
-impl From<serde_json::Error> for ToContentError {
-    fn from(err: serde_json::Error) -> Self {
-        (APPLICATION_JSON, err.to_string()).into()
-    }
-}
-
-#[cfg(any(feature = "serde-full", feature = "serde-xml"))]
-impl From<serde_xml_rs::Error> for ToContentError {
-    fn from(err: serde_xml_rs::Error) -> Self {
-        (TEXT_XML, err.to_string()).into()
-    }
-}
-
-#[cfg(any(feature = "serde-full", feature = "serde-urlencoded"))]
-impl From<serde_urlencoded::ser::Error> for ToContentError {
-    fn from(err: serde_urlencoded::ser::Error) -> Self {
-        (APPLICATION_WWW_FORM_URLENCODED, err.to_string()).into()
-    }
-}
-
-#[cfg(any(feature = "serde-full", feature = "serde-msgpack"))]
-impl From<rmp_serde::encode::Error> for ToContentError {
-    fn from(err: rmp_serde::encode::Error) -> Self {
-        (APPLICATION_MSGPACK, err.to_string()).into()
-    }
 }
 
 impl From<std::string::FromUtf8Error> for FromContentError {

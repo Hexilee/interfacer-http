@@ -1,5 +1,7 @@
 #[doc(hidden)]
 pub mod polyfill;
+pub use error::{FromContentError, ToContentError};
+pub use mime::MimeExt;
 
 #[cfg(feature = "encoding")]
 mod encoding;
@@ -11,8 +13,6 @@ mod serde_support;
 mod unhtml_support;
 
 use crate::mime::Mime;
-pub use error::{FromContentError, ToContentError};
-pub use mime::MimeExt;
 
 // TODO: use T: AsyncRead as type of data
 // TODO: declare mime as generics when const generics is stable

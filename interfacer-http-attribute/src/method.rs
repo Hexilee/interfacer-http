@@ -186,4 +186,3 @@ mod format_uri {
         }
     }
 }
-

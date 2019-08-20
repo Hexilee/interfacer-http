@@ -4,7 +4,8 @@
 use super::encoding::{decode_data, encode_data};
 use super::error::{FromContentError, ToContentError};
 use crate::mime::{
-    Mime, Name, APPLICATION, APPLICATION_JSON, CHARSET, JSON, MSGPACK, TEXT, TEXT_XML, UTF_8,
+    Mime, Name, APPLICATION, APPLICATION_JSON, APPLICATION_MSGPACK,
+    APPLICATION_WWW_FORM_URLENCODED, CHARSET, JSON, MSGPACK, TEXT, TEXT_XML, UTF_8,
     WWW_FORM_URLENCODED, XML,
 };
 use crate::polyfill::{FromContentSerde, ToContentSerde};
@@ -135,6 +136,34 @@ fn to_form(src: &impl Serialize, charset: Option<Name>) -> Result<Vec<u8>, ToCon
         .into_bytes()),
         #[cfg(not(feature = "encoding"))]
         Some(encoding) => Err(encoding.to_string().into()),
+    }
+}
+
+#[cfg(any(feature = "serde-full", feature = "serde-json"))]
+impl From<serde_json::Error> for ToContentError {
+    fn from(err: serde_json::Error) -> Self {
+        (APPLICATION_JSON, err.to_string()).into()
+    }
+}
+
+#[cfg(any(feature = "serde-full", feature = "serde-xml"))]
+impl From<serde_xml_rs::Error> for ToContentError {
+    fn from(err: serde_xml_rs::Error) -> Self {
+        (TEXT_XML, err.to_string()).into()
+    }
+}
+
+#[cfg(any(feature = "serde-full", feature = "serde-urlencoded"))]
+impl From<serde_urlencoded::ser::Error> for ToContentError {
+    fn from(err: serde_urlencoded::ser::Error) -> Self {
+        (APPLICATION_WWW_FORM_URLENCODED, err.to_string()).into()
+    }
+}
+
+#[cfg(any(feature = "serde-full", feature = "serde-msgpack"))]
+impl From<rmp_serde::encode::Error> for ToContentError {
+    fn from(err: rmp_serde::encode::Error) -> Self {
+        (APPLICATION_MSGPACK, err.to_string()).into()
     }
 }
 
