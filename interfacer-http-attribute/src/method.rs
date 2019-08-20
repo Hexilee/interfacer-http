@@ -187,16 +187,3 @@ mod format_uri {
     }
 }
 
-//// TODO: remove it when async_trait support formal parameter attributes
-//mod polyfill {
-//    use super::*;
-//    use syn::FnArg;
-//
-//    pub fn remove_params_attributes(raw_method: &mut TraitItemMethod) {
-//        for arg in raw_method.sig.inputs.iter_mut() {
-//            if let FnArg::Typed(pat) = arg {
-//                pat.attrs = Vec::new()
-//            }
-//        }
-//    }
-//}

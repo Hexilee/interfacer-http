@@ -2,10 +2,9 @@
 #![cfg(all(feature = "derive", feature = "serde-full"))]
 #![allow(unused_attributes)]
 
-use interfacer_http::derive::{FromContent, ToContent};
 use interfacer_http::{
     http::{header::COOKIE, Response},
-    http_service, mime,
+    http_service, mime, FromContent, ToContent
 };
 use serde_derive::{Deserialize, Serialize};
 
