@@ -99,9 +99,9 @@ impl Default for Expect {
     }
 }
 
-impl Default for Request {
-    fn default() -> Self {
-        let method = "get".to_owned();
+impl Request {
+    pub fn new(method: &str) -> Self {
+        let method = method.to_uppercase();
         let path = DEFAULT_PATH.to_owned();
         let content_type = quote!(interfacer_http::mime::APPLICATION_JSON);
         Self {
@@ -129,8 +129,7 @@ impl Request {
 impl TryFrom<AttrMeta> for Request {
     type Error = Diagnostic;
     fn try_from(meta: AttrMeta) -> Result<Self, Self::Error> {
-        let mut request = Self::default();
-        request.method = meta.name().to_string();
+        let mut request = Self::new(&meta.name().to_string());
         if let AttrMeta::List { name: _, nested } = meta {
             let metas = nested.into_iter().collect::<Vec<NestedMeta>>();
             if metas.len() > 2 {
