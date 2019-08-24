@@ -49,3 +49,5 @@ impl<T> ResponseExt for Response<T> {
         Ok(map)
     }
 }
+
+impl std::error::Error for ResponseError {}
