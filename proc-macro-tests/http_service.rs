@@ -1,4 +1,4 @@
-#![feature(custom_attribute, async_await, param_attrs)]
+#![feature(custom_attribute, param_attrs)]
 #![cfg(all(feature = "derive", feature = "serde-full"))]
 #![allow(unused_attributes)]
 

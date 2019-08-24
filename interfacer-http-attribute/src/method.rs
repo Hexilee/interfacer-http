@@ -111,6 +111,7 @@ fn build_request(Context { attr, params }: &Context) -> Result<TokenStream, Diag
             .helper()
             .request()
             .uri(self.helper().parse_uri(&#uri_format_expr)?.as_str())
+            .header(CONTENT_TYPE, #content_type.as_ref())
             #add_headers
             .method(#method)
             .body(#body)?
