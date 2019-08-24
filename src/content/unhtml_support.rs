@@ -2,7 +2,7 @@
 use super::encoding::decode_data;
 
 use super::error::FromContentError;
-use crate::mime::{self, Mime, APPLICATION, JSON, UTF_8};
+use crate::mime::{self, Mime, TEXT, HTML, UTF_8};
 use crate::polyfill::FromContentHtml;
 use crate::MimeExt;
 use unhtml::FromHtml;
@@ -11,7 +11,7 @@ impl<T: FromHtml> FromContentHtml for T {
     type Err = FromContentError;
     fn _from_content(data: Vec<u8>, content_type: &Mime) -> Result<Self, Self::Err> {
         match (content_type.type_(), content_type.subtype()) {
-            (APPLICATION, JSON) => match content_type.get_param(mime::CHARSET) {
+            (TEXT, HTML) => match content_type.get_param(mime::CHARSET) {
                 None | Some(UTF_8) => {
                     let str_data = String::from_utf8(data)?;
                     Ok(T::from_html(&str_data).map_err(|err| {
@@ -34,7 +34,7 @@ impl<T: FromHtml> FromContentHtml for T {
                     })?)
                 }
                 #[cfg(not(feature = "encoding"))]
-                Some(encoding) => Err(disable_encoding_error(encoding.as_str()).into()),
+                Some(encoding) => Err(encoding.to_string().into()),
             },
             _ => Err(content_type.clone().into()),
         }
