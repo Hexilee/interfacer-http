@@ -2,7 +2,7 @@
 use super::encoding::decode_data;
 
 use super::error::FromContentError;
-use crate::mime::{self, Mime, TEXT, HTML, UTF_8};
+use crate::mime::{self, Mime, HTML, TEXT, UTF_8};
 use crate::polyfill::FromContentHtml;
 use crate::MimeExt;
 use unhtml::FromHtml;

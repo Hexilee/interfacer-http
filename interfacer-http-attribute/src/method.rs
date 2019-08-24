@@ -2,7 +2,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{Block, TraitItemMethod};
 
-use crate::attr::{Attr, Expect};
+use crate::attr::Attr;
 use crate::param::Parameters;
 use crate::parse::try_parse;
 use format_uri::gen_uri_format_expr;
@@ -25,11 +25,13 @@ impl Context {
 pub fn gen_block(method: &TraitItemMethod) -> Result<Block, Diagnostic> {
     let context = Context::parse(method)?;
     let import_stmt = import();
+    let define_content_type_stmt = define_content_type(&context.attr);
     let send_request_stmt = send_request(build_request(&context)?);
-    let check_response_stmt = check_response(&context.attr.expect);
-    let return_stmt = return_response(&context.attr.expect);
+    let check_response_stmt = check_response(&context.attr.expect.status);
+    let return_stmt = return_response();
     try_parse(quote!({
         #import_stmt
+        #define_content_type_stmt
         #send_request_stmt
         #check_response_stmt
         #return_stmt
@@ -46,9 +48,20 @@ fn import() -> TokenStream {
     quote!(
         #[allow(unused_imports)]
         use interfacer_http::{
+            mime::Mime,
             http::{StatusCode, header::CONTENT_TYPE, Response},
             ContentInto, ToContent, Unexpected,
         };
+    )
+}
+
+fn define_content_type(Attr { req, expect }: &Attr) -> TokenStream {
+    use_idents!(_req_content_type, _expect_content_type);
+    let req_content_type = &req.content_type;
+    let expect_content_type = &expect.content_type;
+    quote!(
+        let #_req_content_type: Mime = #req_content_type;
+        let #_expect_content_type: Mime = #expect_content_type;
     )
 }
 
@@ -59,38 +72,28 @@ fn send_request(request: TokenStream) -> TokenStream {
     )
 }
 
-fn check_response(
-    Expect {
-        status,
-        content_type,
-    }: &Expect,
-) -> TokenStream {
-    use_idents!(_resp);
+fn check_response(status: &TokenStream) -> TokenStream {
+    use_idents!(_resp, _expect_content_type);
     quote!(
         if #status != #_resp.status() {
             return Err(Unexpected::UnexpectedStatusCode(#_resp).into());
         }
         match #_resp.headers().get(CONTENT_TYPE) {
             None => return Err(Unexpected::UnexpectedContentType(#_resp).into()),
-            Some(content_type) if !self.helper().match_mime(&#content_type, content_type) => return Err(Unexpected::UnexpectedContentType(#_resp).into()),
+            Some(content_type) if !self.helper().match_mime(&#_expect_content_type, content_type) => return Err(Unexpected::UnexpectedContentType(#_resp).into()),
             _ => (),
         }
     )
 }
 
-fn return_response(
-    Expect {
-        status: _,
-        content_type,
-    }: &Expect,
-) -> TokenStream {
-    use_idents!(_resp);
+fn return_response() -> TokenStream {
+    use_idents!(_resp, _expect_content_type);
     quote!(
         Ok({
             let (_parts, _body) = #_resp.into_parts();
             Response::from_parts(
                 _parts,
-                _body.content_into(&#content_type)?,
+                _body.content_into(&#_expect_content_type)?,
             )
         })
     )
@@ -98,11 +101,11 @@ fn return_response(
 
 // TODO: using generic Body type
 fn build_request(Context { attr, params }: &Context) -> Result<TokenStream, Diagnostic> {
+    use_idents!(_req_content_type);
     let method = attr.req.method.as_str();
-    let content_type = &attr.req.content_type;
     let add_headers = gen_headers(params);
     let body = match params.body.as_ref() {
-        Some(body) => quote!(#body.to_content_map_err(&#content_type)?),
+        Some(body) => quote!(#body.to_content_map_err(&#_req_content_type)?),
         None => quote!(Vec::new()),
     };
     let uri_format_expr = gen_uri_format_expr(&attr.req.path, params)?;
@@ -111,7 +114,7 @@ fn build_request(Context { attr, params }: &Context) -> Result<TokenStream, Diag
             .helper()
             .request()
             .uri(self.helper().parse_uri(&#uri_format_expr)?.as_str())
-            .header(CONTENT_TYPE, #content_type.as_ref())
+            .header(CONTENT_TYPE, #_req_content_type.as_ref())
             #add_headers
             .method(#method)
             .body(#body)?
