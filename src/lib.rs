@@ -1,4 +1,4 @@
-#![feature(async_await, trait_alias)]
+#![feature(trait_alias)]
 
 #[doc(inline)]
 pub use content::{
