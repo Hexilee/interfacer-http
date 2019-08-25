@@ -1,5 +1,4 @@
 use derive_more::{Display, From};
-use http::Response;
 use interfacer_http::{http, url, FromContentError, ToContentError, Unexpected};
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -21,20 +20,8 @@ pub enum Error {
     #[display(fmt = "from content error: {}", _0)]
     FromContentError(FromContentError),
 
-    #[display(fmt = "unexpected content type")]
-    UnexpectedContentType(Response<Vec<u8>>),
-
-    #[display(fmt = "unexpected status code")]
-    UnexpectedStatusCode(Response<Vec<u8>>),
-}
-
-impl From<Unexpected> for Error {
-    fn from(err: Unexpected) -> Self {
-        match err {
-            Unexpected::UnexpectedContentType(resp) => Error::UnexpectedContentType(resp),
-            Unexpected::UnexpectedStatusCode(resp) => Error::UnexpectedStatusCode(resp),
-        }
-    }
+    #[display(fmt = "{}", _0)]
+    Unexpected(Unexpected),
 }
 
 impl std::error::Error for Error {}
