@@ -35,6 +35,7 @@ unhtml = { version = "0.7", optional = true }
 # for test
 serde_derive = { version = "1.0", optional = true }
 unhtml_derive = { version = "0.7", optional = true }
+tokio = { version = "0.2.0-alpha.1", optional = true }
 
 [features]
 encoding = ["lib-encoding"]
@@ -48,9 +49,10 @@ unhtml-html = ["unhtml"]
 
 # only for test
 derive = ["serde_derive", "unhtml_derive"]
+runtime = ["tokio"]
 
 [[test]]
 name = "http-service"
 path = "proc-macro-tests/http_service.rs"
 edition = "2018"
-required-features = ["derive", "serde-full"]
+required-features = ["derive", "serde-full", "runtime"]
