@@ -4,7 +4,7 @@ use crate::{
     Error,
 };
 pub use helper::Helper;
-pub use response::{ResponseError, ResponseExt};
+pub use response::{CookieError, ResponseExt};
 
 // TODO: use T: AsyncRead as type of Request::Body
 // TODO: use T: AsyncRead as type of Response::Body

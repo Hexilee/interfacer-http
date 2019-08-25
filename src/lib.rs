@@ -13,7 +13,7 @@ pub use interfacer_http_attribute::http_service;
 pub use interfacer_http_attribute::{FromContent, ToContent};
 
 #[doc(inline)]
-pub use client::{Helper, HttpClient, ResponseError, ResponseExt};
+pub use client::{CookieError, Helper, HttpClient, ResponseExt};
 pub use interfacer_http_util::*;
 
 mod client;
