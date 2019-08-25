@@ -14,6 +14,7 @@ struct User {
     age: i32,
 }
 
+#[rustfmt::skip]
 #[http_service]
 trait UserService {
     type Error;

@@ -1,7 +1,8 @@
 use crate::{
-    http::{self, Response},
+    http::{self, header::HeaderName, Response, StatusCode},
     url, FromContentError, ToContentError,
 };
+use derive_more::{Display, From};
 use std::fmt::{Debug, Display};
 pub trait Error = From<url::ParseError>
     + From<http::Error>
@@ -11,7 +12,23 @@ pub trait Error = From<url::ParseError>
     + Display
     + Debug;
 
-pub enum Unexpected {
-    UnexpectedContentType(Response<Vec<u8>>),
-    UnexpectedStatusCode(Response<Vec<u8>>),
+#[derive(Debug, Display, From)]
+#[display(fmt = "Unexpected: {}", typ)]
+pub struct Unexpected {
+    typ: UnexpectedType,
+    resp: Response<Vec<u8>>,
 }
+
+#[derive(Debug, Display, From)]
+pub enum UnexpectedType {
+    #[display(fmt = "status code should be {}: {}", expect, msg)]
+    StatusCode { expect: StatusCode, msg: String },
+    #[display(fmt = "value of header '{}' is unexpected: {}", header_name, msg)]
+    Header {
+        header_name: HeaderName,
+        msg: String,
+    },
+}
+
+impl std::error::Error for Unexpected {}
+impl std::error::Error for UnexpectedType {}
