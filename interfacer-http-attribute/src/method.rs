@@ -76,11 +76,12 @@ fn check_response(status: &TokenStream) -> TokenStream {
     use_idents!(_resp, _expect_content_type);
     quote!(
         if #status != #_resp.status() {
-            return Err(Unexpected::UnexpectedStatusCode(#_resp).into());
+            return Err(Unexpected::new(#status.into(), #_resp).into());
         }
         match #_resp.headers().get(CONTENT_TYPE) {
-            None => return Err(Unexpected::UnexpectedContentType(#_resp).into()),
-            Some(content_type) if !self.helper().match_mime(&#_expect_content_type, content_type) => return Err(Unexpected::UnexpectedContentType(#_resp).into()),
+            None => return Err(Unexpected::new((CONTENT_TYPE, "Content-Type not found".to_owned()).into(), #_resp).into()),
+            Some(content_type) if !self.helper().match_mime(&#_expect_content_type, content_type) =>
+                return Err(Unexpected::new((CONTENT_TYPE, String::new()).into(), #_resp).into()),
             _ => (),
         }
     )
