@@ -106,3 +106,50 @@ async fn test_get_user() -> Result<(), Error> {
     );
     Ok(())
 }
+
+async fn get_users_handler(req: Request<Vec<u8>>) -> Result<Response<Vec<u8>>, Error> {
+    assert_eq!(
+        Url::parse(MOCK_BASE_URL)?
+            .join("/api/user?age_max=40")?
+            .as_str(),
+        req.uri()
+    );
+    assert_eq!("GET", req.method());
+    Ok(Response::builder()
+        .status(200)
+        .header(CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
+        .body(
+            vec![
+                User {
+                    name: "hexi".to_string(),
+                    age: 20,
+                },
+                User {
+                    name: "boss".to_string(),
+                    age: 35,
+                },
+            ]
+            .to_content(&mime::APPLICATION_JSON)?,
+        )?)
+}
+
+#[tokio::test]
+async fn test_get_users() -> Result<(), Error> {
+    let service = Client::new(MOCK_BASE_URL.parse()?, get_users_handler);
+    let resp = service.get_users(40).await?;
+    assert_eq!(200, resp.status());
+    assert_eq!(
+        &vec![
+            User {
+                name: "hexi".to_string(),
+                age: 20,
+            },
+            User {
+                name: "boss".to_string(),
+                age: 35,
+            },
+        ],
+        resp.body()
+    );
+    Ok(())
+}
