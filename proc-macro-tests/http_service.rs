@@ -2,14 +2,15 @@
 #![allow(unused_attributes)]
 
 use interfacer_http::{
-    http::{header::COOKIE, Request, Response},
+    http::{header::CONTENT_TYPE, header::COOKIE, Request, Response},
     http_service, mime,
     url::Url,
+    ToContent,
 };
 use mock::{Client, Error};
 use serde_derive::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
 struct User {
     name: String,
     age: i32,
@@ -70,6 +71,39 @@ async fn test_ping() -> Result<(), Error> {
     let service = Client::new(MOCK_BASE_URL.parse()?, ping_handler);
     let resp = service.ping().await?;
     assert_eq!(200, resp.status());
+    Ok(())
+}
+
+async fn get_user_handler(req: Request<Vec<u8>>) -> Result<Response<Vec<u8>>, Error> {
+    assert_eq!(
+        Url::parse(MOCK_BASE_URL)?.join("/api/user/0")?.as_str(),
+        req.uri()
+    );
+    assert_eq!("GET", req.method());
+    Ok(Response::builder()
+        .status(200)
+        .header(CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
+        .body(
+            User {
+                name: "hexi".to_string(),
+                age: 20,
+            }
+            .to_content(&mime::APPLICATION_JSON)?,
+        )?)
+}
+
+#[tokio::test]
+async fn test_get_user() -> Result<(), Error> {
+    let service = Client::new(MOCK_BASE_URL.parse()?, get_user_handler);
+    let resp = service.get_user(0).await?;
+    assert_eq!(200, resp.status());
+    assert_eq!(
+        &User {
+            name: "hexi".to_string(),
+            age: 20,
+        },
+        resp.body()
+    );
     Ok(())
 }
 
