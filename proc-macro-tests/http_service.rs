@@ -51,14 +51,6 @@ trait UserService {
         #[body] user: &User,
         #[header(COOKIE)] cookie: &str,
     ) -> Result<Response<User>, Self::Error>;
-
-    #[post("/api/users", mime::APPLICATION_JSON)]
-    #[expect(201)]
-    async fn post_users(
-        &self,
-        #[body] users: &[User],
-        #[header(COOKIE)] cookie: &str,
-    ) -> Result<Response<()>, Self::Error>;
 }
 
 async fn ping_handler(req: Request<Vec<u8>>) -> Result<Response<Vec<u8>>, Error> {
@@ -185,6 +177,42 @@ async fn test_put_user() -> Result<(), Error> {
     };
     let resp = service.put_user(0, &user, DEFAULT_COOKIE).await?;
     assert_eq!(200, resp.status());
+    assert_eq!(&user, resp.body());
+    Ok(())
+}
+
+async fn post_user_handler(req: Request<Vec<u8>>) -> Result<Response<Vec<u8>>, Error> {
+    assert_eq!(
+        Url::parse(MOCK_BASE_URL)?.join("/api/user")?.as_str(),
+        req.uri()
+    );
+    assert_eq!("POST", req.method());
+    assert_eq!(
+        mime::APPLICATION_WWW_FORM_URLENCODED,
+        req.headers().get(CONTENT_TYPE).unwrap().to_str().unwrap()
+    );
+    assert_eq!(
+        DEFAULT_COOKIE,
+        req.headers().get(COOKIE).unwrap().to_str().unwrap()
+    );
+    let user: User = req
+        .into_body()
+        .content_into(&mime::APPLICATION_WWW_FORM_URLENCODED)?;
+    Ok(Response::builder()
+        .status(201)
+        .header(CONTENT_TYPE, mime::APPLICATION_MSGPACK.as_ref())
+        .body(user.to_content(&mime::APPLICATION_MSGPACK)?)?)
+}
+
+#[tokio::test]
+async fn test_post_user() -> Result<(), Error> {
+    let service = Client::new(MOCK_BASE_URL.parse()?, post_user_handler);
+    let user = User {
+        name: "hexi".to_string(),
+        age: 20,
+    };
+    let resp = service.post_user(&user, DEFAULT_COOKIE).await?;
+    assert_eq!(201, resp.status());
     assert_eq!(&user, resp.body());
     Ok(())
 }
