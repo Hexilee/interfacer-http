@@ -3,11 +3,11 @@
 
 use interfacer_http::{
     http::{header::COOKIE, Response},
-    http_service, mime, FromContent, ToContent,
+    http_service, mime,
 };
 use serde_derive::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, FromContent, ToContent, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 struct User {
     name: String,
     age: i32,
