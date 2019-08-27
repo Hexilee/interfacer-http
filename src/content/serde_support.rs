@@ -8,10 +8,11 @@ use crate::mime::{
     APPLICATION_WWW_FORM_URLENCODED, CHARSET, JSON, MSGPACK, TEXT, TEXT_XML, UTF_8,
     WWW_FORM_URLENCODED, XML,
 };
-use crate::url::form_urlencoded::Serializer as UrlEncodedSerializer;
 use crate::MimeExt;
 use crate::{FromContent, ToContent};
 use serde::{de::DeserializeOwned, Serialize};
+
+#[cfg(any(feature = "serde-full", feature = "serde-urlencoded"))]
 use std::borrow::Cow;
 
 impl<T: Serialize> ToContent for T {
@@ -191,7 +192,7 @@ fn encode_into_form(
     input: &impl Serialize,
     encoding: &dyn Fn(&str) -> Cow<[u8]>,
 ) -> Result<String, serde_urlencoded::ser::Error> {
-    let mut urlencoder = UrlEncodedSerializer::new("".to_owned());
+    let mut urlencoder = crate::url::form_urlencoded::Serializer::new("".to_owned());
     urlencoder.encoding_override(Some(encoding));
     input.serialize(serde_urlencoded::Serializer::new(&mut urlencoder))?;
     Ok(urlencoder.finish())

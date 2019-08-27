@@ -26,12 +26,15 @@ trait UserService {
     async fn ping(&self) -> Result<Response<()>, Self::Error>;
 
     #[get("/api/user/{id}")]
+    #[expect(200, mime::APPLICATION_JSON)]
     async fn get_user(&self, id: u64) -> Result<Response<User>, Self::Error>;
 
     #[get("/api/user?age_max={age_max}")]
+    #[expect(200, mime::APPLICATION_JSON)]
     async fn get_users(&self, age_max: u8) -> Result<Response<Vec<User>>, Self::Error>;
 
-    #[put("/api/user/{id}")]
+    #[put("/api/user/{id}", mime::APPLICATION_JSON)]
+    #[expect(200, mime::APPLICATION_JSON)]
     async fn put_user(
         &self,
         id: u64,
@@ -47,7 +50,7 @@ trait UserService {
         #[header(COOKIE)] cookie: &str,
     ) -> Result<Response<User>, Self::Error>;
 
-    #[post("/api/users")]
+    #[post("/api/users", mime::APPLICATION_JSON)]
     #[expect(201)]
     async fn post_users(
         &self,
@@ -73,7 +76,7 @@ async fn test_ping() -> Result<(), Error> {
 mod mock {
     use interfacer_http::{
         async_trait,
-        http::{self, header::CONTENT_TYPE, Request, Response, Version},
+        http::{self, Request, Response},
         url::{self, Url},
         FromContentError, Helper, HttpClient, ToContentError, Unexpected,
     };

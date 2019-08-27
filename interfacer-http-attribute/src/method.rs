@@ -2,7 +2,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{Block, TraitItemMethod};
 
-use crate::attr::Attr;
+use crate::attr::{Attr, Expect};
 use crate::param::Parameters;
 use crate::parse::try_parse;
 use format_uri::gen_uri_format_expr;
@@ -27,8 +27,8 @@ pub fn gen_block(method: &TraitItemMethod) -> Result<Block, Diagnostic> {
     let import_stmt = import();
     let define_content_type_stmt = define_content_type(&context.attr);
     let send_request_stmt = send_request(build_request(&context)?);
-    let check_response_stmt = check_response(&context.attr.expect.status);
-    let return_stmt = return_response();
+    let check_response_stmt = check_response(&context.attr.expect);
+    let return_stmt = return_response(&context.attr.expect);
     try_parse(quote!({
         #import_stmt
         #define_content_type_stmt
@@ -57,11 +57,17 @@ fn import() -> TokenStream {
 
 fn define_content_type(Attr { req, expect }: &Attr) -> TokenStream {
     use_idents!(_req_content_type, _expect_content_type);
-    let req_content_type = &req.content_type;
-    let expect_content_type = &expect.content_type;
+    let define_req_content_type = match &req.content_type {
+        Some(content_type) => quote!(let #_req_content_type: Mime = #content_type;),
+        None => quote!(),
+    };
+    let define_expect_content_type = match &expect.content_type {
+        Some(content_type) => quote!(let #_expect_content_type: Mime = #content_type;),
+        None => quote!(),
+    };
     quote!(
-        let #_req_content_type: Mime = #req_content_type;
-        let #_expect_content_type: Mime = #expect_content_type;
+        #define_req_content_type
+        #define_expect_content_type
     )
 }
 
@@ -72,31 +78,45 @@ fn send_request(request: TokenStream) -> TokenStream {
     )
 }
 
-fn check_response(status: &TokenStream) -> TokenStream {
+fn check_response(
+    Expect {
+        status,
+        content_type,
+    }: &Expect,
+) -> TokenStream {
     use_idents!(_resp, _expect_content_type);
-    quote!(
-        if #status != #_resp.status() {
-            return Err(Unexpected::new(#status.into(), #_resp).into());
-        }
+    let check_content_type = match content_type {
+        Some(_) => quote!(
         match #_resp.headers().get(CONTENT_TYPE) {
             None => return Err(Unexpected::new((CONTENT_TYPE, "Content-Type not found".to_owned()).into(), #_resp).into()),
             Some(content_type) if !self.helper().match_mime(&#_expect_content_type, content_type) =>
                 return Err(Unexpected::new((CONTENT_TYPE, String::new()).into(), #_resp).into()),
             _ => (),
+        }),
+        None => quote!(),
+    };
+    quote!(
+        if #status != #_resp.status() {
+            return Err(Unexpected::new(#status.into(), #_resp).into());
         }
+        #check_content_type
     )
 }
 
-fn return_response() -> TokenStream {
+fn return_response(expect: &Expect) -> TokenStream {
     use_idents!(_resp, _expect_content_type);
-    quote!(
-        Ok({
+    let resp = match expect.content_type {
+        Some(_) => quote!({
             let (_parts, _body) = #_resp.into_parts();
             Response::from_parts(
                 _parts,
                 _body.content_into(&#_expect_content_type)?,
             )
-        })
+        }),
+        None => quote!(Response::from_parts(#_resp.into_parts().0,())),
+    };
+    quote!(
+        Ok(#resp)
     )
 }
 
@@ -104,10 +124,14 @@ fn return_response() -> TokenStream {
 fn build_request(Context { attr, params }: &Context) -> Result<TokenStream, Diagnostic> {
     use_idents!(_req_content_type);
     let method = attr.req.method.as_str();
-    let add_headers = gen_headers(params);
-    let body = match params.body.as_ref() {
-        Some(body) => quote!(#body.to_content(&#_req_content_type)?),
-        None => quote!(Vec::new()),
+    let mut headers = gen_headers(params);
+    match attr.req.content_type {
+        Some(_) => headers.push(quote!(header(CONTENT_TYPE, #_req_content_type.as_ref()))),
+        None => (),
+    };
+    let body = match (params.body.as_ref(), &attr.req.content_type) {
+        (Some(body), Some(_)) => quote!(#body.to_content(&#_req_content_type)?),
+        _ => quote!(Vec::new()),
     };
     let uri_format_expr = gen_uri_format_expr(&attr.req.path, params)?;
     Ok(quote!(
@@ -115,18 +139,18 @@ fn build_request(Context { attr, params }: &Context) -> Result<TokenStream, Diag
             .helper()
             .request()
             .uri(self.helper().parse_uri(&#uri_format_expr)?.as_str())
-            .header(CONTENT_TYPE, #_req_content_type.as_ref())
-            #add_headers
+            #(.#headers)*
             .method(#method)
             .body(#body)?
     ))
 }
 
-fn gen_headers(params: &Parameters) -> TokenStream {
-    params.headers.iter().fold(
-        quote!(),
-        |ret, (key, value)| quote!(#ret.header(#key, #value)),
-    )
+fn gen_headers(params: &Parameters) -> Vec<TokenStream> {
+    params
+        .headers
+        .iter()
+        .map(|(key, value)| quote!(header(#key, #value)))
+        .collect()
 }
 
 mod format_uri {
