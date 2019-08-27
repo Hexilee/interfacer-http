@@ -8,15 +8,14 @@ use crate::mime::{
     APPLICATION_WWW_FORM_URLENCODED, CHARSET, JSON, MSGPACK, TEXT, TEXT_XML, UTF_8,
     WWW_FORM_URLENCODED, XML,
 };
-use crate::polyfill::{FromContentSerde, ToContentSerde};
 use crate::url::form_urlencoded::Serializer as UrlEncodedSerializer;
 use crate::MimeExt;
+use crate::{FromContent, ToContent};
 use serde::{de::DeserializeOwned, Serialize};
 use std::borrow::Cow;
 
-impl<T: Serialize> ToContentSerde for T {
-    type Err = ToContentError;
-    fn _to_content(&self, content_type: &Mime) -> Result<Vec<u8>, Self::Err> {
+impl<T: Serialize> ToContent for T {
+    default fn to_content(&self, content_type: &Mime) -> Result<Vec<u8>, ToContentError> {
         match (content_type.type_(), content_type.subtype()) {
             #[cfg(any(feature = "serde-full", feature = "serde-json"))]
             (APPLICATION, JSON) => to_json(self, content_type.get_param(CHARSET)),
@@ -35,9 +34,8 @@ impl<T: Serialize> ToContentSerde for T {
     }
 }
 
-impl<T: DeserializeOwned> FromContentSerde for T {
-    type Err = FromContentError;
-    fn _from_content(data: Vec<u8>, content_type: &Mime) -> Result<Self, Self::Err> {
+impl<T: DeserializeOwned> FromContent for T {
+    default fn from_content(data: Vec<u8>, content_type: &Mime) -> Result<Self, FromContentError> {
         match (content_type.type_(), content_type.subtype()) {
             #[cfg(any(feature = "serde-full", feature = "serde-json"))]
             (APPLICATION, JSON) => from_json(data, content_type.get_param(CHARSET)),

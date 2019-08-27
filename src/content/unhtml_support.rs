@@ -7,7 +7,10 @@ use crate::polyfill::FromContentHtml;
 use crate::MimeExt;
 use unhtml::FromHtml;
 
-impl<T: FromHtml> FromContentHtml for T {
+impl<T> FromContentHtml for T
+where
+    T: FromHtml,
+{
     type Err = FromContentError;
     fn _from_content(data: Vec<u8>, content_type: &Mime) -> Result<Self, Self::Err> {
         match (content_type.type_(), content_type.subtype()) {

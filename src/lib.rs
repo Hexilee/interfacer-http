@@ -1,4 +1,4 @@
-#![feature(trait_alias)]
+#![feature(trait_alias, specialization)]
 
 #[doc(inline)]
 pub use content::{

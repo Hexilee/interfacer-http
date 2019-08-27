@@ -17,18 +17,13 @@ use crate::mime::Mime;
 // TODO: use T: AsyncRead as type of data
 // TODO: declare mime as generics when const generics is stable
 pub trait FromContent: Sized {
-    type Err: Into<FromContentError>;
-    fn from_content(data: Vec<u8>, content_type: &Mime) -> Result<Self, Self::Err>;
+    fn from_content(data: Vec<u8>, content_type: &Mime) -> Result<Self, FromContentError>;
 }
 
 // TODO: use T: AsyncRead as type of ret
 // TODO: declare mime as generics when const generics is stable
 pub trait ToContent {
-    type Err: Into<ToContentError>;
-    fn to_content(&self, content_type: &Mime) -> Result<Vec<u8>, Self::Err>;
-    fn to_content_map_err(&self, content_type: &Mime) -> Result<Vec<u8>, ToContentError> {
-        self.to_content(content_type).map_err(Into::into)
-    }
+    fn to_content(&self, content_type: &Mime) -> Result<Vec<u8>, ToContentError>;
 }
 
 pub trait ContentInto<T: Sized> {
@@ -37,24 +32,22 @@ pub trait ContentInto<T: Sized> {
 
 impl<T: FromContent> ContentInto<T> for Vec<u8> {
     fn content_into(self, content_type: &Mime) -> Result<T, FromContentError> {
-        <T as FromContent>::from_content(self, content_type).map_err(Into::into)
+        <T as FromContent>::from_content(self, content_type)
     }
 }
 
-// TODO: support more build-in types.
+// TODO: support more special build-in types.
 mod impls {
     use crate::mime::Mime;
     use crate::{FromContent, FromContentError, ToContent, ToContentError};
     impl FromContent for () {
-        type Err = FromContentError;
-        fn from_content(_data: Vec<u8>, _content_type: &Mime) -> Result<Self, Self::Err> {
+        fn from_content(_data: Vec<u8>, _content_type: &Mime) -> Result<Self, FromContentError> {
             Ok(())
         }
     }
 
     impl ToContent for () {
-        type Err = ToContentError;
-        fn to_content(&self, _content_type: &Mime) -> Result<Vec<u8>, Self::Err> {
+        fn to_content(&self, _content_type: &Mime) -> Result<Vec<u8>, ToContentError> {
             Ok(Vec::new())
         }
     }
