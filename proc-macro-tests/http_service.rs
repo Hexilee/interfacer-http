@@ -2,9 +2,11 @@
 #![allow(unused_attributes)]
 
 use interfacer_http::{
-    http::{header::COOKIE, Response},
+    http::{header::COOKIE, Request, Response},
     http_service, mime,
+    url::Url,
 };
+use mock::{Client, Error};
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -12,6 +14,8 @@ struct User {
     name: String,
     age: i32,
 }
+
+const MOCK_BASE_URL: &str = "https://mock.rs";
 
 #[rustfmt::skip]
 #[http_service]
@@ -50,6 +54,20 @@ trait UserService {
         #[body] users: Vec<User>,
         #[header(COOKIE)] cookie: &str,
     ) -> Result<Response<()>, Self::Error>;
+}
+
+async fn ping_handler(req: Request<Vec<u8>>) -> Result<Response<Vec<u8>>, Error> {
+    assert_eq!(Url::parse(MOCK_BASE_URL)?.join("/")?.as_str(), req.uri());
+    assert_eq!("OPTIONS", req.method());
+    Ok(Response::builder().status(200).body(Vec::new())?)
+}
+
+#[tokio::test]
+async fn test_ping() -> Result<(), Error> {
+    let service = Client::new(MOCK_BASE_URL.parse()?, ping_handler);
+    let resp = service.ping().await?;
+    assert_eq!(200, resp.status());
+    Ok(())
 }
 
 mod mock {
@@ -116,37 +134,4 @@ mod mock {
             &self.helper
         }
     }
-
-    //    async fn login_page_handler(req: Request<Vec<u8>>) -> Result<Response<Vec<u8>>> {
-    //        assert_eq!(
-    //            Url::parse(BASE_URL)?.join("default2.aspx")?.as_str(),
-    //            req.uri()
-    //        );
-    //        assert_eq!("GET", req.method());
-    //        Ok(Response::builder()
-    //            .status(200)
-    //            .version(Version::HTTP_11)
-    //            .header(CONTENT_TYPE, "text/html; charset=gb2312")
-    //            .body(
-    //                encoding_from_whatwg_label("gb2312")
-    //                    .unwrap()
-    //                    .encode(LOGIN_PAGE, EncoderTrap::Strict)
-    //                    .unwrap(),
-    //            )?)
-    //    }
-    //
-    //    #[tokio::test]
-    //    async fn test_login_page() -> Result<()> {
-    //        let service = Client::new(BASE_URL.parse()?, login_page_handler);
-    //        let page = service.get_login_page().await?;
-    //        assert_eq!(
-    //            &page.body().hidden_form,
-    //            &HiddenForm {
-    //                event_argument: "".into(),
-    //                event_target: "".into(),
-    //                view_state: "dDwxNTc0MzA5MTU4Ozs+b5wKASjiu+fSjITNzcKuKXEUyXg=".into(),
-    //            }
-    //        );
-    //        Ok(())
-    //    }
 }
