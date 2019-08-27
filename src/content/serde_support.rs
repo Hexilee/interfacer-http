@@ -2,6 +2,13 @@
 
 #[cfg(feature = "encoding")]
 use super::encoding::{decode_data, encode_data};
+
+#[cfg(all(
+    feature = "encoding",
+    any(feature = "serde-full", feature = "serde-urlencoded")
+))]
+use std::borrow::Cow;
+
 use super::error::{FromContentError, ToContentError};
 use crate::mime::{
     Mime, Name, APPLICATION, APPLICATION_JSON, APPLICATION_MSGPACK,
@@ -11,9 +18,6 @@ use crate::mime::{
 use crate::MimeExt;
 use crate::{FromContent, ToContent};
 use serde::{de::DeserializeOwned, Serialize};
-
-#[cfg(any(feature = "serde-full", feature = "serde-urlencoded"))]
-use std::borrow::Cow;
 
 impl<T: Serialize> ToContent for T {
     default fn to_content(&self, content_type: &Mime) -> Result<Vec<u8>, ToContentError> {

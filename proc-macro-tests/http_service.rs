@@ -4,10 +4,10 @@
 use interfacer_http::{
     http::{header::CONTENT_TYPE, header::COOKIE, Request, Response},
     http_service, mime,
+    mock::{Client, Error},
     url::Url,
     ToContent,
 };
-use mock::{Client, Error};
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
@@ -105,70 +105,4 @@ async fn test_get_user() -> Result<(), Error> {
         resp.body()
     );
     Ok(())
-}
-
-mod mock {
-    use interfacer_http::{
-        async_trait,
-        http::{self, Request, Response},
-        url::{self, Url},
-        FromContentError, Helper, HttpClient, ToContentError, Unexpected,
-    };
-    use std::future::Future;
-
-    use derive_more::{Display, From};
-
-    #[derive(Display, Debug, From)]
-    pub enum Error {
-        #[display(fmt = "url parse error: {}", _0)]
-        UrlParseError(url::ParseError),
-
-        #[display(fmt = "http error: {}", _0)]
-        HttpError(http::Error),
-
-        #[display(fmt = "to content error: {}", _0)]
-        ToContentError(ToContentError),
-
-        #[display(fmt = "from content error: {}", _0)]
-        FromContentError(FromContentError),
-
-        #[display(fmt = "{}", _0)]
-        Unexpected(Unexpected),
-    }
-
-    impl std::error::Error for Error {}
-
-    pub type Result<T> = std::result::Result<T, Error>;
-
-    pub struct Client<F> {
-        helper: Helper,
-        handler: fn(Request<Vec<u8>>) -> F,
-    }
-
-    impl<F> Client<F>
-    where
-        F: Future<Output = Result<Response<Vec<u8>>>> + Send + 'static,
-    {
-        pub fn new(base_url: Url, handler: fn(Request<Vec<u8>>) -> F) -> Self {
-            Self {
-                handler,
-                helper: Helper::new().with_base_url(base_url),
-            }
-        }
-    }
-
-    #[async_trait]
-    impl<F> HttpClient for Client<F>
-    where
-        F: Future<Output = Result<Response<Vec<u8>>>> + Send + 'static,
-    {
-        type Err = Error;
-        async fn request(&self, req: Request<Vec<u8>>) -> Result<Response<Vec<u8>>> {
-            (self.handler)(req).await
-        }
-
-        fn helper(&self) -> &Helper {
-            &self.helper
-        }
-    }
 }

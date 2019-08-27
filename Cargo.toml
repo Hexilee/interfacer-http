@@ -46,6 +46,7 @@ serde-urlencoded = ["serde_urlencoded"]
 serde-xml = ["serde-xml-rs"]
 serde-full = ["serde", "serde_json", "rmp-serde", "serde_urlencoded", "serde-xml-rs"]
 unhtml-html = ["unhtml"]
+mock = []
 
 # only for test
 derive = ["serde_derive", "unhtml_derive"]
@@ -55,4 +56,4 @@ runtime = ["tokio"]
 name = "http-service"
 path = "proc-macro-tests/http_service.rs"
 edition = "2018"
-required-features = ["derive", "serde-full", "runtime"]
+required-features = ["derive", "serde-full", "runtime", "mock"]

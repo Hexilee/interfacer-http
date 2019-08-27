@@ -1,5 +1,8 @@
 #![feature(trait_alias, specialization)]
 
+#[cfg(feature = "mock")]
+pub mod mock;
+
 #[doc(inline)]
 pub use content::{
     polyfill, ContentInto, FromContent, FromContentError, MimeExt, ToContent, ToContentError,
