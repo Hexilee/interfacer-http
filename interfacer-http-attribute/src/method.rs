@@ -106,7 +106,7 @@ fn build_request(Context { attr, params }: &Context) -> Result<TokenStream, Diag
     let method = attr.req.method.as_str();
     let add_headers = gen_headers(params);
     let body = match params.body.as_ref() {
-        Some(body) => quote!(#body.to_content_map_err(&#_req_content_type)?),
+        Some(body) => quote!(#body.to_content(&#_req_content_type)?),
         None => quote!(Vec::new()),
     };
     let uri_format_expr = gen_uri_format_expr(&attr.req.path, params)?;

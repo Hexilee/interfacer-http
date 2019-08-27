@@ -17,15 +17,39 @@ struct User {
 #[http_service]
 trait UserService {
     type Error;
-    #[put("/api/user/{id}?age={age}")]
-    #[expect(200, mime::APPLICATION_JSON)]
+
+    #[options]
+    async fn ping(&self) -> Result<Response<()>, Self::Error>;
+
+    #[get("/api/user/{id}")]
+    async fn get_user(&self, id: u64) -> Result<Response<User>, Self::Error>;
+
+    #[get("/api/user?age_max={age_max}")]
+    async fn get_users(&self, age_max: u8) -> Result<Response<Vec<User>>, Self::Error>;
+
+    #[put("/api/user/{id}")]
     async fn put_user(
         &self,
         id: u64,
-        age: i32,
         #[body] user: &User,
         #[header(COOKIE)] cookie: &str,
     ) -> Result<Response<User>, Self::Error>;
+
+    #[post("/api/user", mime::APPLICATION_WWW_FORM_URLENCODED)]
+    #[expect(201, mime::APPLICATION_MSGPACK)]
+    async fn post_user(
+        &self,
+        #[body] user: &User,
+        #[header(COOKIE)] cookie: &str,
+    ) -> Result<Response<User>, Self::Error>;
+
+    #[post("/api/users")]
+    #[expect(201)]
+    async fn post_users(
+        &self,
+        #[body] users: Vec<User>,
+        #[header(COOKIE)] cookie: &str,
+    ) -> Result<Response<()>, Self::Error>;
 }
 
 mod mock {
