@@ -6,7 +6,7 @@ use interfacer_http::{
     http_service, mime,
     mock::{Client, Error},
     url::Url,
-    ToContent,
+    ContentInto, ToContent,
 };
 use serde_derive::{Deserialize, Serialize};
 
@@ -17,6 +17,7 @@ struct User {
 }
 
 const MOCK_BASE_URL: &str = "https://mock.rs";
+const DEFAULT_COOKIE: &str = "cookie=cookie";
 
 #[rustfmt::skip]
 #[http_service]
@@ -35,7 +36,7 @@ trait UserService {
     async fn get_users(&self, age_max: u8) -> Result<Response<Vec<User>>, Self::Error>;
 
     #[put("/api/user/{id}", mime::APPLICATION_JSON)]
-    #[expect(200, mime::APPLICATION_JSON)]
+    #[expect(200, "application/json")]
     async fn put_user(
         &self,
         id: u64,
@@ -55,7 +56,7 @@ trait UserService {
     #[expect(201)]
     async fn post_users(
         &self,
-        #[body] users: Vec<User>,
+        #[body] users: &[User],
         #[header(COOKIE)] cookie: &str,
     ) -> Result<Response<()>, Self::Error>;
 }
@@ -151,5 +152,39 @@ async fn test_get_users() -> Result<(), Error> {
         ],
         resp.body()
     );
+    Ok(())
+}
+
+async fn put_user_handler(req: Request<Vec<u8>>) -> Result<Response<Vec<u8>>, Error> {
+    assert_eq!(
+        Url::parse(MOCK_BASE_URL)?.join("/api/user/0")?.as_str(),
+        req.uri()
+    );
+    assert_eq!("PUT", req.method());
+    assert_eq!(
+        mime::APPLICATION_JSON,
+        req.headers().get(CONTENT_TYPE).unwrap().to_str().unwrap()
+    );
+    assert_eq!(
+        DEFAULT_COOKIE,
+        req.headers().get(COOKIE).unwrap().to_str().unwrap()
+    );
+    let user: User = req.into_body().content_into(&mime::APPLICATION_JSON)?;
+    Ok(Response::builder()
+        .status(200)
+        .header(CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
+        .body(user.to_content(&mime::APPLICATION_JSON)?)?)
+}
+
+#[tokio::test]
+async fn test_put_user() -> Result<(), Error> {
+    let service = Client::new(MOCK_BASE_URL.parse()?, put_user_handler);
+    let user = User {
+        name: "hexi".to_string(),
+        age: 20,
+    };
+    let resp = service.put_user(0, &user, DEFAULT_COOKIE).await?;
+    assert_eq!(200, resp.status());
+    assert_eq!(&user, resp.body());
     Ok(())
 }
