@@ -201,11 +201,13 @@ mod format_uri {
     // TODO: complete test
     #[cfg(test)]
     mod test {
-        use super::{DYN_URI_PATTERN, VAL_NAME};
+        use super::{gen_uri_format_expr, Ident, Parameters, Span, DYN_URI_PATTERN, VAL_NAME};
+        use proc_macro2::TokenStream;
+        use quote::quote;
         use regex::Regex;
 
         #[test]
-        fn dyn_uri_match_test() {
+        fn test_dyn_uri_match() {
             fn dyn_uri_match(raw_uri: &str, value_list: &[&str]) {
                 assert_eq!(
                     value_list
@@ -224,6 +226,53 @@ mod format_uri {
             dyn_uri_match("/api/user/{id}", &["{id}"][..]);
             dyn_uri_match("/api/user/{id}/name", &["{id}"][..]);
             dyn_uri_match("/api/user-{id}/name", &["{id}"][..]);
+        }
+
+        fn assert_gen_uri_format_expr(uri: &str, values: &[&str], expect_token: TokenStream) {
+            let parameters = Parameters {
+                values: values
+                    .iter()
+                    .map(|value| Ident::new(*value, Span::call_site()))
+                    .collect(),
+                headers: Vec::new(),
+                body: None,
+            };
+            let token = gen_uri_format_expr(uri, &parameters).unwrap();
+            assert_eq!(expect_token.to_string(), quote!(#token).to_string());
+        }
+
+        #[test]
+        fn test_gen_uri_format_expr() {
+            assert_gen_uri_format_expr(
+                "/api/user/{id}?age={age}",
+                &["id", "age"][..],
+                quote!(format!("/api/user/{}?age={}", id, age)),
+            );
+            assert_gen_uri_format_expr(
+                "/api/user/{id}",
+                &["id", "age"][..],
+                quote!(format!("/api/user/{}", id)),
+            );
+            assert_gen_uri_format_expr(
+                "/api/user",
+                &["id", "age"][..],
+                quote!(format!("/api/user")),
+            );
+            assert_gen_uri_format_expr(
+                "/api/user-{id}",
+                &["id", "age"][..],
+                quote!(format!("/api/user-{}", id)),
+            );
+        }
+
+        #[test]
+        #[should_panic]
+        fn test_gen_uri_format_expr_no_param_support() {
+            assert_gen_uri_format_expr(
+                "/api/user/{id}?age={age}",
+                &["id"][..],
+                quote!(format!("/api/user/{}?age={}", id, age)),
+            );
         }
     }
 }
