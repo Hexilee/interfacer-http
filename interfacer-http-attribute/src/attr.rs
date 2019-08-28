@@ -210,14 +210,35 @@ fn filter_method(raw_method: &TraitItemMethod) -> Result<AttrMetas, Diagnostic> 
 
 #[cfg(test)]
 mod tests {
-    use super::Attr;
-    use syn::{parse_quote, TraitItemMethod};
+    use super::{Attr, DEFAULT_PATH};
+    use quote::quote;
+    use syn::parse_quote;
+
+    #[test]
+    #[should_panic]
+    fn no_required_attr() {
+        let _ = Attr::from_raw(&parse_quote!(
+            #[test]
+            #[xxxx]
+            fn a(&self);
+        ))
+        .unwrap();
+    }
 
     #[test]
     fn minimal_attr() {
-        let method: TraitItemMethod = parse_quote!(
+        let Attr { req, expect } = Attr::from_raw(&parse_quote!(
             #[get]
             fn a(&self);
+        ))
+        .unwrap();
+        assert_eq!("GET", &req.method);
+        assert_eq!(DEFAULT_PATH, &req.path);
+        assert_eq!(
+            quote!(StatusCode::from_u16(200u16).unwrap()).to_string(),
+            expect.status.to_string()
         );
+        assert!(req.content_type.is_none());
+        assert!(expect.content_type.is_none());
     }
 }
