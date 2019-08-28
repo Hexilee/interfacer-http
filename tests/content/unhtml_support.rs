@@ -1,5 +1,5 @@
-use interfacer_http::derive::FromContent;
-use interfacer_http::{ContentInto, ContentType};
+use interfacer_http::mime::TEXT_HTML;
+use interfacer_http::{ContentInto, FromContent};
 use unhtml_derive::FromHtml;
 
 #[derive(FromHtml, FromContent)]
@@ -16,7 +16,7 @@ struct Link {
 fn normal() {
     let link: Link = br#"<a href="https://github.com">Github</a>"#[..]
         .to_vec()
-        .content_into(&ContentType::new("text/html", None, None))
+        .content_into(&TEXT_HTML)
         .expect("from html fail");
     assert_eq!("https://github.com", &link.href);
     assert_eq!("Github", &link.value);

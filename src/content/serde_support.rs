@@ -205,8 +205,11 @@ fn encode_into_form(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::borrow::Cow;
 
+    #[cfg(all(
+        feature = "encoding",
+        any(feature = "serde-full", feature = "serde-urlencoded")
+    ))]
     #[test]
     fn test_encode_into_form() {
         let meal = &[("bread", "baguette"), ("fat", "butter")];
@@ -219,7 +222,7 @@ mod tests {
             )
         }
         assert_eq!(
-            encode_into_form(meal, caesar_cipher_encode),
+            encode_into_form(meal, &caesar_cipher_encode),
             Ok("euhdg=edjxhwwh&idw=exwwhu".to_owned())
         );
     }
