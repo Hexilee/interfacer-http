@@ -207,3 +207,17 @@ fn filter_method(raw_method: &TraitItemMethod) -> Result<AttrMetas, Diagnostic> 
         )),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::Attr;
+    use syn::{parse_quote, TraitItemMethod};
+
+    #[test]
+    fn minimal_attr() {
+        let method: TraitItemMethod = parse_quote!(
+            #[get]
+            fn a(&self);
+        );
+    }
+}
