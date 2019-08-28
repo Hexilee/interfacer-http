@@ -163,7 +163,8 @@ mod format_uri {
     use regex::Regex;
     use syn::{parse_quote, punctuated::Punctuated, Expr, Macro, Token};
 
-    const DYN_URI_PATTERN: &str = r#"(?P<pattern>\{\w+})"#;
+    const DYN_URI_PATTERN: &str = r#"(?P<value>\{\w+})"#;
+    const VAL_NAME: &str = "value";
 
     pub fn gen_uri_format_expr(raw_uri: &str, params: &Parameters) -> Result<Macro, Diagnostic> {
         lazy_static! {
@@ -174,7 +175,7 @@ mod format_uri {
         let mut values = Vec::new();
         let mut param_list = Punctuated::<Expr, Token![,]>::new();
         for capture in URI_REGEX.captures_iter(raw_uri) {
-            let pattern: &str = &capture["pattern"];
+            let pattern: &str = &capture[VAL_NAME];
             match params.values.get(&Ident::new(
                 pattern.trim_start_matches('{').trim_end_matches('}'),
                 Span::call_site(),
@@ -200,18 +201,29 @@ mod format_uri {
     // TODO: complete test
     #[cfg(test)]
     mod test {
-        use super::DYN_URI_PATTERN;
+        use super::{DYN_URI_PATTERN, VAL_NAME};
         use regex::Regex;
 
-        fn parse_dyn_uri(raw_uri: &str) {
-            for capture in Regex::new(DYN_URI_PATTERN).unwrap().captures_iter(raw_uri) {
-                println!("captured {}", &capture["pattern"]);
-            }
-        }
-
         #[test]
-        fn parse_dyn_uri_test() {
-            parse_dyn_uri("/api/user/{id}?age={age}");
+        fn dyn_uri_match_test() {
+            fn dyn_uri_match(raw_uri: &str, value_list: &[&str]) {
+                assert_eq!(
+                    value_list
+                        .iter()
+                        .map(|value_name| (*value_name).to_owned())
+                        .collect::<Vec<String>>(),
+                    Regex::new(DYN_URI_PATTERN)
+                        .unwrap()
+                        .captures_iter(raw_uri)
+                        .map(|cap| cap[VAL_NAME].to_owned())
+                        .collect::<Vec<String>>()
+                );
+            }
+            dyn_uri_match("/api/user/{id}?age={age}", &["{id}", "{age}"][..]);
+            dyn_uri_match("/api/user/", &[][..]);
+            dyn_uri_match("/api/user/{id}", &["{id}"][..]);
+            dyn_uri_match("/api/user/{id}/name", &["{id}"][..]);
+            dyn_uri_match("/api/user-{id}/name", &["{id}"][..]);
         }
     }
 }
