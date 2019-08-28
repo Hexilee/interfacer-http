@@ -1,5 +1,3 @@
-// TODO: test this mod
-
 #[cfg(feature = "encoding")]
 use super::encoding::{decode_data, encode_data};
 
@@ -185,7 +183,7 @@ impl From<rmp_serde::encode::Error> for ToContentError {
 /// }
 ///
 /// assert_eq!(
-///     encode_into_form(meal, caesar_cipher_encode),
+///     encode_into_form(meal, &caesar_cipher_encode),
 ///     Ok("euhdg=edjxhwwh&idw=exwwhu".to_owned()));
 /// ```
 #[cfg(all(

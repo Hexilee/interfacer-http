@@ -43,7 +43,17 @@ fn json() {
 #[cfg(any(feature = "serde-full", feature = "serde-xml"))]
 #[test]
 fn text_xml() {
-    define_test!(TEXT_XML);
+    let user = User {
+        name: "hexi".to_owned(),
+        age: 18,
+    };
+    let data = user
+        .to_content(&TEXT_XML)
+        .expect(&format!("to '{}' fail", TEXT_XML.as_ref()));
+    let mirror = data
+        .content_into(&TEXT_XML)
+        .expect(&format!("from '{}' fail", TEXT_XML.as_ref()));
+    assert_eq!(user, mirror);
 }
 
 #[cfg(any(feature = "serde-full", feature = "serde-xml"))]
