@@ -215,18 +215,7 @@ mod tests {
     use syn::parse_quote;
 
     #[test]
-    #[should_panic]
-    fn no_required_attr() {
-        let _ = Attr::from_raw(&parse_quote!(
-            #[test]
-            #[xxxx]
-            fn a(&self);
-        ))
-        .unwrap();
-    }
-
-    #[test]
-    fn minimal_attr() {
+    fn default() {
         let Attr { req, expect } = Attr::from_raw(&parse_quote!(
             #[get]
             fn a(&self);
@@ -240,5 +229,71 @@ mod tests {
         );
         assert!(req.content_type.is_none());
         assert!(expect.content_type.is_none());
+    }
+
+    #[test]
+    fn full() {
+        let Attr { req, expect } = Attr::from_raw(&parse_quote!(
+            #[post("api/user", mime::APPLICATION_JSON)]
+            #[expect(201, "application/json")]
+            fn a(&self);
+        ))
+        .unwrap();
+        assert_eq!("POST", &req.method);
+        assert_eq!("api/user", &req.path);
+        assert_eq!(
+            quote!(StatusCode::from_u16(201u16).unwrap()).to_string(),
+            expect.status.to_string()
+        );
+        assert_eq!(
+            quote!(mime::APPLICATION_JSON).to_string(),
+            req.content_type.unwrap().to_string()
+        );
+        assert_eq!(
+            quote!("application/json".parse().unwrap()).to_string(),
+            expect.content_type.unwrap().to_string()
+        );
+    }
+
+    #[test]
+    #[should_panic]
+    fn no_request_attribute() {
+        let _ = Attr::from_raw(&parse_quote!(
+            #[test]
+            #[xxxx]
+            fn a(&self);
+        ))
+        .unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn invalid_attribute_content() {
+        let _ = Attr::from_raw(&parse_quote!(
+            #[get(name())]
+            fn a(&self);
+        ))
+        .unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn invalid_content_type() {
+        let _ = Attr::from_raw(&parse_quote!(
+            #[get("api/user", "text/application/xml")]
+            fn a(&self);
+        ))
+        .unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn invalid_status_code() {
+        let _ = Attr::from_raw(&parse_quote!(
+            #[get]
+            #[expect(1024)]
+            fn a(&self);
+        ))
+        .unwrap();
     }
 }
