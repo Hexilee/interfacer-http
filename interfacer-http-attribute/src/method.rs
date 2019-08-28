@@ -198,7 +198,6 @@ mod format_uri {
         Ok(format_expr)
     }
 
-    // TODO: complete test
     #[cfg(test)]
     mod test {
         use super::{gen_uri_format_expr, Ident, Parameters, Span, DYN_URI_PATTERN, VAL_NAME};
