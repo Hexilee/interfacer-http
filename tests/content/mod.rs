@@ -6,3 +6,5 @@ mod serde_support;
 
 #[cfg(all(feature = "derive", feature = "unhtml-html"))]
 mod unhtml_support;
+
+mod derive;

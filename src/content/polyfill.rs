@@ -1,4 +1,4 @@
-//! ## NEVER USE THIS
+//! ## BE CAUTIOUS TO USE THIS
 //!
 //! This is a polyfill, used for derive `ToContent` and `FromContent`. It will be removed when const generics is stable.
 //!
@@ -26,25 +26,26 @@
 //! ```
 //!
 
-#[allow(unused_imports)]
+#[cfg(feature = "unhtml-html")]
 use crate::mime::Mime;
 
-#[allow(unused_macros)]
+#[cfg(feature = "unhtml-html")]
+use crate::{FromContentError, ToContentError};
+
+#[macro_export]
 macro_rules! define_from_content {
     ($trait_name:ident) => {
         pub trait $trait_name: Sized {
-            type Err;
-            fn _from_content(data: Vec<u8>, content_type: &Mime) -> Result<Self, Self::Err>;
+            fn _from_content(data: Vec<u8>, content_type: &Mime) -> Result<Self, FromContentError>;
         }
     };
 }
 
-#[allow(unused_macros)]
+#[macro_export]
 macro_rules! define_to_content {
     ($trait_name:ident) => {
         pub trait $trait_name: Sized {
-            type Err;
-            fn _to_content(&self, content_type: &Mime) -> Result<Vec<u8>, Self::Err>;
+            fn _to_content(&self, content_type: &Mime) -> Result<Vec<u8>, ToContentError>;
         }
     };
 }

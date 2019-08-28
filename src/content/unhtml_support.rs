@@ -11,8 +11,7 @@ impl<T> FromContentHtml for T
 where
     T: FromHtml,
 {
-    type Err = FromContentError;
-    fn _from_content(data: Vec<u8>, content_type: &Mime) -> Result<Self, Self::Err> {
+    fn _from_content(data: Vec<u8>, content_type: &Mime) -> Result<Self, FromContentError> {
         match (content_type.type_(), content_type.subtype()) {
             (TEXT, HTML) => match content_type.get_param(mime::CHARSET) {
                 None | Some(UTF_8) => {
