@@ -108,15 +108,15 @@ fn from_xml<T: DeserializeOwned>(
     charset: Option<Name>,
 ) -> Result<T, FromContentError> {
     match charset {
-        None | Some(UTF_8) => {
-            Ok(serde_urlencoded::from_bytes(&data)
-                .map_err(|err| (data, TEXT_XML, err.to_string()))?)
-        }
+        None | Some(UTF_8) => Ok(
+            serde_xml_rs::from_str(String::from_utf8_lossy(&data).as_ref())
+                .map_err(|err| (data, TEXT_XML, err.to_string()))?,
+        ),
         #[cfg(feature = "encoding")]
         Some(encoding) => {
-            let data = decode_data(&data, encoding.as_str())?;
-            Ok(serde_json::from_str(&data)
-                .map_err(|err| (data.into_bytes(), TEXT_XML, err.to_string()))?)
+            let string = decode_data(&data, encoding.as_str())?;
+            Ok(serde_xml_rs::from_str(&string)
+                .map_err(|err| (string.into_bytes(), TEXT_XML, err.to_string()))?)
         }
         #[cfg(not(feature = "encoding"))]
         Some(encoding) => Err(encoding.to_string().into()),
