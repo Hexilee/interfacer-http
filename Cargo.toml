@@ -16,13 +16,16 @@ documentation = "https://docs.rs/interfacer-http"
 members = [
     "interfacer-http-attribute",
     "interfacer-http-hyper",
-    "interfacer-http-util",
 ]
 
 [dependencies]
 interfacer-http-attribute = { path = "interfacer-http-attribute", version = "0.2" }
-interfacer-http-util = { path = "interfacer-http-util", version = "0.1" }
 derive_more = "0.15"
+http = "0.1"
+mime = "0.3"
+cookie = "0.12"
+async-trait = "0.1"
+url = "2"
 
 serde_json = { version = "1.0", optional = true }
 rmp-serde = { version = "0.13", optional = true }

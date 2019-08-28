@@ -37,9 +37,9 @@ pub fn implement(item_trait: ItemTrait) -> TokenStream {
         };
     }
 
-    return quote! {
+    quote! (
         #[interfacer_http::async_trait]
         #item_trait
         #item_impl
-    };
+    )
 }

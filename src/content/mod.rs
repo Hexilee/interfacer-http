@@ -1,12 +1,12 @@
 #[doc(hidden)]
 pub mod polyfill;
 pub use error::{FromContentError, ToContentError};
-pub use mime::MimeExt;
+pub use mime_ext::MimeExt;
 
 #[cfg(feature = "encoding")]
 mod encoding;
 mod error;
-mod mime;
+mod mime_ext;
 #[cfg(any(feature = "serde-base", feature = "serde-full"))]
 mod serde_support;
 #[cfg(feature = "unhtml-html")]

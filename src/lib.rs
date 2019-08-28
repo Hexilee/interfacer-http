@@ -1,5 +1,12 @@
 #![feature(trait_alias, specialization)]
 
+pub extern crate cookie;
+pub extern crate http;
+pub extern crate mime;
+pub extern crate url;
+
+pub use async_trait::async_trait;
+
 #[cfg(feature = "mock")]
 pub mod mock;
 
@@ -17,7 +24,6 @@ pub use interfacer_http_attribute::{FromContent, ToContent};
 
 #[doc(inline)]
 pub use client::{CookieError, Helper, HttpClient, ResponseExt};
-pub use interfacer_http_util::*;
 
 mod client;
 mod content;

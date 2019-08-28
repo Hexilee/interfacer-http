@@ -1,6 +1,6 @@
 use crate::parse::AttrMeta;
-use interfacer_http_util::http::StatusCode;
-use interfacer_http_util::mime::Mime;
+use http::StatusCode;
+use mime::Mime;
 use proc_macro::{Diagnostic, Level};
 use proc_macro2::TokenStream;
 use quote::quote;

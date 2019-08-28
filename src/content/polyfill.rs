@@ -30,7 +30,7 @@
 use crate::mime::Mime;
 
 #[cfg(feature = "unhtml-html")]
-use crate::{FromContentError, ToContentError};
+use crate::FromContentError;
 
 #[macro_export]
 macro_rules! define_from_content {
