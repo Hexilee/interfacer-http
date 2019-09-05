@@ -15,6 +15,5 @@ documentation = "https://docs.rs/interfacer-http-hyper"
 
 [dependencies]
 derive_more = "0.15"
-hyper = { git = "https://github.com/hyperium/hyper", branch = "master" }
+hyper = "0.13.0-alpha.1"
 interfacer-http = { path = "..", version = "0.2" }
-
