@@ -1,0 +1,51 @@
+sudo: required
+language: rust
+
+# Cache cargo symbols for faster build
+cache: cargo
+
+# Dependencies of kcov, used by coverage
+addons:
+  apt:
+    packages:
+      - libcurl4-openssl-dev
+      - libelf-dev
+      - libdw-dev
+      - binutils-dev
+      - cmake # also required for cargo-update
+    sources:
+      - kalakris-cmake
+
+rust:
+  - stable
+  - beta
+  - nightly
+
+matrix:
+  allow_failures:
+    - rust: stable
+    - rust: beta
+
+before_script:
+  - export PATH=$HOME/.cargo/bin:$PATH
+  - cargo install cargo-update || echo "cargo-update already installed"
+  - cargo install cargo-travis || echo "cargo-travis already installed"
+  - cargo install-update -a # update outdated cached binaries
+
+script: # 集成脚本
+  - cargo build --all --all-features
+  - cargo test --all --all-features
+
+after_success:
+  - cargo coveralls --all --all-features --exclude-pattern target/
+
+env:
+  global:
+    - TRAVIS_CARGO_NIGHTLY_FEATURE=
+
+notifications:
+  email:
+    recipients:
+    - hexileee@gmail.com
+  on_success: change
+  on_failure: always
