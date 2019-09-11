@@ -1,5 +1,11 @@
 A magic http client, like retrofit in Java
 
+[![Build status](https://img.shields.io/travis/Hexilee/interfacer-http/master.svg)](https://travis-ci.org/Hexilee/interfacer-http)
+[![Coverage Status](https://coveralls.io/repos/github/Hexilee/interfacer-http/badge.svg?branch=master)](https://coveralls.io/github/Hexilee/interfacer-http?branch=master)
+[![Crate version](https://img.shields.io/crates/v/interfacer-http.svg)](https://crates.io/crates/interfacer-http)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/Hexilee/interfacer-http/blob/master/LICENSE)
+[![Rust Docs](https://docs.rs/interfacer-http/badge.svg)](https://docs.rs/interfacer-http)
+
 ```rust
 // define interface
 
