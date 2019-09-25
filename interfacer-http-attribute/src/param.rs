@@ -137,6 +137,36 @@ mod tests {
     }
 
     #[test]
+    fn param_header() -> Result<(), Diagnostic> {
+        assert_eq!(
+            quote!("Content-Type").to_string(),
+            Parameter::header(Punctuated::from_iter(
+                vec![NestedMeta::Lit(Lit::Str(LitStr::new(
+                    "Content-Type",
+                    Span::call_site(),
+                )))]
+                .into_iter(),
+            ))?
+            .to_string()
+        );
+        assert_eq!(
+            quote!(CONTENT_TYPE).to_string(),
+            Parameter::header(Punctuated::from_iter(
+                vec![NestedMeta::Meta(Meta::Path(
+                    Ident::new("CONTENT_TYPE", Span::call_site()).into()
+                ))]
+                .into_iter(),
+            ))?
+            .to_string()
+        );
+        assert_eq!(
+            "header parameter name should be path or str literal",
+            Parameter::header(Punctuated::new()).unwrap_err().message()
+        );
+        Ok(())
+    }
+
+    #[test]
     fn param_try_from() -> Result<(), Diagnostic> {
         assert!(matches!(
             AttrMeta::Name(Ident::new(BODY, Span::call_site())).try_into()?,
