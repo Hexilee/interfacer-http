@@ -221,4 +221,15 @@ mod tests {
         assert!(params.body.is_none());
         Ok(())
     }
+
+    #[test]
+    fn params_try_from_basic() -> Result<(), Diagnostic> {
+        let params = parse_params(quote!(name: &str))?;
+        assert!(params
+            .values
+            .contains(&Ident::new("name", Span::call_site())));
+        assert!(params.headers.is_empty());
+        assert!(params.body.is_none());
+        Ok(())
+    }
 }
