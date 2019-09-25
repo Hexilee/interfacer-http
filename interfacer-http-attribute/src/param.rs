@@ -232,4 +232,25 @@ mod tests {
         assert!(params.body.is_none());
         Ok(())
     }
+
+    #[test]
+    fn params_try_from_full() -> Result<(), Diagnostic> {
+        let params = parse_params(quote!(
+            name: &str,
+            #[body]
+            body: String,
+            #[header(COOKIE)]
+            cookie: &str
+        ))?;
+        assert!(params
+            .values
+            .contains(&Ident::new("name", Span::call_site())));
+        assert_eq!(quote!(COOKIE).to_string(), params.headers[0].0.to_string());
+        assert_eq!(
+            &Ident::new("cookie", Span::call_site()),
+            &params.headers[0].1
+        );
+        assert_eq!(Some(Ident::new("body", Span::call_site())), params.body);
+        Ok(())
+    }
 }
