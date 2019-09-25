@@ -105,9 +105,30 @@ impl TryFrom<Punctuated<FnArg, Token![,]>> for Parameters {
 fn check_duplicate(param_name: &Ident, body: &Option<Ident>) -> Result<(), Diagnostic> {
     match body {
         None => Ok(()),
-        Some(_) => Err(Diagnostic::new(
+        Some(name) => Err(Diagnostic::new(
             Level::Error,
-            format!("param_name `{}` has duplicate body", param_name),
+            format!("duplicate body: {} against {}", param_name, name),
         )),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use proc_macro2::Span;
+
+    #[test]
+    fn test_check_duplicate() -> Result<(), Diagnostic> {
+        assert_eq!(
+            (),
+            check_duplicate(&Ident::new("foo", Span::call_site()), &None)?
+        );
+        let err = check_duplicate(
+            &Ident::new("foo", Span::call_site()),
+            &Some(Ident::new("bar", Span::call_site())),
+        )
+        .unwrap_err();
+        assert_eq!("duplicate body: foo against bar", err.message());
+        Ok(())
     }
 }
