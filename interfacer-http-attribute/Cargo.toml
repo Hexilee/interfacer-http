@@ -22,5 +22,8 @@ lazy_static = "1.3"
 http = "0.1"
 mime = "0.3"
 
+[dev-dependencies]
+matches = "0.1"
+
 [lib]
 proc-macro = true

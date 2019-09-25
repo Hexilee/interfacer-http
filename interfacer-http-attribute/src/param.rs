@@ -15,6 +15,7 @@ pub struct Parameters {
     pub body: Option<Ident>,
 }
 
+#[derive(Debug)]
 enum Parameter {
     Header(TokenStream),
     Body,
@@ -115,7 +116,10 @@ fn check_duplicate(param_name: &Ident, body: &Option<Ident>) -> Result<(), Diagn
 #[cfg(test)]
 mod tests {
     use super::*;
+    use matches::matches;
     use proc_macro2::Span;
+    use std::iter::FromIterator;
+    use syn::LitStr;
 
     #[test]
     fn test_check_duplicate() -> Result<(), Diagnostic> {
@@ -129,6 +133,46 @@ mod tests {
         )
         .unwrap_err();
         assert_eq!("duplicate body: foo against bar", err.message());
+        Ok(())
+    }
+
+    #[test]
+    fn param_try_from() -> Result<(), Diagnostic> {
+        assert!(matches!(
+            AttrMeta::Name(Ident::new(BODY, Span::call_site())).try_into()?,
+            Parameter::Body
+        ));
+        assert!(matches!(
+            AttrMeta::List {
+                name: Ident::new(BODY, Span::call_site()),
+                nested: Punctuated::new()
+            }
+            .try_into()?,
+            Parameter::Body
+        ));
+        assert!(matches!(
+            AttrMeta::List {
+                name: Ident::new(HEADER, Span::call_site()),
+                nested: Punctuated::from_iter(
+                    vec![NestedMeta::Lit(Lit::Str(LitStr::new(
+                        "",
+                        Span::call_site()
+                    )))]
+                    .into_iter()
+                )
+            }
+            .try_into()?,
+            Parameter::Header(_)
+        ));
+        assert_eq!(
+            "header parameter name should be path or str literal",
+            Parameter::try_from(AttrMeta::List {
+                name: Ident::new(HEADER, Span::call_site()),
+                nested: Punctuated::new(),
+            })
+            .unwrap_err()
+            .message()
+        );
         Ok(())
     }
 }
