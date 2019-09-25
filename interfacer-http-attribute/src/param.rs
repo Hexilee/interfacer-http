@@ -9,6 +9,7 @@ use syn::{punctuated::Punctuated, FnArg, Lit, Meta, NestedMeta, Pat, Token};
 const HEADER: &str = "header";
 const BODY: &str = "body";
 
+#[derive(Debug)]
 pub struct Parameters {
     pub values: HashSet<Ident>,
     pub headers: Vec<(TokenStream, Ident)>,
@@ -116,10 +117,11 @@ fn check_duplicate(param_name: &Ident, body: &Option<Ident>) -> Result<(), Diagn
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::parse::try_parse;
     use matches::matches;
     use proc_macro2::Span;
     use std::iter::FromIterator;
-    use syn::LitStr;
+    use syn::{ItemFn, LitStr};
 
     #[test]
     fn test_check_duplicate() -> Result<(), Diagnostic> {
@@ -203,6 +205,20 @@ mod tests {
             .unwrap_err()
             .message()
         );
+        Ok(())
+    }
+
+    fn parse_params(params_token: TokenStream) -> Result<Parameters, Diagnostic> {
+        let func: ItemFn = try_parse(quote!(fn foo(#params_token){}))?;
+        func.sig.inputs.try_into()
+    }
+
+    #[test]
+    fn params_try_from_empty() -> Result<(), Diagnostic> {
+        let params = parse_params(quote!())?;
+        assert!(params.values.is_empty());
+        assert!(params.headers.is_empty());
+        assert!(params.body.is_none());
         Ok(())
     }
 }
