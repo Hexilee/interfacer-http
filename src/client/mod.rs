@@ -13,7 +13,7 @@ pub use response::{CookieError, ResponseExt};
 ///
 /// ### Example
 ///
-/// ```rust
+/// ```rust,ignore
 /// //! base on hyper
 /// #[async_trait]
 /// impl<C> HttpClient for Client<C>

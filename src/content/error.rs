@@ -1,7 +1,7 @@
-#[allow(unused_imports)]
 use crate::mime::{Mime, UTF_8};
 use derive_more::{Display, From};
 
+/// Error type for `ToContent`.
 #[derive(Display, Debug, From)]
 pub enum ToContentError {
     #[display(fmt = "unsupported content type: {}", _0)]
@@ -21,6 +21,7 @@ pub enum ToContentError {
     },
 }
 
+/// Error type for `FromContent`.
 #[derive(Display, Debug, From)]
 pub enum FromContentError {
     #[display(fmt = "unsupported content type: {}", _0)]

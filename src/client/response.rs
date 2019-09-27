@@ -4,6 +4,7 @@ use cookie::Cookie;
 use derive_more::{Display, From};
 use std::collections::HashMap;
 
+/// Error for cookie string parsing.
 #[derive(Debug, Display, From)]
 pub enum CookieError {
     #[display(fmt = "cookie value (`{:?}`) is not string: {}", value, msg)]
@@ -19,6 +20,7 @@ pub enum CookieError {
     },
 }
 
+/// Extensional trait for `http::Response`.
 pub trait ResponseExt {
     fn cookies(&self) -> Result<Vec<Cookie>, CookieError>;
     fn cookie_map(&self) -> Result<HashMap<String, Vec<Cookie>>, CookieError>;

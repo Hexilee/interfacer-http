@@ -1,5 +1,6 @@
 use crate::mime::Mime;
 
+/// Extensional trait for `mime::Mime`.
 pub trait MimeExt {
     fn pure_type(&self) -> Self;
 }

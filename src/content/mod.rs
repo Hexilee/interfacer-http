@@ -16,16 +16,21 @@ use crate::mime::Mime;
 
 // TODO: use T: AsyncRead as type of data
 // TODO: declare mime as generics when const generics is stable
+/// deserialize from response body by `Content-Type` of `Response`.
+/// target type of `http_service` method should implement FromContent.
 pub trait FromContent: Sized {
     fn from_content(data: Vec<u8>, content_type: &Mime) -> Result<Self, FromContentError>;
 }
 
 // TODO: use T: AsyncRead as type of ret
 // TODO: declare mime as generics when const generics is stable
+/// serialize into request body by `Content-Type` of `Request`.
+/// body of `http_service` method should implement ToContent.
 pub trait ToContent {
     fn to_content(&self, content_type: &Mime) -> Result<Vec<u8>, ToContentError>;
 }
 
+/// Wrapped trait of `FromContent` for generic return type inference.
 pub trait ContentInto<T: Sized> {
     fn content_into(self, content_type: &Mime) -> Result<T, FromContentError>;
 }

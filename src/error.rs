@@ -14,7 +14,7 @@ pub trait Error = From<url::ParseError>
     + Display
     + Debug;
 
-/// Error for `Response` asserting.
+/// Error for `Response` assertion.
 #[derive(Debug, Display, Constructor)]
 #[display(fmt = "Unexpected: {}", typ)]
 pub struct Unexpected {
@@ -22,7 +22,7 @@ pub struct Unexpected {
     resp: Response<Vec<u8>>,
 }
 
-/// Error type for `Response` asserting.
+/// Error type for `Response` assertion.
 #[derive(Debug, Display, From)]
 pub enum UnexpectedType {
     #[display(fmt = "status code should be {}", expect)]

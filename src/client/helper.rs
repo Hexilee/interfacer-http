@@ -5,6 +5,26 @@ use crate::{
     url::{ParseError, Url},
 };
 
+/// Client helper.
+///
+/// ### A default `Helper`
+///
+/// ```rust
+/// let helper = Helper::new();
+/// ```
+///
+/// ### Custom `Helper`
+///
+/// ```rust
+/// let helper = Helper::new()
+///     .with_request_initializer(|| {
+///         let mut builder = RequestBuilder::new();
+///         builder
+///             .version(Version::HTTP_10)
+///             .header(USER_AGENT, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36");
+///         builder
+///     });
+/// ```
 #[derive(Clone)]
 pub struct Helper {
     pub base_url: Option<Url>,
