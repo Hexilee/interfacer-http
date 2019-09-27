@@ -1,6 +1,7 @@
 use crate::{http, url, FromContentError, ToContentError, Unexpected};
 use derive_more::{Display, From};
 
+/// Error for mock server
 #[derive(Display, Debug, From)]
 pub enum Error {
     #[display(fmt = "url parse error: {}", _0)]
@@ -21,4 +22,5 @@ pub enum Error {
 
 impl std::error::Error for Error {}
 
+/// alias with `Error`
 pub type Result<T> = std::result::Result<T, Error>;

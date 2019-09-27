@@ -1,3 +1,6 @@
+//! mock module for tests.
+//! need `mock` feature.
+
 #[doc(inline)]
 pub use error::{Error, Result};
 

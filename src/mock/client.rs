@@ -7,6 +7,7 @@ use crate::{
 };
 use std::future::Future;
 
+/// A mock server
 pub struct Client<F> {
     helper: Helper,
     handler: fn(Request<Vec<u8>>) -> F,
@@ -16,6 +17,8 @@ impl<F> Client<F>
 where
     F: Future<Output = Result<Response<Vec<u8>>>> + Send + 'static,
 {
+    /// @param base_url: base url to join path
+    /// @param handler: mock handler implementation
     pub fn new(base_url: Url, handler: fn(Request<Vec<u8>>) -> F) -> Self {
         Self {
             handler,
