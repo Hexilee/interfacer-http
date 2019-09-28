@@ -33,8 +33,15 @@ before_script:
   - cargo install-update -a # update outdated cached binaries
 
 script: # 集成脚本
+  - cargo install grcov
+  - export CARGO_INCREMENTAL=0
+  - export RUSTFLAGS="-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Zno-landing-pads"
   - cargo build --all --all-features
   - cargo test --all --all-features
+  - zip -0 ccov.zip \$(find . \\( -name "*.gc*" \\) -print)
+  - grcov ccov.zip -s . -t coveralls --token $COVERALL_TOKEN --commit-sha TRAVIS_COMMIT  --llvm --ignore-not-existing --ignore-dir "target/*" "/*" -o output.json
+  - sed -i "s/\\"service_name\\":\\"\\"/\\"service_name\\":\\"travis-ci\\"/g" output.json
+  - curl -F json_file=@output.json https://coveralls.io/api/v1/jobs -vvv
 
 after_success:
   - cargo coverage --all --all-features
