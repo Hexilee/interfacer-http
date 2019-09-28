@@ -32,6 +32,7 @@ use crate::mime::Mime;
 #[cfg(feature = "unhtml-html")]
 use crate::FromContentError;
 
+#[doc(hidden)]
 #[macro_export]
 macro_rules! define_from_content {
     ($trait_name:ident) => {
@@ -41,6 +42,7 @@ macro_rules! define_from_content {
     };
 }
 
+#[doc(hidden)]
 #[macro_export]
 macro_rules! define_to_content {
     ($trait_name:ident) => {
