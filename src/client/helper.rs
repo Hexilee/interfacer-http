@@ -30,12 +30,13 @@ use crate::{
 /// ```
 #[derive(Clone)]
 pub struct Helper {
-    pub base_url: Option<Url>,
-    pub request_initializer: fn() -> RequestBuilder,
-    pub mime_matcher: fn(&Mime, &HeaderValue) -> bool,
+    base_url: Option<Url>,
+    request_initializer: fn() -> RequestBuilder,
+    mime_matcher: fn(&Mime, &HeaderValue) -> bool,
 }
 
 impl Helper {
+    /// Construct a default Helper.
     pub fn new() -> Self {
         Self {
             base_url: None,
@@ -55,6 +56,7 @@ impl Default for Helper {
 }
 
 impl Helper {
+    /// bind a base url.
     pub fn with_base_url(self, base_url: Url) -> Self {
         Self {
             base_url: Some(base_url),
@@ -62,6 +64,7 @@ impl Helper {
         }
     }
 
+    /// bind a request initializer.
     pub fn with_request_initializer(self, request_initializer: fn() -> RequestBuilder) -> Self {
         Self {
             request_initializer,
@@ -69,6 +72,7 @@ impl Helper {
         }
     }
 
+    /// bind a mime matcher.
     pub fn with_mime_matcher(self, mime_matcher: fn(&Mime, &HeaderValue) -> bool) -> Self {
         Self {
             mime_matcher,
@@ -76,6 +80,10 @@ impl Helper {
         }
     }
 
+    /// parse a uri string.
+    ///
+    /// if `self.base_url` is None, `raw_url` will be parsed as `raw_url.parse()`.
+    /// else, `raw_url` will be parsed as path.
     pub fn parse_uri(&self, raw_url: &str) -> Result<Url, ParseError> {
         match self.base_url {
             Some(ref base_url) => base_url.join(raw_url),
@@ -83,10 +91,12 @@ impl Helper {
         }
     }
 
+    /// initialize a `Request`.
     pub fn request(&self) -> RequestBuilder {
         (self.request_initializer)()
     }
 
+    /// util function to compare headers.
     pub fn match_mime(&self, expect: &Mime, actual: &HeaderValue) -> bool {
         (self.mime_matcher)(expect, actual)
     }
