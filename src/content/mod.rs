@@ -30,7 +30,7 @@ pub trait ToContent {
     fn to_content(&self, content_type: &Mime) -> Result<Vec<u8>, ToContentError>;
 }
 
-/// Wrapped trait of `FromContent` for generic return type inference.
+/// Wrapped trait of `FromContent` for generic return type deduction.
 pub trait ContentInto<T: Sized> {
     fn content_into(self, content_type: &Mime) -> Result<T, FromContentError>;
 }
