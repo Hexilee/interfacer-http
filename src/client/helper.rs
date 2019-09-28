@@ -10,12 +10,15 @@ use crate::{
 /// ### A default `Helper`
 ///
 /// ```rust
+/// use interfacer_http::Helper;
 /// let helper = Helper::new();
 /// ```
 ///
 /// ### Custom `Helper`
 ///
 /// ```rust
+/// use interfacer_http::Helper;
+/// use interfacer_http::http::{Version, header::USER_AGENT, request::Builder as RequestBuilder};
 /// let helper = Helper::new()
 ///     .with_request_initializer(|| {
 ///         let mut builder = RequestBuilder::new();
