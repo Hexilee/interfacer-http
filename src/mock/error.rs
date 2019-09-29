@@ -2,6 +2,7 @@ use crate::{http, url, FromContentError, ToContentError, Unexpected};
 use derive_more::{Display, From};
 
 /// Error for mock server
+#[allow(clippy::large_enum_variant)]
 #[derive(Display, Debug, From)]
 pub enum Error {
     #[display(fmt = "url parse error: {}", _0)]

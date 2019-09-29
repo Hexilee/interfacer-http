@@ -8,12 +8,9 @@ pub trait MimeExt {
 impl MimeExt for Mime {
     fn pure_type(&self) -> Self {
         let mut ret = format!("{}/{}", self.type_(), self.subtype());
-        match self.suffix() {
-            Some(suffix) => {
-                ret += "+";
-                ret += suffix.as_str();
-            }
-            None => (),
+        if let Some(suffix) = self.suffix() {
+            ret += "+";
+            ret += suffix.as_str();
         }
         ret.parse().unwrap()
     }

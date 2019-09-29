@@ -51,3 +51,6 @@ impl From<std::string::FromUtf8Error> for FromContentError {
         (err.into_bytes(), UTF_8.to_string(), msg).into()
     }
 }
+
+impl std::error::Error for ToContentError {}
+impl std::error::Error for FromContentError {}

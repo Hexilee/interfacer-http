@@ -117,11 +117,11 @@ mod tests {
                     .header(USER_AGENT, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36");
                 builder
             });
-        let request = (helper.request_initializer)()
+        (helper.request_initializer)()
             .method("get")
             .uri("https://github.com")
             .body(())?;
-        Ok(*request.body())
+        Ok(())
     }
 
     #[test]
