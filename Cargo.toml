@@ -61,5 +61,10 @@ path = "proc-macro-tests/http_service.rs"
 edition = "2018"
 required-features = ["derive", "serde-full", "runtime", "mock"]
 
+[[test]]
+name = "async-trait-debug"
+path = "proc-macro-tests/async_trait_debug.rs"
+edition = "2018"
+
 [package.metadata.docs.rs]
 all-features = true
