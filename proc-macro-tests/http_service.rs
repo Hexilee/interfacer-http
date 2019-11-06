@@ -29,7 +29,6 @@ struct User {
 const MOCK_BASE_URL: &str = "https://mock.rs";
 const DEFAULT_COOKIE: &str = "cookie=cookie";
 
-#[rustfmt::skip]
 #[http_service]
 trait UserService {
     type Error;
