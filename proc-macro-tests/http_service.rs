@@ -1,5 +1,15 @@
-#![feature(custom_attribute, param_attrs)]
+#![feature(custom_attribute)]
 #![allow(unused_attributes)]
+
+extern crate alloc;
+
+// polyfill: remove it after https://github.com/rust-lang/rust/pull/64856 merged
+macro_rules! format {
+    ($($arg:tt)*) => {{
+        let res = alloc::fmt::format(alloc::__export::format_args!($($arg)*));
+        res
+    }}
+}
 
 use interfacer_http::{
     http::{header::CONTENT_TYPE, header::COOKIE, Request, Response},
