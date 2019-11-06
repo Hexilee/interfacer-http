@@ -5,7 +5,7 @@ use std::convert::TryFrom;
 use syn::parse::{Parse, Parser};
 use syn::{punctuated::Punctuated, Attribute, Meta, NestedMeta, Path, Token};
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub enum AttrMeta {
     Name(Ident),
     List {
