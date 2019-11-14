@@ -1,3 +1,14 @@
+use crate::content_type::ApplicationJson;
+use crate::{FromContent, FromContentError, ToContent, ToContentError};
+use serde::{de::DeserializeOwned, Serialize};
+
+impl<T: Serialize> ToContent<ApplicationJson> for T {
+    type Err = ToContentError;
+    fn to_content(&self) -> Result<Vec<u8>, Self::Err> {
+        unimplemented!()
+    }
+}
+
 //#[cfg(all(
 //    feature = "encoding",
 //    any(feature = "serde-full", feature = "serde-urlencoded")
