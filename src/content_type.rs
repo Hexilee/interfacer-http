@@ -1,24 +1,30 @@
 use encoding::{all::UTF_8, EncodingRef};
 use mime::{Mime, CHARSET};
-pub trait MimeType {
+
+pub struct ApplicationJSON;
+
+impl MimeType for ApplicationJSON {
     const TYPE: &'static str = "application/json";
-    const ENCODING: EncodingRef = UTF_8;
+    const ENCODING: Option<EncodingRef> = Some(UTF_8);
+    const ENCODING_LABELS: Option<&'static [&'static str]> = None;
+}
+
+pub trait MimeType {
+    const TYPE: &'static str;
+    const ENCODING: Option<EncodingRef>;
+    const ENCODING_LABELS: Option<&'static [&'static str]>;
     fn equal(content_type: &Mime) -> bool {
-        match Self::TYPE.parse::<Mime>() {
-            Err(_) => false,
-            Ok(self_type) => {
-                if self_type.pure_type() != content_type.pure_type() {
-                    return false;
-                }
+        if content_type.pure_type() != Self::TYPE {
+            return false;
+        }
 
-                if self_type.get_param(CHARSET).is_some()
-                    && content_type.get_param(CHARSET).is_some()
-                {
-                    return self_type.get_param(CHARSET) == content_type.get_param(CHARSET);
-                }
-
-                true
-            }
+        match Self::ENCODING_LABELS {
+            Some(labels) => match content_type.get_param(CHARSET) {
+                None => false,
+                Some(charset) if !labels.contains(&charset.as_str()) => false,
+                _ => true,
+            },
+            None => true,
         }
     }
 }
@@ -41,8 +47,10 @@ impl MimeExt for Mime {
 
 #[cfg(test)]
 mod test {
-    use super::{Mime, MimeExt};
+    use super::{ApplicationJSON, Mime, MimeExt, MimeType};
+    use mime::APPLICATION_JSON;
     use std::str::FromStr;
+
     #[test]
     fn test_pure_type() {
         assert_eq!(
@@ -57,5 +65,10 @@ mod test {
                 .pure_type(),
             &"image/svg+xml"
         );
+    }
+
+    #[test]
+    fn test_basic_mime_equal() {
+        assert!(ApplicationJSON::equal(&APPLICATION_JSON));
     }
 }
