@@ -5,6 +5,8 @@ pub extern crate http;
 pub extern crate mime;
 pub extern crate url;
 
+pub mod content_type;
+
 pub use async_trait::async_trait;
 
 #[cfg(feature = "mock")]
@@ -12,7 +14,8 @@ pub mod mock;
 
 #[doc(inline)]
 pub use content::{
-    polyfill, ContentInto, FromContent, FromContentError, MimeExt, ToContent, ToContentError,
+    error::{FromContentError, ToContentError},
+    ContentInto, FromContent, ToContent,
 };
 #[doc(inline)]
 pub use error::{Error, Unexpected, UnexpectedType};

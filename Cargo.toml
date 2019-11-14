@@ -26,13 +26,13 @@ mime = "0.3"
 cookie = "0.12"
 async-trait = "0.1"
 url = "2"
+encoding = "0.2"
 
 serde_json = { version = "1.0", optional = true }
 rmp-serde = { version = "0.13", optional = true }
 serde_urlencoded = { version = "0.6", optional = true }
 serde-xml-rs = { version = "0.3", optional = true }
 serde = { version = "1.0", optional = true }
-lib-encoding = { package = "encoding", version = "0.2", optional = true }
 unhtml = { version = "0.7", optional = true }
 
 # for test
@@ -41,7 +41,6 @@ unhtml_derive = { version = "0.7", optional = true }
 tokio = { version = "0.2.0-alpha.4", optional = true }
 
 [features]
-encoding = ["lib-encoding"]
 serde-base = ["serde"]
 serde-json = ["serde_json"]
 serde-msgpack = ["rmp-serde"]
